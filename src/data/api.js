@@ -2,7 +2,7 @@ import ldfetch from 'ldfetch';
 import {DATASET_URL} from "./const";
 
 export function fetchRoutableTile(z,x,y){
-    return new Promise((resolve,reject) => {
+    return new Promise((resolve) => {
         let fetch = new ldfetch({headers: {accept: 'application/ld+json'}});
         fetch.get(DATASET_URL+z+"/"+x+"/"+y).then(
             response => {resolve(response)}
@@ -53,19 +53,55 @@ export function getIntersectionNodes(triples){
 
 
         // voor elke node nog zijn lat en long bepalen
+        getLatLng(triples,intersections);
+
+        resolve(intersections);
+    });
+}
+
+/*
+Gaat er van uit de lat en long triples van een node voor de highway triple komt
+ */
+export function getNodesWithTrafficSignals(triples){
+    return new Promise((resolve)=>{
+        let intersections = {};
+        let lat = undefined;
+        let lng = undefined;
+
         triples.forEach(function(element){
             if(element.subject && element.predicate && element.object){
-                if(intersections[element.subject.value]){
-                    if(element.predicate.value === "http://www.w3.org/2003/01/geo/wgs84_pos#lat"){
-                        intersections[element.subject.value].lat = element.object.value;
+                if(element.predicate.value === "http://www.w3.org/2003/01/geo/wgs84_pos#lat"){
+                    lat = element.object.value;
+                }
+                else if(element.predicate.value === "http://www.w3.org/2003/01/geo/wgs84_pos#long"){
+                    lng = element.object.value;
+                }
+                else if(element.predicate.value === "https://w3id.org/openstreetmap/terms#highway" && element.object.value === "osm:traffic_signals"){
+                    intersections[element.subject.value] = {id: element.object.value, lat: lat, lng: lng};
+                    if(!lat || !lng){
+                        console.log("lat of lng zijn undefined")
                     }
-                    else if(element.predicate.value === "http://www.w3.org/2003/01/geo/wgs84_pos#long"){
-                        intersections[element.subject.value].lng = element.object.value;
-                    }
+                    lat = undefined;
+                    lng = undefined;
                 }
             }
         });
 
         resolve(intersections);
+    });
+}
+
+function getLatLng(triples,intersections){
+    triples.forEach(function(element){
+        if(element.subject && element.predicate && element.object){
+            if(intersections[element.subject.value]){
+                if(element.predicate.value === "http://www.w3.org/2003/01/geo/wgs84_pos#lat"){
+                    intersections[element.subject.value].lat = element.object.value;
+                }
+                else if(element.predicate.value === "http://www.w3.org/2003/01/geo/wgs84_pos#long"){
+                    intersections[element.subject.value].lng = element.object.value;
+                }
+            }
+        }
     });
 }

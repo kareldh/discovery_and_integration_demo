@@ -5,25 +5,25 @@ import {Map, TileLayer} from 'react-leaflet';
 export default class TileView extends React.Component {
     constructor(props) {
         super();
-        this.lat = props.lat;
-        this.lng = props.lng;
         this.zoom = props.zoom;
         this.state = {
-            data: props.data
+            data: props.data,
+            lat: props.lat,
+            lng: props.lng
         }
     }
 
     componentWillReceiveProps(newProps) {
-        this.setState({data: newProps.data})
+        this.setState({data: newProps.data, lat: newProps.lat, lng: newProps.lng})
     }
 
     render() {
-        const position = [this.lat, this.lng];
+        const position = [this.state.lat, this.state.lng];
         const zoom = this.zoom;
         const {data} = this.state;
         return (
             <Map
-                style = {{width:'600px', height: '600px'}}
+                style = {{height: '850px'}}
                 center = {position}
                 zoom = {zoom}
             >
