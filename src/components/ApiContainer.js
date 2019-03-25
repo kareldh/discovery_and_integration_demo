@@ -14,7 +14,7 @@ export default class ApiContainer extends React.Component{
     }
 
     init(){
-        fetchRoutableTile(14,8392,5470).then((data)=>{getIntersectionNodes(data.triples).then((intersections)=>{this.setState({data: intersections})})});
+        fetchRoutableTile(14,8392,5469).then((data)=>{getIntersectionNodes(data.triples).then((intersections)=>{this.setState({data: intersections})})});
     }
 
     render(){
