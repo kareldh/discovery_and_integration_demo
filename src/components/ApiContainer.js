@@ -55,7 +55,7 @@ export default class ApiContainer extends React.Component{
             <div>
                 <TileView zoom={14} lat={lat} lng={lng} data={markers}/>
         </div>
-            <button onClick={()=>{this.init(0,this.x,this.y)}}>Way intersections</button>
+            <button onClick={()=>{this.init(0,this.x,this.y)}}>Common Nodes between Ways</button>
             <button onClick={()=>{this.init(1,this.x,this.y)}}>Highway:traffic_signals Nodes</button>
             current tile x value: {this.x}   current tile y value: {this.y}
             <Input placeholder="tile x value" onChange={(e,data)=>{this.x = data.value}}/>
