@@ -4,6 +4,13 @@
   "private": true,
   "homepage": "https://kareldh.github.io/intersection_visualisation_demo/",
   "dependencies": {
+    "@turf/along": "^6.0.1",
+    "@turf/distance": "^6.0.1",
+    "@turf/helpers": "^6.1.4",
+    "@turf/nearest-point-on-line": "^6.0.2",
+    "@turf/point-to-line-distance": "^6.0.0",
+    "axios": "^0.18.0",
+    "fast-xml-parser": "^3.12.16",
     "gh-pages": "^2.0.1",
     "ldfetch": "^1.1.1-alpha",
     "leaflet": "^1.4.0",
