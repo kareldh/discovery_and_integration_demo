@@ -8,6 +8,13 @@ export default class Node{
         this.long = long;
         this.incomingLines = incomingLines;
         this.outgoingLines = outgoingLines;
+        this.setLines(incomingLines,outgoingLines);
+    }
+
+    setLines(incomingLines,outgoingLines){
+        this.incomingLines = incomingLines;
+        this.outgoingLines = outgoingLines;
+        //todo: overbodig?
         this.lines = incomingLines.concat(outgoingLines.filter(function (outLine) {
             incomingLines.forEach(function (inLine) {
                 if(inLine.id === outLine.id){
@@ -15,7 +22,7 @@ export default class Node{
                 }
             });
             return true;
-        }))
+        }));
     }
 
     getLatitudeDeg(){

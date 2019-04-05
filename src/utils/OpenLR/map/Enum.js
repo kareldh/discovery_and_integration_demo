@@ -19,3 +19,16 @@ export let frcEnum = Object.freeze({
     "FRC_6": 6, // Sixth class road.
     "FRC_7": 7 // Other class road.
 });
+
+export let locationTypeEnum = Object.freeze({
+    "UNKNOWN": 0,
+    "LINE_LOCATION": 1,
+    "GEO_COORDINATES": 2,
+    "POINT_ALONG_LINE": 3,
+    "POI_WITH_ACCESS_POINT": 4,
+    "CIRCLE": 5,
+    "POLYGON": 6,
+    "CLOSED_LINE": 7,
+    "RECTANGLE": 8,
+    "GRID": 9
+});

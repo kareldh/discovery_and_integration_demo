@@ -3,9 +3,10 @@ import nearestPointOnLine from '@turf/nearest-point-on-line';
 import along from '@turf/along';
 import {point,lineString,feature} from '@turf/helpers'
 import {fowEnum} from "./Enum";
+import distance from "@turf/distance/index";
 
 export default class Line {
-    constructor(startNode,endNode,id){
+    constructor(id,startNode,endNode){
         this.startNode = startNode;
         this.endNode = endNode;
         this.id = id;
@@ -16,6 +17,7 @@ export default class Line {
         this.prevLines = [];
         this.nextLines = [];
         this.shape = undefined;
+        this.turnRestriction = undefined;
     }
 
     getStartNode(){
@@ -38,7 +40,18 @@ export default class Line {
         return this.pointAlongLine;
     }
 
-    getLineLength(){
+    getLength(){
+        if(this.lineLength === undefined && this.startNode !== undefined && this.endNode !== undefined){
+            let from = point([
+                this.startNode.getLatitudeDeg(),
+                this.startNode.getLongitudeDeg()
+            ]);
+            let to = point([
+                this.endNode.getLatitudeDeg(),
+                this.endNode.getLongitudeDeg()
+            ]);
+            this.lineLength = distance(from,to,{units: "meters"});
+        }
         return this.lineLength;
     }
 
@@ -62,14 +75,22 @@ export default class Line {
         //optional, undefined
     }
 
+    getTurnRestriction(){
+        return this.turnRestriction;
+    }
+
     getGeoCoordinateAlongLine(distanceAlong){
-        let line = lineString(
+        let line = lineString([
             [this.startNode.getLatitudeDeg(),this.startNode.getLongitudeDeg()],
             [this.endNode.getLatitudeDeg(), this.endNode.getLongitudeDeg()]
-        );
-        let along = along(line,distanceAlong,{units: 'meters'});
-        return along.geometry;
-        //todo aanpassen aan {lat: lon: }
+        ]);
+
+        let distAlong = along(line,distanceAlong,{units: 'meters'});
+        //return distAlong.geometry;
+        return {
+            lat: distAlong.geometry.coordinates[0],
+            lon: distAlong.geometry.coordinates[1]
+        }
     }
 
     distanceToPoint(lat,long){
@@ -83,10 +104,10 @@ export default class Line {
 
     measureAlongLine(lat,long){
         let pt = point([lat,long]);
-        let line = lineString(
+        let line = lineString([
             [this.startNode.getLatitudeDeg(),this.startNode.getLongitudeDeg()],
             [this.endNode.getLatitudeDeg(), this.endNode.getLongitudeDeg()]
-        );
+        ]);
         let snapped = nearestPointOnLine(line,pt,{units: 'meters'});
         return snapped.properties.location;
     }

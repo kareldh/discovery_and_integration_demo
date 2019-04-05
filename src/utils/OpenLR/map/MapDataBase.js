@@ -30,6 +30,7 @@ export default class MapDataBase {
         return this.nodes[id];
     }
 
+    //todo: versnellen via custom gegevensstructuur
     findNodesCloseByCoordinate(lat,long,dist){
         let resNodes = [];
         for(let key in this.nodes){
@@ -43,6 +44,7 @@ export default class MapDataBase {
         return resNodes;
     }
 
+    //todo: versnellen via custom gegevensstructuur
     findLinesCloseByCoordinate(lat,long,dist){
         let resLines = [];
         for(let key in this.lines){
@@ -57,8 +59,12 @@ export default class MapDataBase {
     }
 
     hasTurnRestrictionOnPath(lineList){
-        //todo: als een line eigenschap oneway heeft??
-        // of dus als line van-naar niet als naar-van voorkomt
+        //https://wiki.openstreetmap.org/wiki/Relation:restriction
+        let i=0;
+        while(i<lineList.length && lineList[i].getTurnRestriction() !== undefined){
+            i++;
+        }
+        return i === lineList.length;
     }
 
     getAllNodes(){
