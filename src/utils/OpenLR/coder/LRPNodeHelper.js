@@ -1,6 +1,6 @@
 import LocationReferencePoint from "./LocationReferencePoint";
 import {point} from '@turf/helpers'
-import {bearing} from '@turf/bearing'
+import bearing from '@turf/bearing'
 import {frcEnum} from "../map/Enum";
 
 export default class LRPNodeHelper{
@@ -13,18 +13,24 @@ export default class LRPNodeHelper{
         for(let i=0;i<lrpNodes.length;i++){
             let properties = {};
             let isLast = false;
+            let frc;
+            let fow;
             if(i < shortestPaths.length){
                 properties = this.calcProperties(20,lrpNodes[i],shortestPaths[i],lrpNodes[i+1]);
+                frc = shortestPaths[i][0].getFRC();
+                fow = shortestPaths[i][0].getFOW();
             }
             else{
                 isLast = true;
                 properties = this.calcLastLRPProperties(20,lrpNodes[i-1],shortestPaths[i-1],lrpNodes[i])
+                frc = shortestPaths[i-1][shortestPaths[i-1].length-1].getFRC();
+                fow = shortestPaths[i-1][shortestPaths[i-1].length-1].getFOW();
             }
             let LRP = new LocationReferencePoint(
                 properties.bearing,
                 properties.pathLength,
-                lrpNodes[i].getFRC(),
-                lrpNodes[i].getFOW(),
+                frc,
+                fow,
                 properties.lfrcnp,
                 properties.isLast,
                 lrpNodes[i].getLatitudeDeg(),
@@ -33,7 +39,7 @@ export default class LRPNodeHelper{
             );
             LRPs.push(LRP);
         }
-        LRPs.push()
+        return LRPs;
     }
 
     /*
@@ -91,10 +97,10 @@ export default class LRPNodeHelper{
         let leastFRCtillNextPoint = frcEnum.FRC_0;
         while(i < shortestPath.length && shortestPath[i].getStartNode() !== lastNode){
             pathLength += shortestPath[i].getLength();
-            i++;
             if(shortestPath[i].getFRC() !== undefined && shortestPath[i].getFRC() < leastFRCtillNextPoint){
                 leastFRCtillNextPoint = shortestPath[i].getFRC();
             }
+            i++;
         }
         i--;
         let reverseLength = 0;
@@ -112,6 +118,7 @@ export default class LRPNodeHelper{
                     calcBear += 360;
                 }
             }
+            i--;
         }
         if(calcBear === undefined){
             //means that the previous LRP lays further than the beardist point
