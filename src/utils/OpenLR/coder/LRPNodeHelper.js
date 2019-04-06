@@ -22,7 +22,7 @@ export default class LRPNodeHelper{
             }
             else{
                 isLast = true;
-                properties = this.calcLastLRPProperties(20,lrpNodes[i-1],shortestPaths[i-1],lrpNodes[i])
+                properties = this.calcLastLRPProperties(20,lrpNodes[i-1],shortestPaths[i-1],lrpNodes[i]);
                 frc = shortestPaths[i-1][shortestPaths[i-1].length-1].getFRC();
                 fow = shortestPaths[i-1][shortestPaths[i-1].length-1].getFOW();
             }
