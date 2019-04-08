@@ -63,8 +63,6 @@ export default class LRPNodeHelper{
                 let lrpPoint = point([node.getLatitudeDeg(), node.getLongitudeDeg()]);
                 let bearDistPoint = point([bearDistLoc.lat,bearDistLoc.lon]);
 
-                console.log(lrpPoint);
-
                 calcBear = bearing(lrpPoint, bearDistPoint);
                 if(calcBear < 0){
                     // bear is always positive, counterclockwise
@@ -123,8 +121,15 @@ export default class LRPNodeHelper{
         if(calcBear === undefined){
             //means that the previous LRP lays further than the beardist point
             let lrpPoint = point([lastNode.getLatitudeDeg(), lastNode.getLongitudeDeg()]);
-            let nextLrpPoint = point([prevNode.getLatitudeDeg(), prevNode.getLongitudeDeg()]);
+            let prevLrpPoint = point([prevNode.getLatitudeDeg(), prevNode.getLongitudeDeg()]);
+
+            calcBear = bearing(lrpPoint, prevLrpPoint);
+            if(calcBear < 0){
+                // bear is always positive, counterclockwise
+                calcBear += 360;
+            }
         }
+
         return {
             bearing: calcBear,
             pathLength: pathLength,

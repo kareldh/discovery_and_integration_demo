@@ -22,7 +22,10 @@ export default class JsonFormat{
                     "type": "Offsets",
                     "properties": {
                         "_pOffset": posOffset,
+                        "_pOffRelative":0,
                         "_nOffset": negOffset,
+                        "_nOffRelative": 0,
+                        "_version": 3
                     }
                 }
             }
