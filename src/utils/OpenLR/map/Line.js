@@ -1,9 +1,12 @@
 import pointToLineDistance from '@turf/point-to-line-distance';
 import nearestPointOnLine from '@turf/nearest-point-on-line';
 import along from '@turf/along';
-import {point,lineString,feature} from '@turf/helpers'
-import {fowEnum} from "./Enum";
+import {point,lineString} from '@turf/helpers'
 import distance from "@turf/distance/index";
+import bearing from '@turf/bearing'
+import {fowEnum} from "./Enum";
+import {configProperties} from "../coder/CoderSettings";
+
 
 export default class Line {
     constructor(id,startNode,endNode){
@@ -18,6 +21,8 @@ export default class Line {
         this.nextLines = [];
         this.shape = undefined;
         this.turnRestriction = undefined;
+        this.bearing = undefined;
+        this.reverseBearing = undefined;
     }
 
     getStartNode(){
@@ -89,7 +94,7 @@ export default class Line {
         //return distAlong.geometry;
         return {
             lat: distAlong.geometry.coordinates[0],
-            lon: distAlong.geometry.coordinates[1]
+            long: distAlong.geometry.coordinates[1]
         }
     }
 
@@ -109,6 +114,53 @@ export default class Line {
             [this.endNode.getLatitudeDeg(), this.endNode.getLongitudeDeg()]
         ]);
         let snapped = nearestPointOnLine(line,pt,{units: 'meters'});
-        return snapped.properties.location;
+        return {
+            lat: snapped.geometry.coordinates[0],
+            long: snapped.geometry.coordinates[1]
+        }
+    }
+
+    getBearing(){
+        if(this.bearing === undefined){
+            let startNode = point([this.startNode.getLatitudeDeg(), this.startNode.getLongitudeDeg()]);
+            let bearPoint;
+            if(this.lineLength <= configProperties.bearDist){
+                bearPoint = point([this.endNode.getLatitudeDeg(), this.endNode.getLongitudeDeg()]);
+            }
+            else{
+                let bearDistLoc = this.getGeoCoordinateAlongLine(configProperties.bearDist);
+                bearPoint = point([bearDistLoc.lat,bearDistLoc.long]);
+            }
+
+            let calcBear = bearing(startNode, bearPoint);
+            if(calcBear < 0){
+                // bear is always positive, counterclockwise
+                calcBear += 360;
+            }
+            this.bearing = calcBear;
+        }
+        return this.bearing;
+    }
+
+    getReverseBearing(){
+        if(this.reverseBearing === undefined){
+            let startNode = point([this.endNode.getLatitudeDeg(), this.endNode.getLongitudeDeg()]);
+            let bearPoint;
+            if(this.lineLength <= configProperties.bearDist){
+                bearPoint = point([this.startNode.getLatitudeDeg(), this.startNode.getLongitudeDeg()]);
+            }
+            else{
+                let bearDistLoc = this.getGeoCoordinateAlongLine(this.lineLength-configProperties.bearDist);
+                bearPoint = point([bearDistLoc.lat,bearDistLoc.long]);
+            }
+
+            let calcBear = bearing(startNode, bearPoint);
+            if(calcBear < 0){
+                // bear is always positive, counterclockwise
+                calcBear += 360;
+            }
+            this.reverseBearing = calcBear;
+        }
+        return this.reverseBearing;
     }
 }

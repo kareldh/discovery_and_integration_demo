@@ -1,7 +1,7 @@
 import {locationTypeEnum} from "../map/Enum";
 
 export default class JsonFormat{
-    static export(type,LRPs,posOffset,negOffset){
+    static exportJson(type,LRPs,posOffset,negOffset){
         if(type === locationTypeEnum.LINE_LOCATION){
             return this.exportLineLocation(LRPs,posOffset,negOffset);
         }
@@ -41,7 +41,7 @@ export default class JsonFormat{
                     "_lfrcnp": LRPs[i].lfrcnp,
                     "_isLast": LRPs[i].isLast,
                     "_longitude": LRPs[i].lat,
-                    "_latitude": LRPs[i].lon,
+                    "_latitude": LRPs[i].long,
                     "_sequenceNumber": LRPs[i].seqNr
                 }
             });

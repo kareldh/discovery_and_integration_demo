@@ -12,6 +12,7 @@ export function generateStraightLaneTestData(){
     let node3 = new Node(3,51.2120361,4.3974671);
     let node4 = new Node(4,51.2120058,4.3976971);
     let node5 = new Node(5,51.2120184,4.3977501);
+    //todo: line parameters (length, frc, ...)
     let line1 = new Line(1,node1,node2);
     let line2 = new Line(2,node3,node4);
     let line3 = new Line(3,node4,node5);

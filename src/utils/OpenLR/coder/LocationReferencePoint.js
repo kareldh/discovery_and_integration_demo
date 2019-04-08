@@ -7,7 +7,7 @@ export default class LocationReferencePoint{
         this.lfrcnp = lfrcnp;
         this.isLast = islast;
         this.lat = lat;
-        this.lon = lon;
+        this.long = lon;
         this.seqNr = seqNr;
     }
 }

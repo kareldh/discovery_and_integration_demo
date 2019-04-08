@@ -2,6 +2,7 @@ import LocationReferencePoint from "./LocationReferencePoint";
 import {point} from '@turf/helpers'
 import bearing from '@turf/bearing'
 import {frcEnum} from "../map/Enum";
+import {configProperties} from "./CoderSettings";
 
 export default class LRPNodeHelper{
 
@@ -16,15 +17,15 @@ export default class LRPNodeHelper{
             let frc;
             let fow;
             if(i < shortestPaths.length){
-                properties = this.calcProperties(20,lrpNodes[i],shortestPaths[i],lrpNodes[i+1]);
-                frc = shortestPaths[i][0].getFRC();
-                fow = shortestPaths[i][0].getFOW();
+                properties = this.calcProperties(configProperties.bearDist,lrpNodes[i],shortestPaths[i].lines,lrpNodes[i+1]);
+                frc = shortestPaths[i].lines[0].getFRC();
+                fow = shortestPaths[i].lines[0].getFOW();
             }
             else{
                 isLast = true;
-                properties = this.calcLastLRPProperties(20,lrpNodes[i-1],shortestPaths[i-1],lrpNodes[i]);
-                frc = shortestPaths[i-1][shortestPaths[i-1].length-1].getFRC();
-                fow = shortestPaths[i-1][shortestPaths[i-1].length-1].getFOW();
+                properties = this.calcLastLRPProperties(configProperties.bearDist,lrpNodes[i-1],shortestPaths[i-1].lines,lrpNodes[i]);
+                frc = shortestPaths[i-1].lines[shortestPaths[i-1].length-1].getFRC();
+                fow = shortestPaths[i-1].lines[shortestPaths[i-1].length-1].getFOW();
             }
             let LRP = new LocationReferencePoint(
                 properties.bearing,
@@ -32,7 +33,7 @@ export default class LRPNodeHelper{
                 frc,
                 fow,
                 properties.lfrcnp,
-                properties.isLast,
+                isLast,
                 lrpNodes[i].getLatitudeDeg(),
                 lrpNodes[i].getLongitudeDeg(),
                 i+1
@@ -54,14 +55,14 @@ export default class LRPNodeHelper{
         let i = 0;
         let pathLength = 0;
         let calcBear = undefined;
-        let leastFRCtillNextPoint = frcEnum.FRC_0;
+        let leastFRCtillNextPoint = frcEnum.FRC_7;
         while(i < shortestPath.length && shortestPath[i].getStartNode() !== nextNode){
             if(calcBear === undefined && pathLength+shortestPath[i].getLength() > 20){
                 // the bearingdist point lays on this line
                 let distanceFromLRP = beardist - pathLength;
                 let bearDistLoc = shortestPath[i].getGeoCoordinateAlongLine(distanceFromLRP);
                 let lrpPoint = point([node.getLatitudeDeg(), node.getLongitudeDeg()]);
-                let bearDistPoint = point([bearDistLoc.lat,bearDistLoc.lon]);
+                let bearDistPoint = point([bearDistLoc.lat,bearDistLoc.long]);
 
                 calcBear = bearing(lrpPoint, bearDistPoint);
                 if(calcBear < 0){
@@ -79,6 +80,12 @@ export default class LRPNodeHelper{
             //means that the next LRP lays earlier than the beardist point
             let lrpPoint = point([node.getLatitudeDeg(), node.getLongitudeDeg()]);
             let nextLrpPoint = point([nextNode.getLatitudeDeg(), nextNode.getLongitudeDeg()]);
+
+            calcBear = bearing(lrpPoint, nextLrpPoint);
+            if(calcBear < 0){
+                // bear is always positive, counterclockwise
+                calcBear += 360;
+            }
         }
         return {
             bearing: calcBear,
@@ -103,12 +110,12 @@ export default class LRPNodeHelper{
         i--;
         let reverseLength = 0;
         while(i > 0 && calcBear === undefined){
-            if(reverseLength+shortestPath[i].getLength() > 20){
+            if(reverseLength+shortestPath[i].getLength() > beardist){
                 // the bearingdist point lays on this line
-                let distance = reverseLength+shortestPath[i]-20;
+                let distance = reverseLength+shortestPath[i]-beardist;
                 let bearDistLoc = shortestPath[i].getGeoCoordinateAlongLine(distance);
                 let lrpPoint = point([lastNode.getLatitudeDeg(), lastNode.getLongitudeDeg()]);
-                let bearDistPoint = point([bearDistLoc.lat,bearDistLoc.lon]);
+                let bearDistPoint = point([bearDistLoc.lat,bearDistLoc.long]);
 
                 calcBear = bearing(lrpPoint, bearDistPoint);
                 if(calcBear < 0){
