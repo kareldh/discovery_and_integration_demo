@@ -1,4 +1,4 @@
-import {configProperties, decoderProperties} from "./CoderSettings";
+import {decoderProperties} from "./CoderSettings";
 import {calcDistance} from "./GeoFunctions";
 import {fowEnum, frcEnum} from "../map/Enum";
 import Dijkstra from "./Dijkstra";
@@ -16,12 +16,17 @@ export default class LineDecoder{
 
         // 5: Determine shortest-path(s) between two subsequent location reference points
         // 6: Check validity of the calculated shortest-path(s)
-        let shortestPaths = LineDecoder.determineShortestPaths(candidateLines,LRPs);
+        // 7: Concatenate shortest-path(s) to form the location
+        let concatShortestPath = LineDecoder.determineShortestPaths(candidateLines,LRPs);
 
+        // 7: and trim according to the offsets
+        let trimmed = LineDecoder.trimAccordingToOffsets(concatShortestPath,posOffset,negOffset);
 
-
-        // 7: Concatenate shortest-path(s) to form the location and trim according to the offsets
-
+        return {
+            lines: trimmed,
+            posOffset: posOffset,
+            negOffset: negOffset
+        }
     }
 
     static findCandidatesOrProjections(mapDataBase,LRPs){
@@ -185,7 +190,7 @@ export default class LineDecoder{
         while((shortestPath === undefined
             || shortestPath.lines.length === 0
             || Math.abs(shortestPath.length-LRPs[lrpIndex].distanceToNext) >= decoderProperties.distanceToNextDiff) // check validity (step 6 of decoding)
-            && tries < decoderProperties.maxSPSearchRetries){
+            && tries.count < decoderProperties.maxSPSearchRetries){
             shortestPath = LineDecoder.findShortestPath(candidateLines[lrpIndex][candidateIndexes[lrpIndex]],candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]]);
             if(candidateIndexes[lrpIndex+1]<candidateLines[lrpIndex+1].length){
                 candidateIndexes[lrpIndex+1]++;
@@ -198,7 +203,7 @@ export default class LineDecoder{
             else{
                 throw "could not construct a shortest path";
             }
-            tries++;
+            tries.count++;
         }
         shortestPaths[lrpIndex] = shortestPath;
         if(prevEndChanged && lrpIndex-1 >= 0){
@@ -213,10 +218,44 @@ export default class LineDecoder{
     static determineShortestPaths(candidateLines,LRPs){
         let shortestPaths = [];
         let candidateIndexes = [];
-        let tries = 0;
+        let tries = {count: 0};
         for(let i=0;i<candidateLines.length-1;i++){
             LineDecoder.calcSPforLRP(candidateLines,candidateIndexes,i,tries,shortestPaths,LRPs);
         }
-        return shortestPaths;
+
+        return LineDecoder.concatSP(shortestPaths, candidateLines, candidateIndexes);
+    }
+
+    static concatSP(shortestPaths,candidateLines,candidateIndexes){
+        if(shortestPaths.length !== candidateLines.length-1){
+            throw "length of shortestPaths !== length of candidateLines-1";
+        }
+        let concatenatedShortestPath = [];
+        for(let i=0;i<shortestPaths.length;i++){
+            concatenatedShortestPath.push(candidateLines[i][candidateIndexes[i]]); //add the startLine of the LRP (endline if last LRP)
+            for(let j=0;j<shortestPaths[i].lines.length;i++){
+                concatenatedShortestPath.push(shortestPaths[i].lines[j])
+            }
+        }
+        concatenatedShortestPath.push(candidateLines[candidateLines.length-1][candidateIndexes[candidateIndexes.length-1]]);
+        return concatenatedShortestPath;
+    }
+
+    static trimAccordingToOffsets(concatShortestPath,offsets){
+        if(concatShortestPath.length === 0){
+            throw "can't trim empty path";
+        }
+        let firstLine = concatShortestPath[0];
+        while(offsets.posOffset > 0 && firstLine !== undefined && firstLine.getLength()<=offsets.posOffset){
+            offsets.posOffset  -= firstLine.getLength();
+            concatShortestPath.shift();
+            firstLine = concatShortestPath[0];
+        }
+        let lastLine = concatShortestPath[concatShortestPath.length-1];
+        while(offsets.negOffset > 0 && lastLine !== undefined && lastLine.getLength()<=offsets.negOffset){
+            offsets.negOffset -= lastLine.getLength();
+            concatShortestPath.pop();
+            lastLine = concatShortestPath[concatShortestPath.length-1];
+        }
     }
 }

@@ -10,6 +10,9 @@ export default class LRPNodeHelper{
         if(lrpNodes.length<2){
             throw "not enough LRP nodes";
         }
+        if(shortestPaths.length !== lrpNodes.length-1){
+            throw "not enough shortestPaths";
+        }
         let LRPs = [];
         for(let i=0;i<lrpNodes.length;i++){
             let properties = {};
@@ -24,8 +27,8 @@ export default class LRPNodeHelper{
             else{
                 isLast = true;
                 properties = this.calcLastLRPProperties(configProperties.bearDist,lrpNodes[i-1],shortestPaths[i-1].lines,lrpNodes[i]);
-                frc = shortestPaths[i-1].lines[shortestPaths[i-1].length-1].getFRC();
-                fow = shortestPaths[i-1].lines[shortestPaths[i-1].length-1].getFOW();
+                frc = shortestPaths[i-1].lines[shortestPaths[i-1].lines.length-1].getFRC();
+                fow = shortestPaths[i-1].lines[shortestPaths[i-1].lines.length-1].getFOW();
             }
             let LRP = new LocationReferencePoint(
                 properties.bearing,

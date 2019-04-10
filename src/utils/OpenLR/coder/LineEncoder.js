@@ -1,4 +1,4 @@
-import Dijkstra from "./dijkstra";
+import Dijkstra from "./Dijkstra";
 import JsonFormat from "./JsonFormat";
 import {locationTypeEnum} from "../map/Enum";
 import LRPNodeHelper from "./LRPNodeHelper";
@@ -7,12 +7,16 @@ export default class LineEncoder {
     static encode(mapDataBase,lines,posOffset,negOffset){
         let lrpNodes = [];
         let shortestPaths = [];
+        let offsets = {
+            posOffset: posOffset,
+            negOffset: negOffset
+        };
 
         // 1: check validity of the location and offsets to be encoded
-        LineEncoder.checkValidityAndAdjustOffsets(lines,posOffset,negOffset);
+        LineEncoder.checkValidityAndAdjustOffsets(lines,offsets);
 
         // 2: adjust start and end nodes of the location to represent valid map nodes
-        let expanded = this.adjustToValidStartEnd(mapDataBase,lines,posOffset,negOffset);
+        let expanded = this.adjustToValidStartEnd(mapDataBase,lines,offsets);
         lrpNodes.push(lines[0].getStartNode());
 
         // 3: determine coverage of the location by a shortest-path
@@ -20,7 +24,7 @@ export default class LineEncoder {
         shortestPaths.push(shortestPath);
 
         // 4: check whether the calculated shortest-path covers the location completely
-        let checkResult = this.checkShortestPathCoverage(expanded.front,lines,shortestPath);
+        let checkResult = this.checkShortestPathCoverage(expanded.front,lines,shortestPath.lines);
 
         //location not completely covered, intermediate LRPs needed
         while(! checkResult.fullyCovered){
@@ -33,15 +37,15 @@ export default class LineEncoder {
                 // reference point and the end of the location
                 shortestPath = Dijkstra.shortestPath(lines[checkResult.lrpNodeIndexInLoc].getEndNode(),lines[lines.length-1-expanded.back].getEndNode());
                 shortestPaths.push(shortestPath);
-                checkResult = this.checkShortestPathCoverage(checkResult.lrpNodeIndexInLoc+1,lines,shortestPath);
+                checkResult = this.checkShortestPathCoverage(checkResult.lrpNodeIndexInLoc+1,lines,shortestPath.lines);
             }
             else{
                 //find a valid node on the shortest path that leads to the invalid node
-                let validNodeResult = this.findValidNodeOnSP(shortestPath,checkResult.lrpNodeIndexInSP);
+                let validNodeResult = this.findValidNodeOnSP(shortestPath.lines,checkResult.lrpNodeIndexInSP);
                 lrpNodes.push(validNodeResult.validNode);
                 shortestPath = Dijkstra.shortestPath(validNodeResult.validNode,lines[lines.length-1-expanded.back].getEndNode());
                 shortestPaths.push(shortestPath);
-                checkResult = this.checkShortestPathCoverage(validNodeResult.lrpNodeIndexInLoc,lines,shortestPath);
+                checkResult = this.checkShortestPathCoverage(validNodeResult.lrpNodeIndexInLoc,lines,shortestPath.lines);
             }
         }
 
@@ -50,7 +54,7 @@ export default class LineEncoder {
 
         // 7: concatenate the calculated shortest-paths for a complete coverage of the location and
         // form an ordered list of location reference points (from the start to the end of the location)
-        let concatenatedSPResult = this.concatenateAndValidateShortestPaths(lrpNodes,shortestPaths);
+        let concatenatedSPResult = this.concatenateAndValidateShortestPaths(lrpNodes,shortestPaths,offsets);
         checkResult = this.checkShortestPathCoverage(0,lines,concatenatedSPResult.shortestPath);
         if(!checkResult.fullyCovered){
             throw "something went wrong with determining the concatenated shortest path";
@@ -65,13 +69,14 @@ export default class LineEncoder {
             // of the corresponding path.
             if(concatenatedSPResult.wrongPosOffset){
                 //remove LRP at the front
-                this.removeLRPatFront(lrpNodes,shortestPaths,posOffset);
-                concatenatedSPResult = this.concatenateAndValidateShortestPaths(lrpNodes,shortestPaths);
+                this.removeLRPatFront(lrpNodes,shortestPaths,offsets);
+                //todo: controleer dat posOffset kan worden aangepast
+                concatenatedSPResult = this.concatenateAndValidateShortestPaths(lrpNodes,shortestPaths,offsets);
             }
             if(concatenatedSPResult.wrongNegOffset){
                 //remove LRP at the end
-                this.removeLRPatEnd(lrpNodes,shortestPaths,negOffset);
-                concatenatedSPResult = this.concatenateAndValidateShortestPaths(lrpNodes,shortestPaths);
+                this.removeLRPatEnd(lrpNodes,shortestPaths,offsets);
+                concatenatedSPResult = this.concatenateAndValidateShortestPaths(lrpNodes,shortestPaths,offsets);
             }
             if(concatenatedSPResult.wrongIntermediateDistance){
                 //add intermediate LRPs
@@ -87,10 +92,10 @@ export default class LineEncoder {
 
         // 10: create physical representation of the location reference (json)
         let LRPs = LRPNodeHelper.lrpNodesToLRPs(lrpNodes,shortestPaths);
-        return JsonFormat.export(locationTypeEnum.LINE_LOCATION,LRPs,posOffset,negOffset);
+        return JsonFormat.exportJson(locationTypeEnum.LINE_LOCATION,LRPs,offsets.posOffset,offsets.negOffset);
     }
 
-    static checkValidityAndAdjustOffsets(lines,posOffset,negOffset){
+    static checkValidityAndAdjustOffsets(lines,offsets){
         if(lines !== undefined && lines.length > 0){
             let pathLength = lines[0].getLength();
             let prevLineEndNode = lines[0].getEndNode();
@@ -105,18 +110,18 @@ export default class LineEncoder {
             if(i !== lines.length){
                 throw "line isn't a connected path";
             }
-            if(posOffset + negOffset >= pathLength){
-                throw "offsets longer than path";
+            if(offsets.posOffset + offsets.negOffset >= pathLength){
+                throw "offsets longer than path: path="+pathLength+" posOffset="+offsets.posOffset+ " negOffset="+offsets.negOffset;
             }
             //remove unnecessary start or end lines
-            while(posOffset >= lines[0].getLength()){
+            while(lines.length>0 && offsets.posOffset >= lines[0].getLength()){
                 console.log("first line should be omitted");
-                posOffset -= lines[0].getLength();
+                offsets.posOffset -= lines[0].getLength();
                 lines.shift();
             }
-            while(negOffset >= lines[lines.length-1].getLength()){
+            while(lines.length>0 && offsets.negOffset >= lines[lines.length-1].getLength()){
                 console.log("last line should be omitted");
-                negOffset -= lines[lines.length-1].getLength();
+                offsets.negOffset -= lines[lines.length-1].getLength();
                 lines.pop();
             }
             //todo vereisten voor binary formaat
@@ -125,7 +130,7 @@ export default class LineEncoder {
     }
 
     // if this step fails, the encoding can proceed to the next step
-    static adjustToValidStartEnd(mapDataBase,lines,posOffset,negOffset){
+    static adjustToValidStartEnd(mapDataBase,lines,offsets){
         let expanded = {
             front: 0,
             back: 0
@@ -150,19 +155,19 @@ export default class LineEncoder {
                 //start node expansion
                 while(LineEncoder.nodeIsValid(startNode)){
                     if(startNode.getIncomingLines().length === 1){
-                        this.expand(startNode.getIncomingLines()[0],startNode,startLine,lines,pathLength,posOffset);
+                        this.expand(startNode.getIncomingLines()[0],startNode,startLine,lines,pathLength,offsets.posOffset);
                         expanded.front += 1;
                     }
                     else if(startNode.getIncomingLines().length === 2){
                         // one of the outgoing lines is the second line of the location, so expansion should happen in the other direction
                         if(startNode.getIncomingLines()[0].getStartNode().getID() === startLine.getEndNode().getID()){
                             //expand to the start node of the second incoming line
-                            this.expand(startNode.getIncomingLines()[0],startNode,startLine,lines,pathLength,posOffset);
+                            this.expand(startNode.getIncomingLines()[0],startNode,startLine,lines,pathLength,offsets.posOffset);
                             expanded.front += 1;
                         }
                         else if(startNode.getIncomingLines()[1].getStartNode().getID() === startLine.getEndNode().getID()){
                             //expand to the start node of the first incoming line
-                            this.expand(startNode.getIncomingLines()[1],startNode,startLine,lines,pathLength,posOffset);
+                            this.expand(startNode.getIncomingLines()[1],startNode,startLine,lines,pathLength,offsets.posOffset);
                             expanded.front += 1;
                         }
                         else{
@@ -176,19 +181,19 @@ export default class LineEncoder {
                 //end node expansion
                 while(this.nodeIsValid(endNode)){
                     if(endNode.getIncomingLines().length === 1){
-                        this.expand(endNode.getIncomingLines()[0],endNode,endLine,lines,pathLength,negOffset);
+                        this.expand(endNode.getIncomingLines()[0],endNode,endLine,lines,pathLength,offsets.negOffset);
                         expanded.back += 1;
                     }
                     else if(endNode.getIncomingLines().length === 2){
                         // one of the incoming lines is the second-last line of the location, so expansion should happen in the other direction
                         if(endNode.getIncomingLines()[0].getStartNode().getID() === endLine.getStartNode().getID()){
                             //expand to the start node of the second incoming line
-                            this.expand(endNode.getIncomingLines()[1],endNode,endLine,lines,pathLength,negOffset);
+                            this.expand(endNode.getIncomingLines()[1],endNode,endLine,lines,pathLength,offsets.negOffset);
                             expanded.back += 1;
                         }
                         else if(endNode.getIncomingLines()[1].getStartNode().getID() === endLine.getStartNode().getID()){
                             //expand to the start node of the first incoming line
-                            this.expand(endNode.getIncomingLines()[0],endNode,endLine,lines,pathLength,negOffset);
+                            this.expand(endNode.getIncomingLines()[0],endNode,endLine,lines,pathLength,offsets.negOffset);
                             expanded.back += 1;
                         }
                         else{
@@ -217,7 +222,7 @@ export default class LineEncoder {
             let firstIncomingStartEqSecondOutgoingEnd = (node.startNode.getIncomingLines()[0].getStartNode().getID() === node.getOutgoingLines()[1].getEndNode().getID());
             let secondIncomingStartEqSecondOutgoingEnd = (node.startNode.getIncomingLines()[1].getStartNode().getID() === node.getOutgoingLines()[1].getEndNode().getID());
 
-            expansionNeeded &= (firstIncomingStartEqFirstOutgoingEnd && secondIncomingStartEqSecondOutgoingEnd || firstIncomingStartEqSecondOutgoingEnd && secondIncomingStartEqFirstOutgoingEnd);
+            expansionNeeded &= ((firstIncomingStartEqFirstOutgoingEnd && secondIncomingStartEqSecondOutgoingEnd) || (firstIncomingStartEqSecondOutgoingEnd && secondIncomingStartEqFirstOutgoingEnd));
         }
 
         return expansionNeeded;
@@ -291,7 +296,7 @@ export default class LineEncoder {
         }
     }
 
-    static concatenateAndValidateShortestPaths(lrpNodes,shortestPaths,posOffset,negOffset){
+    static concatenateAndValidateShortestPaths(lrpNodes,shortestPaths,offsets){
         let isValid = true;
         let distanceBetweenFirstTwoLength = 0;
         let distanceBetweenLastTwoLength = 0;
@@ -304,7 +309,7 @@ export default class LineEncoder {
             for(let i=0;i<shortestPaths.length;i++){
                 let a = 0;
                 let lengthBetweenLRPs = 0;
-                let line = shortestPaths[i][a];
+                let line = shortestPaths[i].lines[a];
                 //while the start node of a line is not the next LRP node, this line can be added
                 //otherwise we should add the lines of the shortest path of that LRP node
                 while(line !== undefined && line.getStartNode().getID() !== lrpNodes[i+1].getID()){
@@ -313,11 +318,11 @@ export default class LineEncoder {
                     if(i===0){
                         distanceBetweenFirstTwoLength += line.getLength();
                     }
-                    else if(i===shortestPath.length-1){
+                    if(i===shortestPath.length-1){
                         distanceBetweenLastTwoLength += line.getLength();
                     }
                     a++;
-                    line = shortestPath[i][a];
+                    line = shortestPaths[i].lines[a];
                 }
                 if(lengthBetweenLRPs >= 15000){
                     isValid = false;
@@ -325,12 +330,12 @@ export default class LineEncoder {
                 }
             }
             //check if offset values are shorter then the distance between the first two/last two location reference points
-            if(posOffset >= distanceBetweenFirstTwoLength){
+            if(offsets.posOffset >= distanceBetweenFirstTwoLength){
                 // can happen if we added extra intermediate LRPs on invalid nodes
                 isValid = false;
                 wrongPosOffset = true;
             }
-            else if(negOffset >= distanceBetweenLastTwoLength){
+            else if(offsets.negOffset >= distanceBetweenLastTwoLength){
                 // can happen if we added extra intermediate LRPs on invalid nodes
                 isValid = false;
                 wrongNegOffset = true;
@@ -348,10 +353,10 @@ export default class LineEncoder {
         }
     }
 
-    static removeLRPatFront(lrpNodes,shortestPaths,posOffset){
-        if(posOffset>=shortestPaths[0].getLength()
+    static removeLRPatFront(lrpNodes,shortestPaths,offsets){
+        if(offsets.posOffset>=shortestPaths[0].length
             && lrpNodes.length > 0 && shortestPaths.length > 0){
-            posOffset -= shortestPaths[0].getLength();
+            offsets.posOffset -= shortestPaths[0].length;
             lrpNodes.shift();
             shortestPaths.shift();
         }
@@ -360,10 +365,10 @@ export default class LineEncoder {
         }
     }
 
-    static removeLRPatEnd(lrpNodes,shortestPaths,negOffset){
-        if(negOffset>=shortestPaths[shortestPaths.length-1].getLength()
+    static removeLRPatEnd(lrpNodes,shortestPaths,offsets){
+        if(offsets.negOffset>=shortestPaths[shortestPaths.length-1].length
             && lrpNodes.length > 0 && shortestPaths.length > 0){
-            negOffset -= shortestPaths[shortestPaths.length-1].getLength();
+            offsets.negOffset -= shortestPaths[shortestPaths.length-1].length;
             lrpNodes.pop();
             shortestPaths.pop();
         }

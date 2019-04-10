@@ -55,7 +55,7 @@ export default class Line {
                 this.endNode.getLatitudeDeg(),
                 this.endNode.getLongitudeDeg()
             ]);
-            this.lineLength = distance(from,to,{units: "meters"});
+            this.lineLength = Math.round(distance(from,to,{units: "meters"})); //work with integer values
         }
         return this.lineLength;
     }

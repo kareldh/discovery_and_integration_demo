@@ -55,7 +55,7 @@ export default class Dijkstra{
         //todo: remove separate length calculations since it is included here
         return {
             lines: shortestPathLines,
-            length: minLengths[endNode.getID()]
+            length: minLengths[endNode.getID()] //integer value in meter!
         }
     }
 }
