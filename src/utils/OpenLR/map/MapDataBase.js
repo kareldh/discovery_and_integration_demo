@@ -59,6 +59,11 @@ export default class MapDataBase {
     }
 
     hasTurnRestrictionOnPath(lineList){
+        //todo: how to implement turn restrictions? is it a property of nodes or of lines or both?
+        if(!this.turnResctrictions){
+            //if database has no turn restrictions, a line should also have no turn restrictions
+            return this.turnResctrictions;
+        }
         //https://wiki.openstreetmap.org/wiki/Relation:restriction
         let i=0;
         while(i<lineList.length && lineList[i].getTurnRestriction() !== undefined){

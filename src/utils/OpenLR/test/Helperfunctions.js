@@ -6,7 +6,6 @@ import {locationTypeEnum} from "../map/Enum";
 export function generateStraightLaneTestData(){
     let lines = [];
     let nodes = [];
-    let locations = [];
     let node1 = new Node(1,51.2120579,4.3974671);
     let node2 = new Node(2,51.2118214,4.3991321);
     let node3 = new Node(3,51.2120361,4.3974671);
@@ -24,18 +23,29 @@ export function generateStraightLaneTestData(){
     nodes.push(node1,node2,node3,node4,node5);
     lines.push(line1,line2,line3);
 
-    let lane1 = new Location(locationTypeEnum.LINE_LOCATION,1);
-    lane1.locationLines = [line1];
+    let singleLineLane = new Location(locationTypeEnum.LINE_LOCATION,1);
+    singleLineLane.locationLines = [line1];
 
-    let lane2 = new Location();
-    lane2.locationLines = [line2,line3];
+    let doubleLineLane = new Location(locationTypeEnum.LINE_LOCATION,2);
+    doubleLineLane.locationLines = [line2,line3];
 
-    locations.push(lane1,lane2);
+    let unconnectedLane = new Location(locationTypeEnum.LINE_LOCATION,3);
+    unconnectedLane.locationLines = [line1,line3];
+
+    let invalidStartNodeLane = new Location(locationTypeEnum.LINE_LOCATION,4);
+    invalidStartNodeLane.locationLines=[line3];
+
+    let invalidEndNodeLane = new Location(locationTypeEnum.LINE_LOCATION,5);
+    invalidEndNodeLane.locationLines=[line2];
 
     return {
         lines: lines,
         nodes: nodes,
-        locations: locations
+        singleLineLane: singleLineLane,
+        doubleLineLane: doubleLineLane,
+        unconnectedLane: unconnectedLane,
+        invalidStartNodeLane: invalidStartNodeLane,
+        invalidEndNodeLane: invalidEndNodeLane
     }
 }
 

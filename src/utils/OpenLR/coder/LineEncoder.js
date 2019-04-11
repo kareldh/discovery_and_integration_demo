@@ -57,7 +57,7 @@ export default class LineEncoder {
         let concatenatedSPResult = this.concatenateAndValidateShortestPaths(lrpNodes,shortestPaths,offsets);
         checkResult = this.checkShortestPathCoverage(0,lines,concatenatedSPResult.shortestPath);
         if(!checkResult.fullyCovered){
-            throw "something went wrong with determining the concatenated shortest path";
+            throw Error("something went wrong with determining the concatenated shortest path");
         }
 
         // 8: check validity of the location reference path. If the location reference path is invalid then
@@ -86,7 +86,7 @@ export default class LineEncoder {
             //check if the location is still fully covered
             checkResult = this.checkShortestPathCoverage(0,lines,concatenatedSPResult.shortestPath);
             if(!checkResult.fullyCovered){
-                throw "something went wrong with determining the concatenated shortest path";
+                throw Error("something went wrong with determining the concatenated shortest path");
             }
         }
 
@@ -108,10 +108,10 @@ export default class LineEncoder {
                 //todo: check if also traversable from start to end
             }
             if(i !== lines.length){
-                throw "line isn't a connected path";
+                throw Error("line isn't a connected path");
             }
             if(offsets.posOffset + offsets.negOffset >= pathLength){
-                throw "offsets longer than path: path="+pathLength+" posOffset="+offsets.posOffset+ " negOffset="+offsets.negOffset;
+                throw Error("offsets longer than path: path="+pathLength+" posOffset="+offsets.posOffset+ " negOffset="+offsets.negOffset);
             }
             //remove unnecessary start or end lines
             while(lines.length>0 && offsets.posOffset >= lines[0].getLength()){
@@ -136,38 +136,33 @@ export default class LineEncoder {
             back: 0
         };
 
-        let pathLength = 0;
+        let pathLength = {length: 0};
         lines.forEach(function (line) {
-           pathLength+=line.getLength();
+           pathLength.length+=line.getLength();
         });
         // check if map has turn restrictions, detect invalid nodes according rule 4 of the whitepaper
-        if(!mapDataBase.hasTurnRestrictions() && !mapDataBase.hasTurnRestrictionOnPath(lines)){
+        if(!mapDataBase.hasTurnRestrictions() && !mapDataBase.hasTurnRestrictionOnPath(lines)){ //todo: why do we need to check this?
             //node is invalid if
             //one line enters and line leaves (note: lines are directed)
             //two lines enter and two lines leave, but they are connected to only 2 adjacent nodes,
             //unless a u-turn is possible at that node
             if(lines[0] !== undefined && lines[lines.length-1] !== undefined){
-                let startLine = lines[0];
-                let endLine = lines[lines.length-1];
-                let startNode = startLine.getStartNode();
-                let endNode = endLine.getEndNode();
-
                 //start node expansion
-                while(LineEncoder.nodeIsValid(startNode)){
-                    if(startNode.getIncomingLines().length === 1){
-                        this.expand(startNode.getIncomingLines()[0],startNode,startLine,lines,pathLength,offsets.posOffset);
+                while(LineEncoder.nodeIsInValid(lines[0].getStartNode())){
+                    if(lines[0].getStartNode().getIncomingLines().length === 1){
+                        this.expand(lines[0].getStartNode().getIncomingLines()[0],lines,pathLength,offsets,true);
                         expanded.front += 1;
                     }
-                    else if(startNode.getIncomingLines().length === 2){
+                    else if(lines[0].getStartNode().getIncomingLines().length === 2){
                         // one of the outgoing lines is the second line of the location, so expansion should happen in the other direction
-                        if(startNode.getIncomingLines()[0].getStartNode().getID() === startLine.getEndNode().getID()){
+                        if(lines[0].getStartNode().getIncomingLines()[0].getStartNode().getID() === lines[0].getEndNode().getID()){
                             //expand to the start node of the second incoming line
-                            this.expand(startNode.getIncomingLines()[0],startNode,startLine,lines,pathLength,offsets.posOffset);
+                            this.expand(lines[0].getStartNode().getIncomingLines()[1],lines,pathLength,offsets,true);
                             expanded.front += 1;
                         }
-                        else if(startNode.getIncomingLines()[1].getStartNode().getID() === startLine.getEndNode().getID()){
+                        else if(lines[0].getStartNode().getIncomingLines()[1].getStartNode().getID() === lines[0].getEndNode().getID()){
                             //expand to the start node of the first incoming line
-                            this.expand(startNode.getIncomingLines()[1],startNode,startLine,lines,pathLength,offsets.posOffset);
+                            this.expand(lines[0].getStartNode().getIncomingLines()[0],lines,pathLength,offsets,true);
                             expanded.front += 1;
                         }
                         else{
@@ -179,21 +174,21 @@ export default class LineEncoder {
                     }
                 }
                 //end node expansion
-                while(this.nodeIsValid(endNode)){
-                    if(endNode.getIncomingLines().length === 1){
-                        this.expand(endNode.getIncomingLines()[0],endNode,endLine,lines,pathLength,offsets.negOffset);
+                while(LineEncoder.nodeIsInValid(lines[lines.length-1].getEndNode())){
+                    if(lines[lines.length-1].getEndNode().getOutgoingLines().length === 1){
+                        this.expand(lines[lines.length-1].getEndNode().getOutgoingLines()[0],lines,pathLength,offsets,false);
                         expanded.back += 1;
                     }
-                    else if(endNode.getIncomingLines().length === 2){
+                    else if(lines[lines.length-1].getEndNode().getOutgoingLines().length === 2){
                         // one of the incoming lines is the second-last line of the location, so expansion should happen in the other direction
-                        if(endNode.getIncomingLines()[0].getStartNode().getID() === endLine.getStartNode().getID()){
+                        if(lines[lines.length-1].getEndNode().getOutgoingLines()[0].getEndNode().getID() === lines[lines.length-1].getStartNode().getID()){
                             //expand to the start node of the second incoming line
-                            this.expand(endNode.getIncomingLines()[1],endNode,endLine,lines,pathLength,offsets.negOffset);
+                            this.expand(lines[lines.length-1].getEndNode().getOutgoingLines()[1],lines,pathLength,offsets,false);
                             expanded.back += 1;
                         }
-                        else if(endNode.getIncomingLines()[1].getStartNode().getID() === endLine.getStartNode().getID()){
+                        else if(lines[lines.length-1].getEndNode().getOutgoingLines()[1].getEndNode().getID() === lines[lines.length-1].getStartNode().getID()){
                             //expand to the start node of the first incoming line
-                            this.expand(endNode.getIncomingLines()[0],endNode,endLine,lines,pathLength,offsets.negOffset);
+                            this.expand(lines[lines.length-1].getEndNode().getOutgoingLines()[0],lines,pathLength,offsets,false);
                             expanded.back += 1;
                         }
                         else{
@@ -204,37 +199,45 @@ export default class LineEncoder {
                         console.log("something went wrong with determining if expansion is needed");
                     }
                 }
-                return expanded;
             }
         }
+        return expanded;
         //todo what if there are turn restrictions?
     }
 
-    static nodeIsValid(node){
+    static nodeIsInValid(node){
         let oneInOneOut = (node.getIncomingLines().length === 1 && node.getOutgoingLines().length === 1);
         let twoInTwoOut = (node.getIncomingLines().length === 2 && node.getOutgoingLines().length === 2);
 
-        let expansionNeeded = oneInOneOut || twoInTwoOut;
-
-        if(twoInTwoOut){
+        let expansionNeeded = false;
+        if(oneInOneOut){
+            //if the incoming line starts from the same node as the outgoing line ends, this node has only one sibling (border node in our graph) and thus is a valid node
+            expansionNeeded = (node.getIncomingLines()[0].getStartNode().getID() !== node.getOutgoingLines()[0].getEndNode().getID());
+        }
+        else if(twoInTwoOut){
+            //todo: if a u-turn can be made at the node, the node should be valid: turn restrictions should be known, how to implement these?
             let firstIncomingStartEqFirstOutgoingEnd = (node.getIncomingLines()[0].getStartNode().getID() === node.getOutgoingLines()[0].getEndNode().getID());
             let secondIncomingStartEqFirstOutgoingEnd = (node.getIncomingLines()[1].getStartNode().getID() === node.getOutgoingLines()[0].getEndNode().getID());
-            let firstIncomingStartEqSecondOutgoingEnd = (node.startNode.getIncomingLines()[0].getStartNode().getID() === node.getOutgoingLines()[1].getEndNode().getID());
-            let secondIncomingStartEqSecondOutgoingEnd = (node.startNode.getIncomingLines()[1].getStartNode().getID() === node.getOutgoingLines()[1].getEndNode().getID());
+            let firstIncomingStartEqSecondOutgoingEnd = (node.getIncomingLines()[0].getStartNode().getID() === node.getOutgoingLines()[1].getEndNode().getID());
+            let secondIncomingStartEqSecondOutgoingEnd = (node.getIncomingLines()[1].getStartNode().getID() === node.getOutgoingLines()[1].getEndNode().getID());
 
-            expansionNeeded &= ((firstIncomingStartEqFirstOutgoingEnd && secondIncomingStartEqSecondOutgoingEnd) || (firstIncomingStartEqSecondOutgoingEnd && secondIncomingStartEqFirstOutgoingEnd));
+            expansionNeeded = ((firstIncomingStartEqFirstOutgoingEnd && secondIncomingStartEqSecondOutgoingEnd) || (firstIncomingStartEqSecondOutgoingEnd && secondIncomingStartEqFirstOutgoingEnd));
         }
 
         return expansionNeeded;
     }
 
-    static expand(lineToAdd,lastNode,lastLine,lines,pathLength,offset){
-        if(pathLength + lineToAdd.getLength() < 15000){
-            pathLength += lineToAdd.getLength();
-            offset += lineToAdd.getLength();
-            lines.unshift(lineToAdd);
-            lastLine = lineToAdd;
-            lastNode = lineToAdd.getStartNode();
+    static expand(lineToAdd,lines,pathLength,offsets,positive){
+        if(pathLength.length + lineToAdd.getLength() < 15000){
+            pathLength.length += lineToAdd.getLength();
+            if(positive){
+                offsets.posOffset += lineToAdd.getLength();
+                lines.unshift(lineToAdd);
+            }
+            else{
+                offsets.negOffset += lineToAdd.getLength();
+                lines.push(lineToAdd);
+            }
         }
         else{
             console.log("start node expansion aborted because path length exceeding 15000m")
