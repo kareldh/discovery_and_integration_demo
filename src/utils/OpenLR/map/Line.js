@@ -23,6 +23,8 @@ export default class Line {
         this.turnRestriction = undefined;
         this.bearing = undefined;
         this.reverseBearing = undefined;
+        startNode.outgoingLines.push(this);
+        endNode.incomingLines.push(this);
     }
 
     getStartNode(){

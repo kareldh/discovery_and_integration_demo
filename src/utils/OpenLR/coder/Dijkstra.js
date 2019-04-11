@@ -19,13 +19,15 @@ export default class Dijkstra{
         // push start node on heap with length 0
         heap.push([0,startNode]);
         minLengths[startNode.getID()] = 0;
-
         while(heap.size() > 0){
             let heapTop = heap.pop();
             let currentNode = heapTop[1];
 
             currentNode.getOutgoingLines().forEach(function (line) {
                 let length = minLengths[currentNode.getID()] + Math.round(line.getLength()); //work with integer values
+                if(length<0){
+                    throw Error("negative line length found for line: "+line.getID());
+                }
                 let validLine = options === undefined ? 1 : 0 ||
                     (options.lfrcnp !== undefined
                     && options.lfrcnpDiff !== undefined
@@ -50,8 +52,6 @@ export default class Dijkstra{
             lastStep = line.getStartNode();
         }
 
-        //return shortestPathLines;
-        //todo: check for compability errors after this change
         //todo: remove separate length calculations since it is included here
         return {
             lines: shortestPathLines,
