@@ -51,4 +51,9 @@ test('ShortestPath',()=>{
     expect(shortestPath2.lines[2].getID()).toEqual(line3.getID());
     expect(shortestPath2.lines[3].getID()).toEqual(line20.getID());
     expect(shortestPath2.lines[4].getID()).toEqual(line13.getID());
+    let shortestPath3 = Dijkstra.shortestPath(nodeA,nodeA);
+    expect(shortestPath3).toEqual({
+        lines: [],
+        length: 0
+    });
 });

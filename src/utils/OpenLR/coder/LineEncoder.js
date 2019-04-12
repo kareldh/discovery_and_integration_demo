@@ -5,7 +5,7 @@ import LRPNodeHelper from "./LRPNodeHelper";
 
 export default class LineEncoder {
     static encode(mapDataBase,lines,posOffset,negOffset){
-        let lrpNodes = [];
+        let lrpLines = []; // use this? since it can contain more information then lrpNodes?
         let shortestPaths = [];
         let offsets = {
             posOffset: posOffset,
@@ -17,45 +17,24 @@ export default class LineEncoder {
 
         // 2: adjust start and end nodes of the location to represent valid map nodes
         let expanded = this.adjustToValidStartEnd(mapDataBase,lines,offsets);
-        lrpNodes.push(lines[0].getStartNode());
+        //lrpNodes.push(lines[0].getStartNode());
+        lrpLines.push(lines[0]);
 
         // 3: determine coverage of the location by a shortest-path
-        let shortestPath = Dijkstra.shortestPath(lines[expanded.front].getStartNode(),lines[lines.length-1-expanded.back].getEndNode());
+        let shortestPath = Dijkstra.shortestPath(lines[expanded.front].getEndNode(),lines[lines.length-1-expanded.back].getStartNode());
         shortestPaths.push(shortestPath);
 
         // 4: check whether the calculated shortest-path covers the location completely
-        let checkResult = this.checkShortestPathCoverage(expanded.front,lines,shortestPath.lines);
+        let checkResult = this.checkShortestPathCoverage(expanded.front,lines,shortestPath.lines,lines.length-1-expanded.back);
 
         //location not completely covered, intermediate LRPs needed
-        while(! checkResult.fullyCovered){
-            // 5: Determine the position of a new intermediate location reference point so that the part of
-            // the location between the start of the shortest-path calculation and the new intermediate
-            // is covered completely by a shortest-path.
-            if(this.nodeIsValid(lines[checkResult.lrpNodeIndexInLoc])){
-                lrpNodes.push(lines[checkResult.lrpNodeIndexInLoc].getEndNode());
-                // 6: go to step 3 and restart shortest path calculation between the new intermediate location
-                // reference point and the end of the location
-                shortestPath = Dijkstra.shortestPath(lines[checkResult.lrpNodeIndexInLoc].getEndNode(),lines[lines.length-1-expanded.back].getEndNode());
-                shortestPaths.push(shortestPath);
-                checkResult = this.checkShortestPathCoverage(checkResult.lrpNodeIndexInLoc+1,lines,shortestPath.lines);
-            }
-            else{
-                //find a valid node on the shortest path that leads to the invalid node
-                let validNodeResult = this.findValidNodeOnSP(shortestPath.lines,checkResult.lrpNodeIndexInSP);
-                lrpNodes.push(validNodeResult.validNode);
-                shortestPath = Dijkstra.shortestPath(validNodeResult.validNode,lines[lines.length-1-expanded.back].getEndNode());
-                shortestPaths.push(shortestPath);
-                checkResult = this.checkShortestPathCoverage(validNodeResult.lrpNodeIndexInLoc,lines,shortestPath.lines);
-            }
-        }
-
-        //push the last node of the expanded location to the list of LRPs
-        lrpNodes.push(lines[lines.length-1].getEndNode());
+        LineEncoder.addLRPsUntilFullyCovered(checkResult,lines,lrpLines,shortestPaths,shortestPath,expanded);
 
         // 7: concatenate the calculated shortest-paths for a complete coverage of the location and
         // form an ordered list of location reference points (from the start to the end of the location)
-        let concatenatedSPResult = this.concatenateAndValidateShortestPaths(lrpNodes,shortestPaths,offsets);
-        checkResult = this.checkShortestPathCoverage(0,lines,concatenatedSPResult.shortestPath);
+        let concatenatedSPResult = this.concatenateAndValidateShortestPaths(lrpLines,shortestPaths,offsets);
+        checkResult = this.checkShortestPathCoverage(0,lines,concatenatedSPResult.shortestPath,lines.length);
+       console.error(concatenatedSPResult);
         if(!checkResult.fullyCovered){
             throw Error("something went wrong with determining the concatenated shortest path");
         }
@@ -69,29 +48,29 @@ export default class LineEncoder {
             // of the corresponding path.
             if(concatenatedSPResult.wrongPosOffset){
                 //remove LRP at the front
-                this.removeLRPatFront(lrpNodes,shortestPaths,offsets);
-                //todo: controleer dat posOffset kan worden aangepast
-                concatenatedSPResult = this.concatenateAndValidateShortestPaths(lrpNodes,shortestPaths,offsets);
+                this.removeLRPatFront(lrpLines,offsets,concatenatedSPResult.distanceBetweenFirstTwo);
+                concatenatedSPResult = this.concatenateAndValidateShortestPaths(lrpLines,shortestPaths,offsets);
             }
             if(concatenatedSPResult.wrongNegOffset){
                 //remove LRP at the end
-                this.removeLRPatEnd(lrpNodes,shortestPaths,offsets);
-                concatenatedSPResult = this.concatenateAndValidateShortestPaths(lrpNodes,shortestPaths,offsets);
+                this.removeLRPatEnd(lrpLines,offsets,concatenatedSPResult.distanceBetweenLastTwo);
+                concatenatedSPResult = this.concatenateAndValidateShortestPaths(lrpLines,shortestPaths,offsets);
             }
             if(concatenatedSPResult.wrongIntermediateDistance){
                 //add intermediate LRPs
-                this.addIntermediateLRPs(lrpNodes,shortestPaths,lines);
+                this.addIntermediateLRPs(lrpLines,lines);
                 //todo
+                throw Error("not yet supported");
             }
             //check if the location is still fully covered
             checkResult = this.checkShortestPathCoverage(0,lines,concatenatedSPResult.shortestPath);
             if(!checkResult.fullyCovered){
-                throw Error("something went wrong with determining the concatenated shortest path");
+                throw Error("something went wrong while making the concatenated shortest path valid");
             }
         }
 
         // 10: create physical representation of the location reference (json)
-        let LRPs = LRPNodeHelper.lrpNodesToLRPs(lrpNodes,shortestPaths);
+        let LRPs = LRPNodeHelper.lrpLinesToLRPs(lrpLines,shortestPaths);
         return JsonFormat.exportJson(locationTypeEnum.LINE_LOCATION,LRPs,offsets.posOffset,offsets.negOffset);
     }
 
@@ -244,30 +223,75 @@ export default class LineEncoder {
         }
     }
 
-    static checkShortestPathCoverage(lStartIndex,lines,shortestPath){
+    static checkShortestPathCoverage(lStartIndex,lines,shortestPath,lEndIndex){ //lEndIndex is one greater than the last index to be checked (confer length of an array)
+        if(lStartIndex === undefined || lines === undefined || shortestPath === undefined || lEndIndex === undefined){
+            throw Error("One of the parameters is undefined.");
+        }
+        if(lEndIndex>lines.length){
+            throw Error("lEndIndex can't be greater than lines.length");
+        }
+        else if(lStartIndex > lEndIndex){
+            throw Error("lStartIndex can't be greater than lEndIndex");
+        }
         let spIndex = 0;
         let lIndex = lStartIndex;
 
-        while(lIndex < lines.length && spIndex < shortestPath.length
+        while(lIndex < lEndIndex && spIndex < shortestPath.length //todo: hier stond lIndex <= lEndIndex wat niet klopte, heeft deze fix invloed?
             && lines[lIndex].getID() === shortestPath[spIndex].getID()
             ){
             spIndex++;
             lIndex++;
         }
-        if(spIndex + lStartIndex === lIndex){
+        //if even the first line of the shortest path is not correct, a new LRP (lines[lStartIndex].getStartNode()) should be added that has the lines[lStartIndex] as outgoing line
+        //if only the first line of the shortest path is correct, the next line lines[lStartIndex+1] should start in a new LRP
+        //so lrpNodeIndexInLoc indicates the index of the line of which the startnode should be a new LRP, because that is the line that didn't match the shortest path
+        if(lIndex === lEndIndex && spIndex + lStartIndex === lIndex){
             return {
                 fullyCovered: true,
-                lrpNodeIndexInSP: spIndex-1,
-                lrpNodeIndexInLoc: lIndex-1
+                lrpNodeIndexInSP: spIndex,
+                lrpNodeIndexInLoc: lIndex
             }
         }
         else{
             return {
                 fullyCovered: false,
-                lrpNodeIndexInSP: spIndex-1,
-                lrpNodeIndexInLoc: lIndex-1
+                lrpNodeIndexInSP: spIndex,
+                lrpNodeIndexInLoc: lIndex
             }
         }
+    }
+
+    static addLRPsUntilFullyCovered(prevCheckResult,lines,lrpLines,shortestPaths,prevShortestPath,expanded){
+        let checkResult = prevCheckResult;
+        let shortestPath = prevShortestPath;
+        while(! checkResult.fullyCovered){
+            // 5: Determine the position of a new intermediate location reference point so that the part of
+            // the location between the start of the shortest-path calculation and the new intermediate
+            // is covered completely by a shortest-path.
+            if(!this.nodeIsInValid(lines[checkResult.lrpNodeIndexInLoc].getStartNode())){
+                //lrpNodes.push(lines[checkResult.lrpNodeIndexInLoc].getStartNode());
+                lrpLines.push(lines[checkResult.lrpNodeIndexInLoc]);
+                // 6: go to step 3 and restart shortest path calculation between the new intermediate location
+                // reference point and the end of the location
+                shortestPath = Dijkstra.shortestPath(lines[checkResult.lrpNodeIndexInLoc].getEndNode(),lines[lines.length-1-expanded.back].getStartNode());
+                shortestPaths.push(shortestPath);
+                checkResult = this.checkShortestPathCoverage(checkResult.lrpNodeIndexInLoc+1,lines,shortestPath.lines,lines.length-1-expanded.back);
+            }
+            else{
+                throw checkResult;
+                //todo: kan dit wel voorkomen? aangezien invalid enkel gaat indien 1 in 1 uit of 2 in 2 naar zelfde -> bij deze nodes kan nooit een afwijking van sp optreden want ze hebben eigenschap dat ze verbinding tussen maar 2 nodes vormen
+                //find a valid node on the shortest path that leads to the invalid node
+                let validNodeResult = this.findValidNodeOnSP(shortestPath.lines,checkResult.lrpNodeIndexInSP);
+                //lrpNodes.push(validNodeResult.validNode);
+                shortestPath = Dijkstra.shortestPath(validNodeResult.validNode,lines[lines.length-1-expanded.back].getEndNode());
+                shortestPaths.push(shortestPath);
+                checkResult = this.checkShortestPathCoverage(validNodeResult.lrpNodeIndexInLoc,lines,shortestPath.lines);
+            }
+        }
+
+        //push the last line of the expanded location to the list of LRPs
+        //lrpNodes.push(lines[lines.length-1].getEndNode());
+        lrpLines.push(lines[lines.length-1]);
     }
 
     static findValidNodeOnSP(shortestPath,endIndex){
@@ -277,7 +301,7 @@ export default class LineEncoder {
         let possibleNode = shortestPath[possibleIndex];
 
 
-        while(!this.nodeIsValid(possibleNode) && possibleIndex >= 0){
+        while(possibleIndex >= 0 && this.nodeIsInValid(possibleNode)){
             possibleIndex--;
             possibleNode = shortestPath[possibleIndex];
         }
@@ -299,39 +323,42 @@ export default class LineEncoder {
         }
     }
 
-    static concatenateAndValidateShortestPaths(lrpNodes,shortestPaths,offsets){
+    static concatenateAndValidateShortestPaths(lrpLines,shortestPaths,offsets){
+        if(lrpLines === undefined || shortestPaths === undefined || offsets === undefined){
+            throw Error("Parameters can not be undefined");
+        }
         let isValid = true;
-        let distanceBetweenFirstTwoLength = 0;
-        let distanceBetweenLastTwoLength = 0;
+        let distanceBetweenFirstTwoLength = lrpLines[0].getLength();
+        let distanceBetweenLastTwoLength = lrpLines[lrpLines.length-1].getLength();
         let wrongPosOffset = false;
         let wrongNegOffset = false;
         let wrongIntermediateOffset = false;
 
-        if(lrpNodes.length-1 === shortestPaths.length){
+        if(lrpLines.length-1 === shortestPaths.length){
             let shortestPath = [];
             for(let i=0;i<shortestPaths.length;i++){
+                shortestPath.push(lrpLines[i]);
                 let a = 0;
                 let lengthBetweenLRPs = 0;
-                let line = shortestPaths[i].lines[a];
                 //while the start node of a line is not the next LRP node, this line can be added
                 //otherwise we should add the lines of the shortest path of that LRP node
-                while(line !== undefined && line.getStartNode().getID() !== lrpNodes[i+1].getID()){
-                    shortestPath.push(line);
-                    lengthBetweenLRPs += line.getLength();
+                while(shortestPaths[i].lines !== undefined && shortestPaths[i].lines[a] !== undefined && shortestPaths[i].lines[a].getStartNode().getID() !== lrpLines[i+1].getStartNode().getID()){
+                    shortestPath.push(shortestPaths[i].lines[a]);
+                    lengthBetweenLRPs += shortestPaths[i].lines[a].getLength();
                     if(i===0){
-                        distanceBetweenFirstTwoLength += line.getLength();
+                        distanceBetweenFirstTwoLength += shortestPaths[i].lines[a].getLength();
                     }
                     if(i===shortestPath.length-1){
-                        distanceBetweenLastTwoLength += line.getLength();
+                        distanceBetweenLastTwoLength += shortestPaths[i].lines[a].getLength();
                     }
                     a++;
-                    line = shortestPaths[i].lines[a];
                 }
                 if(lengthBetweenLRPs >= 15000){
                     isValid = false;
                     wrongIntermediateOffset = true;
                 }
             }
+            shortestPath.push(lrpLines[lrpLines.length-1]); //add the line incoming in the last LRP
             //check if offset values are shorter then the distance between the first two/last two location reference points
             if(offsets.posOffset >= distanceBetweenFirstTwoLength){
                 // can happen if we added extra intermediate LRPs on invalid nodes
@@ -348,39 +375,42 @@ export default class LineEncoder {
                 isValid: isValid,
                 wrongPosOffset: wrongPosOffset,
                 wrongNegOffset: wrongNegOffset,
-                wrongIntermediateDistance: wrongIntermediateOffset
+                wrongIntermediateDistance: wrongIntermediateOffset,
+                distanceBetweenFirstTwo: distanceBetweenFirstTwoLength,
+                distanceBetweenLastTwo: distanceBetweenLastTwoLength
             }
         }
         else{
-            throw "the amount of shortest paths is not equal as the amount of lrp nodes"
+            throw Error("the amount of shortest paths is not one less than the amount of lrp nodes");
         }
     }
 
-    static removeLRPatFront(lrpNodes,shortestPaths,offsets){
-        if(offsets.posOffset>=shortestPaths[0].length
-            && lrpNodes.length > 0 && shortestPaths.length > 0){
-            offsets.posOffset -= shortestPaths[0].length;
-            lrpNodes.shift();
-            shortestPaths.shift();
+    static removeLRPatFront(lrpLines,offsets,length){
+        //todo: noet correct, should take length of al lines on sp between first and second lrp
+        if(lrpLines.length > 0
+            && offsets.posOffset>=length
+        ){
+            offsets.posOffset -= length;
+            lrpLines.shift();
         }
         else{
             console.log("unnecessary removing of LRP at front");
         }
     }
 
-    static removeLRPatEnd(lrpNodes,shortestPaths,offsets){
-        if(offsets.negOffset>=shortestPaths[shortestPaths.length-1].length
-            && lrpNodes.length > 0 && shortestPaths.length > 0){
-            offsets.negOffset -= shortestPaths[shortestPaths.length-1].length;
-            lrpNodes.pop();
-            shortestPaths.pop();
+    static removeLRPatEnd(lrpLines,offsets,length){
+        if(lrpLines.length > 0
+            && offsets.negOffset>=length
+        ){
+            offsets.negOffset -= length;
+            lrpLines.pop();
         }
         else{
             console.log("unnecessary removing of LRP at end");
         }
     }
 
-    static addIntermediateLRPs(lrpNodes,shortestPaths,lines){
+    static addIntermediateLRPs(lrpLines,shortestPaths,lines){
         //todo
         console.log("todo");
     }

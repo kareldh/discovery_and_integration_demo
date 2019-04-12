@@ -6,29 +6,28 @@ import {configProperties} from "./CoderSettings";
 
 export default class LRPNodeHelper{
 
-    static lrpNodesToLRPs(lrpNodes,shortestPaths){
-        if(lrpNodes.length<2){
-            throw "not enough LRP nodes";
-        }
-        if(shortestPaths.length !== lrpNodes.length-1){
-            throw "not enough shortestPaths";
+    static lrpLinesToLRPs(lrpLines,shortestPaths){
+        if(lrpLines.length<2){
+            throw Error("not enough LRP nodes");
         }
         let LRPs = [];
-        for(let i=0;i<lrpNodes.length;i++){
+        for(let i=0;i<lrpLines.length;i++){
             let properties = {};
             let isLast = false;
-            let frc;
-            let fow;
-            if(i < shortestPaths.length){
-                properties = this.calcProperties(configProperties.bearDist,lrpNodes[i],shortestPaths[i].lines,lrpNodes[i+1]);
-                frc = shortestPaths[i].lines[0].getFRC();
-                fow = shortestPaths[i].lines[0].getFOW();
+            let frc = lrpLines[i].getFRC();
+            let fow = lrpLines[i].getFOW();
+            let lat;
+            let long;
+            if(i < lrpLines.length-1){
+                properties = this.calcProperties(configProperties.bearDist,lrpLines[i].getStartNode(),shortestPaths[i].lines,lrpLines[i+1].getStartNode());
+                lat = lrpLines[i].getStartNode().getLatitudeDeg();
+                long = lrpLines[i].getStartNode().getLongitudeDeg();
             }
             else{
                 isLast = true;
-                properties = this.calcLastLRPProperties(configProperties.bearDist,lrpNodes[i-1],shortestPaths[i-1].lines,lrpNodes[i]);
-                frc = shortestPaths[i-1].lines[shortestPaths[i-1].lines.length-1].getFRC();
-                fow = shortestPaths[i-1].lines[shortestPaths[i-1].lines.length-1].getFOW();
+                properties = this.calcLastLRPProperties(configProperties.bearDist,lrpLines[i-1].getStartNode(),shortestPaths[i-1].lines,lrpLines[i].getEndNode());
+                lat = lrpLines[i].getEndNode().getLatitudeDeg();
+                long = lrpLines[i].getEndNode().getLongitudeDeg();
             }
             let LRP = new LocationReferencePoint(
                 properties.bearing,
@@ -37,8 +36,8 @@ export default class LRPNodeHelper{
                 fow,
                 properties.lfrcnp,
                 isLast,
-                lrpNodes[i].getLatitudeDeg(),
-                lrpNodes[i].getLongitudeDeg(),
+                lat,
+                long,
                 i+1
             );
             LRPs.push(LRP);

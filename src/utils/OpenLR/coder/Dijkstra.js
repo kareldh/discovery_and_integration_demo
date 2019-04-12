@@ -3,6 +3,13 @@ import {frcEnum} from "../map/Enum";
 
 export default class Dijkstra{
     static shortestPath(startNode,endNode,options){
+        if(startNode.getID() === endNode.getID()){
+            return {
+                lines: [],
+                length: 0 //integer value in meter!
+            }
+        }
+
         let minLengths = {};
         let followedLine = {};
 
