@@ -6,6 +6,9 @@ import {
 import LineEncoder from "../coder/LineEncoder";
 import Line from "../map/Line";
 import Node from "../map/Node";
+import Location from "../coder/Location";
+import Encoder from "../Encoder";
+import {locationTypeEnum} from "../map/Enum";
 import {BinaryEncoder, BinaryDecoder, Serializer, LocationReference} from 'openlr-js';
 
 test('encode doesn\'t crash with lane existing of single line',()=>{
@@ -14,6 +17,7 @@ test('encode doesn\'t crash with lane existing of single line',()=>{
     let mapDataBase = new MapDataBase(lines,nodes);
     let locLines = startData.singleLineLane.locationLines;
     let encoded = LineEncoder.encode(mapDataBase,locLines,0,0);
+    expect(encoded.LRPs.length).toEqual(2);
 });
 
 test('encode doesn\'t crash with lane existing of two lines',()=>{
@@ -22,15 +26,26 @@ test('encode doesn\'t crash with lane existing of two lines',()=>{
     let mapDataBase = new MapDataBase(lines,nodes);
     let locLines = startData.doubleLineLane.locationLines;
     let encoded = LineEncoder.encode(mapDataBase,locLines,0,0);
+    expect(encoded.LRPs.length).toEqual(2);
 });
 
-// test('encode doesn\'t crash with lane existing of two lines and offsets',()=>{
-//     let startData = generateStraightLaneTestData();
-//     let {nodes,lines} = mapNodesLinesToID(startData.nodes,startData.lines);
-//     let mapDataBase = new MapDataBase(lines,nodes);
-//     let locLines = startData.doubleLineLane;
-//     let encoded = LineEncoder.encode(mapDataBase,locLines,5,10);
-// });
+test('encode doesn\'t crash with lane existing of two lines and valid offsets',()=>{
+    let startData = generateStraightLaneTestData();
+    let {nodes,lines} = mapNodesLinesToID(startData.nodes,startData.lines);
+    let mapDataBase = new MapDataBase(lines,nodes);
+    let locLines = startData.doubleLineLane.locationLines;
+    let encoded = LineEncoder.encode(mapDataBase,locLines,10,5);
+    expect(encoded.LRPs.length).toEqual(2);
+});
+
+test('encode doesn\'t crash with lane existing of two lines and invalid offsets',()=>{
+    let startData = generateStraightLaneTestData();
+    let {nodes,lines} = mapNodesLinesToID(startData.nodes,startData.lines);
+    let mapDataBase = new MapDataBase(lines,nodes);
+    let locLines = startData.doubleLineLane.locationLines;
+    let encoded = LineEncoder.encode(mapDataBase,locLines,5,10);
+    expect(encoded.LRPs.length).toEqual(2);
+});
 
 test('checkValidityAndAdjustOffsets with end adjustments',()=>{
     let startData = generateStraightLaneTestData();
@@ -319,8 +334,44 @@ test('checkShortestPathCoverage fully covered',()=>{
     let locationLines = [network.lines[5],network.lines[3],network.lines[4]];
     let checkResult = LineEncoder.checkShortestPathCoverage(0,locationLines,[network.lines[5],network.lines[3],network.lines[4]],3);
     expect(checkResult.fullyCovered).toEqual(true);
-    expect(checkResult.lrpNodeIndexInLoc).toEqual(3);
-    expect(checkResult.lrpNodeIndexInSP).toEqual(3);
+    expect(checkResult.lrpIndexInLoc).toEqual(3);
+    expect(checkResult.lrpIndexInSP).toEqual(3);
+});
+
+test('checkShortestPathCoverage fully covered 0 path length',()=>{
+    let network = generateTestNetwork();
+    let locationLines = [network.lines[5],network.lines[3],network.lines[4]];
+    let checkResult = LineEncoder.checkShortestPathCoverage(1,locationLines,[],2);
+    expect(checkResult.fullyCovered).toEqual(true);
+    expect(checkResult.lrpIndexInLoc).toEqual(1);
+    expect(checkResult.lrpIndexInSP).toEqual(0);
+});
+
+test('checkShortestPathCoverage not fully covered 0 path length',()=>{
+    let network = generateTestNetwork();
+    let locationLines = [network.lines[5],network.lines[3],network.lines[4]];
+    let checkResult = LineEncoder.checkShortestPathCoverage(1,locationLines,[],3);
+    expect(checkResult.fullyCovered).toEqual(false);
+    expect(checkResult.lrpIndexInLoc).toEqual(1);
+    expect(checkResult.lrpIndexInSP).toEqual(0);
+});
+
+test('checkShortestPathCoverage fully covered 1 path length',()=>{
+    let network = generateTestNetwork();
+    let locationLines = [network.lines[5],network.lines[3],network.lines[4]];
+    let checkResult = LineEncoder.checkShortestPathCoverage(2,locationLines,[network.lines[4]],3);
+    expect(checkResult.fullyCovered).toEqual(true);
+    expect(checkResult.lrpIndexInLoc).toEqual(3);
+    expect(checkResult.lrpIndexInSP).toEqual(1);
+});
+
+test('checkShortestPathCoverage not fully covered 1 path length',()=>{
+    let network = generateTestNetwork();
+    let locationLines = [network.lines[5],network.lines[3],network.lines[4]];
+    let checkResult = LineEncoder.checkShortestPathCoverage(2,locationLines,[network.lines[8]],3);
+    expect(checkResult.fullyCovered).toEqual(false);
+    expect(checkResult.lrpIndexInLoc).toEqual(2);
+    expect(checkResult.lrpIndexInSP).toEqual(0);
 });
 
 test('checkShortestPathCoverage fully covered part',()=>{
@@ -328,8 +379,8 @@ test('checkShortestPathCoverage fully covered part',()=>{
     let locationLines = [network.lines[5],network.lines[3],network.lines[4]];
     let checkResult = LineEncoder.checkShortestPathCoverage(1,locationLines,[network.lines[3],network.lines[4]],3);
     expect(checkResult.fullyCovered).toEqual(true);
-    expect(checkResult.lrpNodeIndexInLoc).toEqual(3);
-    expect(checkResult.lrpNodeIndexInSP).toEqual(2);
+    expect(checkResult.lrpIndexInLoc).toEqual(3);
+    expect(checkResult.lrpIndexInSP).toEqual(2);
 });
 
 test('checkShortestPathCoverage not fully covered',()=>{
@@ -337,8 +388,8 @@ test('checkShortestPathCoverage not fully covered',()=>{
     let locationLines = [network.lines[5],network.lines[3],network.lines[7]];
     let checkResult = LineEncoder.checkShortestPathCoverage(0,locationLines,[network.lines[5],network.lines[3],network.lines[4]],3);
     expect(checkResult.fullyCovered).toEqual(false);
-    expect(checkResult.lrpNodeIndexInLoc).toEqual(2);
-    expect(checkResult.lrpNodeIndexInSP).toEqual(2);
+    expect(checkResult.lrpIndexInLoc).toEqual(2);
+    expect(checkResult.lrpIndexInSP).toEqual(2);
 });
 
 test('checkShortestPathCoverage not fully covered part',()=>{
@@ -346,8 +397,8 @@ test('checkShortestPathCoverage not fully covered part',()=>{
     let locationLines = [network.lines[5],network.lines[3],network.lines[7]];
     let checkResult = LineEncoder.checkShortestPathCoverage(1,locationLines,[network.lines[3],network.lines[4]],3);
     expect(checkResult.fullyCovered).toEqual(false);
-    expect(checkResult.lrpNodeIndexInLoc).toEqual(2);
-    expect(checkResult.lrpNodeIndexInSP).toEqual(1);
+    expect(checkResult.lrpIndexInLoc).toEqual(2);
+    expect(checkResult.lrpIndexInSP).toEqual(1);
 });
 
 test('checkShortestPathCoverage nothing covered',()=>{
@@ -355,8 +406,8 @@ test('checkShortestPathCoverage nothing covered',()=>{
     let locationLines = [network.lines[5],network.lines[3],network.lines[7]];
     let checkResult = LineEncoder.checkShortestPathCoverage(1,locationLines,[network.lines[6],network.lines[4]],3);
     expect(checkResult.fullyCovered).toEqual(false);
-    expect(checkResult.lrpNodeIndexInLoc).toEqual(1);
-    expect(checkResult.lrpNodeIndexInSP).toEqual(0);
+    expect(checkResult.lrpIndexInLoc).toEqual(1);
+    expect(checkResult.lrpIndexInSP).toEqual(0);
 });
 
 test('checkShortestPathCoverage undefined param',()=>{
@@ -385,8 +436,8 @@ test('checkShortestPathCoverage not fully covered part with lEndIndex',()=>{
     let locationLines = [network.lines[5],network.lines[3],network.lines[7],network[13]];
     let checkResult = LineEncoder.checkShortestPathCoverage(1,locationLines,[network.lines[3],network.lines[4]],3);
     expect(checkResult.fullyCovered).toEqual(false);
-    expect(checkResult.lrpNodeIndexInLoc).toEqual(2);
-    expect(checkResult.lrpNodeIndexInSP).toEqual(1);
+    expect(checkResult.lrpIndexInLoc).toEqual(2);
+    expect(checkResult.lrpIndexInSP).toEqual(1);
 });
 
 test('checkShortestPathCoverage fully covered part with lEndIndex',()=>{
@@ -394,16 +445,16 @@ test('checkShortestPathCoverage fully covered part with lEndIndex',()=>{
     let locationLines = [network.lines[5],network.lines[3],network.lines[4],network.lines[9]];
     let checkResult = LineEncoder.checkShortestPathCoverage(1,locationLines,[network.lines[3],network.lines[4]],3);
     expect(checkResult.fullyCovered).toEqual(true);
-    expect(checkResult.lrpNodeIndexInLoc).toEqual(3);
-    expect(checkResult.lrpNodeIndexInSP).toEqual(2);
+    expect(checkResult.lrpIndexInLoc).toEqual(3);
+    expect(checkResult.lrpIndexInSP).toEqual(2);
 });
 
 test('addLRPsUntilFullyCovered fully covered',()=>{
     let network = generateTestNetwork();
     let checkResult = {
         fullyCovered: true,
-        lrpNodeIndexInSP: 0,
-        lrpNodeIndexInLoc: 1
+        lrpIndexInSP: 0,
+        lrpIndexInLoc: 1
     };
     let locLines = [network.lines[5],network.lines[3],network.lines[4]];
     // let lrpNodes = [network.nodes[2]];
@@ -422,8 +473,8 @@ test('addLRPsUntilFullyCovered extra lrp needed',()=>{
     let network = generateTestNetwork();
     let checkResult = {
         fullyCovered: false,
-        lrpNodeIndexInSP: 1,
-        lrpNodeIndexInLoc: 1
+        lrpIndexInSP: 1,
+        lrpIndexInLoc: 1
     };
     let locLines = [network.lines[26],network.lines[7],network.lines[19],network.lines[23]];
     // let lrpNodes = [network.nodes[9]];
@@ -440,6 +491,42 @@ test('addLRPsUntilFullyCovered extra lrp needed',()=>{
     expect(shortestPaths.length).toEqual(2);
 });
 
+test('addLRPsUntilFullyCovered single lrp line location',()=>{
+    let network = generateTestNetwork();
+    let checkResult = {
+        fullyCovered: true,
+        lrpIndexInSP: 1,
+        lrpIndexInLoc: 1
+    };
+    let locLines = [network.lines[26]];
+    let lrpLines = [network.lines[26]];
+    let shortestPaths = [[network.lines[13]]];
+    let expanded = {front: 0, back: 0};
+    LineEncoder.addLRPsUntilFullyCovered(checkResult,locLines,lrpLines,shortestPaths,[network.lines[13]],expanded);
+    expect(lrpLines.length).toEqual(2);
+    expect(lrpLines[0].getID()).toEqual(network.lines[26].getID());
+    expect(lrpLines[1].getID()).toEqual(network.lines[26].getID());
+    expect(shortestPaths.length).toEqual(1);
+});
+
+test('addLRPsUntilFullyCovered 2 lrp line location',()=>{
+    let network = generateTestNetwork();
+    let checkResult = {
+        fullyCovered: true,
+        lrpIndexInSP: 1,
+        lrpIndexInLoc: 1
+    };
+    let locLines = [network.lines[26],network.lines[7]];
+    let lrpLines = [network.lines[26]];
+    let shortestPaths = [[]];
+    let expanded = {front: 0, back: 0};
+    LineEncoder.addLRPsUntilFullyCovered(checkResult,locLines,lrpLines,shortestPaths,[],expanded);
+    expect(lrpLines.length).toEqual(2);
+    expect(lrpLines[0].getID()).toEqual(network.lines[26].getID());
+    expect(lrpLines[1].getID()).toEqual(network.lines[7].getID());
+    expect(shortestPaths.length).toEqual(1);
+});
+
 //todo: test addLRPsUntilFullyCovered else structure? indien die kan voorkomen
 
 test('concatenateAndValidateShortestPaths valid',()=>{
@@ -454,11 +541,44 @@ test('concatenateAndValidateShortestPaths valid',()=>{
     expect(concatenatedSPResult.wrongNegOffset).toEqual(false);
     expect(concatenatedSPResult.wrongIntermediateDistance).toEqual(false);
     expect(concatenatedSPResult.distanceBetweenFirstTwo).toEqual(555);
-    expect(concatenatedSPResult.distanceBetweenLastTwo).toEqual(314);
+    expect(concatenatedSPResult.distanceBetweenLastTwo).toEqual(1276);
     expect(concatenatedSPResult.shortestPath[0].getID()).toEqual(network.lines[26].getID());
     expect(concatenatedSPResult.shortestPath[1].getID()).toEqual(network.lines[7].getID());
     expect(concatenatedSPResult.shortestPath[2].getID()).toEqual(network.lines[19].getID());
     expect(concatenatedSPResult.shortestPath[3].getID()).toEqual(network.lines[23].getID());
+});
+
+test('concatenateAndValidateShortestPaths valid 2 LRP lines with wrong SP between',()=>{
+    let network = generateRealisticLengthTestNetwork();
+    let lrpLines = [network.lines[26],network.lines[7]];
+    let shortestPaths = [{lines: [network.lines[13]]}];
+    let offsets = {posOffset: 0, netOffset: 0};
+    let concatenatedSPResult = LineEncoder.concatenateAndValidateShortestPaths(lrpLines,shortestPaths,offsets);
+    expect(concatenatedSPResult.isValid).toEqual(true);
+    expect(concatenatedSPResult.wrongPosOffset).toEqual(false);
+    expect(concatenatedSPResult.wrongNegOffset).toEqual(false);
+    expect(concatenatedSPResult.wrongIntermediateDistance).toEqual(false);
+    expect(concatenatedSPResult.distanceBetweenFirstTwo).toEqual(889);
+    expect(concatenatedSPResult.distanceBetweenLastTwo).toEqual(889);
+    expect(concatenatedSPResult.shortestPath[0].getID()).toEqual(network.lines[26].getID());
+    expect(concatenatedSPResult.shortestPath[1].getID()).toEqual(network.lines[7].getID());
+});
+
+test('concatenateAndValidateShortestPaths 1 line',()=>{
+    let network = generateRealisticLengthTestNetwork();
+    // let locLines = [network.lines[26],network.lines[7],network.lines[19],network.lines[23]];
+    let lrpLines = [network.lines[26],network.lines[26]];
+    let shortestPaths = [{lines: [network.lines[13]]}];
+    let offsets = {posOffset: 0, netOffset: 0};
+    let concatenatedSPResult = LineEncoder.concatenateAndValidateShortestPaths(lrpLines,shortestPaths,offsets);
+    expect(concatenatedSPResult.isValid).toEqual(true);
+    expect(concatenatedSPResult.wrongPosOffset).toEqual(false);
+    expect(concatenatedSPResult.wrongNegOffset).toEqual(false);
+    expect(concatenatedSPResult.wrongIntermediateDistance).toEqual(false);
+    expect(concatenatedSPResult.distanceBetweenFirstTwo).toEqual(555);
+    expect(concatenatedSPResult.distanceBetweenLastTwo).toEqual(555);
+    expect(concatenatedSPResult.shortestPath.length).toEqual(1);
+    expect(concatenatedSPResult.shortestPath[0].getID()).toEqual(network.lines[26].getID());
 });
 
 test('concatenateAndValidateShortestPaths wrongPosOffset',()=>{
@@ -473,7 +593,7 @@ test('concatenateAndValidateShortestPaths wrongPosOffset',()=>{
     expect(concatenatedSPResult.wrongNegOffset).toEqual(false);
     expect(concatenatedSPResult.wrongIntermediateDistance).toEqual(false);
     expect(concatenatedSPResult.distanceBetweenFirstTwo).toEqual(555);
-    expect(concatenatedSPResult.distanceBetweenLastTwo).toEqual(314);
+    expect(concatenatedSPResult.distanceBetweenLastTwo).toEqual(1276);
     expect(concatenatedSPResult.shortestPath[0].getID()).toEqual(network.lines[26].getID());
     expect(concatenatedSPResult.shortestPath[1].getID()).toEqual(network.lines[7].getID());
     expect(concatenatedSPResult.shortestPath[2].getID()).toEqual(network.lines[19].getID());
@@ -492,7 +612,7 @@ test('concatenateAndValidateShortestPaths wrongNegOFfset',()=>{
     expect(concatenatedSPResult.wrongNegOffset).toEqual(true);
     expect(concatenatedSPResult.wrongIntermediateDistance).toEqual(false);
     expect(concatenatedSPResult.distanceBetweenFirstTwo).toEqual(555);
-    expect(concatenatedSPResult.distanceBetweenLastTwo).toEqual(314);
+    expect(concatenatedSPResult.distanceBetweenLastTwo).toEqual(1276);
     expect(concatenatedSPResult.shortestPath[0].getID()).toEqual(network.lines[26].getID());
     expect(concatenatedSPResult.shortestPath[1].getID()).toEqual(network.lines[7].getID());
     expect(concatenatedSPResult.shortestPath[2].getID()).toEqual(network.lines[19].getID());
@@ -508,16 +628,56 @@ test('concatenateAndValidateShortestPaths wrong shortestPaths length',()=>{
     expect(()=>{LineEncoder.concatenateAndValidateShortestPaths(lrpLines,shortestPaths,offsets)}).toThrow(Error("the amount of shortest paths is not one less than the amount of lrp nodes"));
 });
 
+test('removeLRPatFront',()=>{
+    let network = generateRealisticLengthTestNetwork();
+    let lrpLines = [network.lines[26],network.lines[7],network.lines[19],network.lines[23]];
+    let offsets = {posOffset: 600, negOffset: 0};
+    LineEncoder.removeLRPatFront(lrpLines,offsets,500);
+    expect(lrpLines.length).toEqual(3);
+    expect(lrpLines[0].getID()).toEqual(network.lines[7].getID());
+    expect(offsets.posOffset).toEqual(100);
+    expect(offsets.negOffset).toEqual(0);
+});
+
+test('removeLRPatFront unnecessary',()=>{
+    let network = generateRealisticLengthTestNetwork();
+    let lrpLines = [network.lines[26],network.lines[7],network.lines[19],network.lines[23]];
+    let offsets = {posOffset: 400, negOffset: 0};
+    expect(()=>{LineEncoder.removeLRPatFront(lrpLines,offsets,500)}).toThrow(Error("unnecessary removing of LRP at front"));
+});
+
+test('removeLRPatEnd',()=>{
+    let network = generateRealisticLengthTestNetwork();
+    let lrpLines = [network.lines[26],network.lines[7],network.lines[19],network.lines[23]];
+    let offsets = {posOffset: 0, negOffset: 500};
+    LineEncoder.removeLRPatEnd(lrpLines,offsets,200);
+    expect(lrpLines.length).toEqual(3);
+    expect(lrpLines[2].getID()).toEqual(network.lines[19].getID());
+    expect(offsets.posOffset).toEqual(0);
+    expect(offsets.negOffset).toEqual(300);
+});
+
+test('removeLRPatEnd unnecessary',()=>{
+    let network = generateRealisticLengthTestNetwork();
+    let lrpLines = [network.lines[26],network.lines[7],network.lines[19],network.lines[23]];
+    let offsets = {posOffset: 0, negOffset: 300};
+    expect(()=>{LineEncoder.removeLRPatEnd(lrpLines,offsets,500)}).toThrow(Error("unnecessary removing of LRP at end"));
+});
+
 test('encode lane existing of two lines can be binary encoded and decoded',()=>{
     let startData = generateStraightLaneTestData();
     let {nodes,lines} = mapNodesLinesToID(startData.nodes,startData.lines);
     let mapDataBase = new MapDataBase(lines,nodes);
     let locLines = startData.doubleLineLane.locationLines;
-    let encoded = LineEncoder.encode(mapDataBase,locLines,0,0);
+    let location = new Location(locationTypeEnum.LINE_LOCATION,1);
+    location.locationLines = locLines;
+    location.posOffset = 0;
+    location.negOffset = 0;
+    let jsonEncoded = Encoder.encode(location,mapDataBase,0,0);
 
     //encode binary
     const binaryEncoder = new BinaryEncoder();
-    const rawLocationReference = Serializer.deserialize(encoded);
+    const rawLocationReference = Serializer.deserialize(jsonEncoded);
     const locationReference = binaryEncoder.encodeDataFromRLR(rawLocationReference);
     const openLrBinary = locationReference.getLocationReferenceData();
     const openLrString = openLrBinary.toString('base64');
@@ -529,5 +689,5 @@ test('encode lane existing of two lines can be binary encoded and decoded',()=>{
     const rawLocationReference2 = binaryDecoder.decodeData(locationReference2);
     const jsonObject = Serializer.serialize(rawLocationReference2);
     
-    expect(jsonObject).toEqual(encoded);
+    expect(jsonObject).toEqual(jsonEncoded);
 });

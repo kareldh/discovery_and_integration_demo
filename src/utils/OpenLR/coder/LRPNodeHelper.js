@@ -8,7 +8,7 @@ export default class LRPNodeHelper{
 
     static lrpLinesToLRPs(lrpLines,shortestPaths){
         if(lrpLines.length<2){
-            throw Error("not enough LRP nodes");
+            throw Error("not enough LRP lines");
         }
         let LRPs = [];
         for(let i=0;i<lrpLines.length;i++){

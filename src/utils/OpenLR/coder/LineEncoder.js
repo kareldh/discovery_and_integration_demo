@@ -1,11 +1,10 @@
 import Dijkstra from "./Dijkstra";
-import JsonFormat from "./JsonFormat";
 import {locationTypeEnum} from "../map/Enum";
 import LRPNodeHelper from "./LRPNodeHelper";
 
 export default class LineEncoder {
     static encode(mapDataBase,lines,posOffset,negOffset){
-        let lrpLines = []; // use this? since it can contain more information then lrpNodes?
+        let lrpLines = [];
         let shortestPaths = [];
         let offsets = {
             posOffset: posOffset,
@@ -17,24 +16,31 @@ export default class LineEncoder {
 
         // 2: adjust start and end nodes of the location to represent valid map nodes
         let expanded = this.adjustToValidStartEnd(mapDataBase,lines,offsets);
-        //lrpNodes.push(lines[0].getStartNode());
         lrpLines.push(lines[0]);
 
         // 3: determine coverage of the location by a shortest-path
-        let shortestPath = Dijkstra.shortestPath(lines[expanded.front].getEndNode(),lines[lines.length-1-expanded.back].getStartNode());
+        let shortestPath;
+        if(lines.length === 1){
+            //if there is only line, the sp calculation would return the line in the other direction of the given line (but wouldn't be used further in the algoritm
+            shortestPath = {
+                lines: [],
+                length: 0
+            }
+        }
+        else{
+            shortestPath = Dijkstra.shortestPath(lines[expanded.front].getEndNode(),lines[lines.length-1-expanded.back].getStartNode());
+        }
         shortestPaths.push(shortestPath);
 
         // 4: check whether the calculated shortest-path covers the location completely
-        let checkResult = this.checkShortestPathCoverage(expanded.front,lines,shortestPath.lines,lines.length-1-expanded.back);
+        let checkResult = this.checkShortestPathCoverage(1+expanded.front,lines,shortestPath.lines,lines.length-expanded.back);
 
         //location not completely covered, intermediate LRPs needed
         LineEncoder.addLRPsUntilFullyCovered(checkResult,lines,lrpLines,shortestPaths,shortestPath,expanded);
-
         // 7: concatenate the calculated shortest-paths for a complete coverage of the location and
         // form an ordered list of location reference points (from the start to the end of the location)
         let concatenatedSPResult = this.concatenateAndValidateShortestPaths(lrpLines,shortestPaths,offsets);
         checkResult = this.checkShortestPathCoverage(0,lines,concatenatedSPResult.shortestPath,lines.length);
-       console.error(concatenatedSPResult);
         if(!checkResult.fullyCovered){
             throw Error("something went wrong with determining the concatenated shortest path");
         }
@@ -63,7 +69,10 @@ export default class LineEncoder {
                 throw Error("not yet supported");
             }
             //check if the location is still fully covered
-            checkResult = this.checkShortestPathCoverage(0,lines,concatenatedSPResult.shortestPath);
+            checkResult = this.checkShortestPathCoverage(0,lines,concatenatedSPResult.shortestPath,lines.length);
+            console.log(checkResult);
+            console.log(concatenatedSPResult.shortestPath);
+            console.log(lines);
             if(!checkResult.fullyCovered){
                 throw Error("something went wrong while making the concatenated shortest path valid");
             }
@@ -71,7 +80,12 @@ export default class LineEncoder {
 
         // 10: create physical representation of the location reference (json)
         let LRPs = LRPNodeHelper.lrpLinesToLRPs(lrpLines,shortestPaths);
-        return JsonFormat.exportJson(locationTypeEnum.LINE_LOCATION,LRPs,offsets.posOffset,offsets.negOffset);
+        return {
+            type:locationTypeEnum.LINE_LOCATION,
+            LRPs: LRPs,
+            posOffset: offsets.posOffset,
+            negOffset: offsets.negOffset
+        };
     }
 
     static checkValidityAndAdjustOffsets(lines,offsets){
@@ -236,27 +250,36 @@ export default class LineEncoder {
         let spIndex = 0;
         let lIndex = lStartIndex;
 
-        while(lIndex < lEndIndex && spIndex < shortestPath.length //todo: hier stond lIndex <= lEndIndex wat niet klopte, heeft deze fix invloed?
-            && lines[lIndex].getID() === shortestPath[spIndex].getID()
-            ){
-            spIndex++;
-            lIndex++;
-        }
-        //if even the first line of the shortest path is not correct, a new LRP (lines[lStartIndex].getStartNode()) should be added that has the lines[lStartIndex] as outgoing line
-        //if only the first line of the shortest path is correct, the next line lines[lStartIndex+1] should start in a new LRP
-        //so lrpNodeIndexInLoc indicates the index of the line of which the startnode should be a new LRP, because that is the line that didn't match the shortest path
-        if(lIndex === lEndIndex && spIndex + lStartIndex === lIndex){
+        if(lStartIndex === lEndIndex-1 && shortestPath.length  === 0){
             return {
                 fullyCovered: true,
-                lrpNodeIndexInSP: spIndex,
-                lrpNodeIndexInLoc: lIndex
+                lrpIndexInSP: spIndex,
+                lrpIndexInLoc: lIndex++
             }
         }
-        else{
-            return {
-                fullyCovered: false,
-                lrpNodeIndexInSP: spIndex,
-                lrpNodeIndexInLoc: lIndex
+        else {
+            while (lIndex < lEndIndex && spIndex < shortestPath.length
+                && lines[lIndex].getID() === shortestPath[spIndex].getID()
+                ) {
+                spIndex++;
+                lIndex++;
+            }
+            //if even the first line of the shortest path is not correct, a new LRP (lines[lStartIndex].getStartNode()) should be added that has the lines[lStartIndex] as outgoing line
+            //if only the first line of the shortest path is correct, the next line lines[lStartIndex+1] should start in a new LRP
+            //so lrpIndexInLoc indicates the index of the line of which the startnode should be a new LRP, because that is the line that didn't match the shortest path
+            if (lIndex === lEndIndex && spIndex + lStartIndex === lIndex) {
+                return {
+                    fullyCovered: true,
+                    lrpIndexInSP: spIndex,
+                    lrpIndexInLoc: lIndex
+                }
+            }
+            else {
+                return {
+                    fullyCovered: false,
+                    lrpIndexInSP: spIndex,
+                    lrpIndexInLoc: lIndex
+                }
             }
         }
     }
@@ -268,29 +291,29 @@ export default class LineEncoder {
             // 5: Determine the position of a new intermediate location reference point so that the part of
             // the location between the start of the shortest-path calculation and the new intermediate
             // is covered completely by a shortest-path.
-            if(!this.nodeIsInValid(lines[checkResult.lrpNodeIndexInLoc].getStartNode())){
-                //lrpNodes.push(lines[checkResult.lrpNodeIndexInLoc].getStartNode());
-                lrpLines.push(lines[checkResult.lrpNodeIndexInLoc]);
+            if(!this.nodeIsInValid(lines[checkResult.lrpIndexInLoc].getStartNode())){
+                //lrpNodes.push(lines[checkResult.lrpIndexInLoc].getStartNode());
+                lrpLines.push(lines[checkResult.lrpIndexInLoc]);
                 // 6: go to step 3 and restart shortest path calculation between the new intermediate location
                 // reference point and the end of the location
-                shortestPath = Dijkstra.shortestPath(lines[checkResult.lrpNodeIndexInLoc].getEndNode(),lines[lines.length-1-expanded.back].getStartNode());
+                shortestPath = Dijkstra.shortestPath(lines[checkResult.lrpIndexInLoc].getEndNode(),lines[lines.length-1-expanded.back].getStartNode());
                 shortestPaths.push(shortestPath);
-                checkResult = this.checkShortestPathCoverage(checkResult.lrpNodeIndexInLoc+1,lines,shortestPath.lines,lines.length-1-expanded.back);
+                checkResult = this.checkShortestPathCoverage(checkResult.lrpIndexInLoc+1,lines,shortestPath.lines,lines.length-1-expanded.back);
             }
             else{
                 throw checkResult;
                 //todo: kan dit wel voorkomen? aangezien invalid enkel gaat indien 1 in 1 uit of 2 in 2 naar zelfde -> bij deze nodes kan nooit een afwijking van sp optreden want ze hebben eigenschap dat ze verbinding tussen maar 2 nodes vormen
                 //find a valid node on the shortest path that leads to the invalid node
-                let validNodeResult = this.findValidNodeOnSP(shortestPath.lines,checkResult.lrpNodeIndexInSP);
+                let validNodeResult = this.findValidNodeOnSP(shortestPath.lines,checkResult.lrpIndexInSP);
                 //lrpNodes.push(validNodeResult.validNode);
                 shortestPath = Dijkstra.shortestPath(validNodeResult.validNode,lines[lines.length-1-expanded.back].getEndNode());
                 shortestPaths.push(shortestPath);
-                checkResult = this.checkShortestPathCoverage(validNodeResult.lrpNodeIndexInLoc,lines,shortestPath.lines);
+                checkResult = this.checkShortestPathCoverage(validNodeResult.lrpIndexInLoc,lines,shortestPath.lines);
             }
         }
 
-        //push the last line of the expanded location to the list of LRPs
-        //lrpNodes.push(lines[lines.length-1].getEndNode());
+        // push the last line of the expanded location to the list of LRPs,
+        // even if the expanded location contains only one line: in that case lrpLines contains the line two times
         lrpLines.push(lines[lines.length-1]);
     }
 
@@ -312,13 +335,13 @@ export default class LineEncoder {
             //if no valid node is found, an invalid node may be used
             return {
                 validNode: shortestPath[endIndex],
-                lrpNodeIndexInLoc: endIndex
+                lrpIndexInLoc: endIndex
             }
         }
         else{
             return {
                 validNode: possibleNode,
-                lrpNodeIndexInLoc: possibleIndex
+                lrpIndexInLoc: possibleIndex
             }
         }
     }
@@ -336,29 +359,47 @@ export default class LineEncoder {
 
         if(lrpLines.length-1 === shortestPaths.length){
             let shortestPath = [];
-            for(let i=0;i<shortestPaths.length;i++){
-                shortestPath.push(lrpLines[i]);
-                let a = 0;
-                let lengthBetweenLRPs = 0;
-                //while the start node of a line is not the next LRP node, this line can be added
-                //otherwise we should add the lines of the shortest path of that LRP node
-                while(shortestPaths[i].lines !== undefined && shortestPaths[i].lines[a] !== undefined && shortestPaths[i].lines[a].getStartNode().getID() !== lrpLines[i+1].getStartNode().getID()){
-                    shortestPath.push(shortestPaths[i].lines[a]);
-                    lengthBetweenLRPs += shortestPaths[i].lines[a].getLength();
-                    if(i===0){
-                        distanceBetweenFirstTwoLength += shortestPaths[i].lines[a].getLength();
+            if(lrpLines.length === 2 && lrpLines[0].getID() === lrpLines[1].getID()){
+                // lines contains only one line, so the first 2 lines in lrpLines are the same
+                // the second lrp line should not be pushed on the shortestPath
+                shortestPath.push(lrpLines[0]);
+            }
+            else{
+                for(let i=0;i<shortestPaths.length;i++){
+                    shortestPath.push(lrpLines[i]);
+                    if(i === shortestPaths.length-1){
+                        distanceBetweenLastTwoLength += lrpLines[i].getLength();
                     }
-                    if(i===shortestPath.length-1){
-                        distanceBetweenLastTwoLength += shortestPaths[i].lines[a].getLength();
+                    let a = 0;
+                    let lengthBetweenLRPs = lrpLines[i].getLength();
+                    //while the start node of a line is not the next LRP node, this line can be added
+                    //otherwise we should add the lines of the shortest path of that LRP node
+                    while(shortestPaths[i].lines !== undefined && shortestPaths[i].lines[a] !== undefined && shortestPaths[i].lines[a].getStartNode().getID() !== lrpLines[i+1].getStartNode().getID()){
+                        shortestPath.push(shortestPaths[i].lines[a]);
+                        lengthBetweenLRPs += shortestPaths[i].lines[a].getLength();
+                        if(i===0){
+                            distanceBetweenFirstTwoLength += shortestPaths[i].lines[a].getLength();
+                            console.error("fout!");
+                        }
+                        if(i===shortestPaths.length-1){
+                            distanceBetweenLastTwoLength += shortestPaths[i].lines[a].getLength();
+                        }
+                        a++;
                     }
-                    a++;
+                    if(lengthBetweenLRPs >= 15000){
+                        isValid = false;
+                        wrongIntermediateOffset = true;
+                    }
                 }
-                if(lengthBetweenLRPs >= 15000){
-                    isValid = false;
-                    wrongIntermediateOffset = true;
+                shortestPath.push(lrpLines[lrpLines.length-1]); //add the line incoming in the last LRP
+                if(lrpLines.length === 2){
+                    distanceBetweenFirstTwoLength += lrpLines[lrpLines.length-1].getLength();
                 }
             }
-            shortestPath.push(lrpLines[lrpLines.length-1]); //add the line incoming in the last LRP
+            if(distanceBetweenFirstTwoLength >=  15000 || distanceBetweenLastTwoLength >= 15000){
+                isValid = false;
+                wrongIntermediateOffset = true;
+            }
             //check if offset values are shorter then the distance between the first two/last two location reference points
             if(offsets.posOffset >= distanceBetweenFirstTwoLength){
                 // can happen if we added extra intermediate LRPs on invalid nodes
@@ -394,7 +435,7 @@ export default class LineEncoder {
             lrpLines.shift();
         }
         else{
-            console.log("unnecessary removing of LRP at front");
+            throw Error("unnecessary removing of LRP at front");
         }
     }
 
@@ -406,7 +447,7 @@ export default class LineEncoder {
             lrpLines.pop();
         }
         else{
-            console.log("unnecessary removing of LRP at end");
+            throw Error("unnecessary removing of LRP at end");
         }
     }
 
