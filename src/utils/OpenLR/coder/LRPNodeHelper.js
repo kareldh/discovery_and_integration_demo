@@ -114,7 +114,7 @@ export default class LRPNodeHelper{
         while(i > 0 && calcBear === undefined){
             if(reverseLength+shortestPath[i].getLength() > beardist){
                 // the bearingdist point lays on this line
-                let distance = reverseLength+shortestPath[i]-beardist;
+                let distance = reverseLength+shortestPath[i].getLength()-beardist;
                 let bearDistLoc = shortestPath[i].getGeoCoordinateAlongLine(distance);
                 let lrpPoint = point([lastNode.getLatitudeDeg(), lastNode.getLongitudeDeg()]);
                 let bearDistPoint = point([bearDistLoc.lat,bearDistLoc.long]);

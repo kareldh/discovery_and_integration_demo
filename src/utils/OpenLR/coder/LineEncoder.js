@@ -15,25 +15,30 @@ export default class LineEncoder {
         LineEncoder.checkValidityAndAdjustOffsets(lines,offsets);
 
         // 2: adjust start and end nodes of the location to represent valid map nodes
-        let expanded = this.adjustToValidStartEnd(mapDataBase,lines,offsets);
+        let expanded = this.adjustToValidStartEnd(mapDataBase,lines,offsets); //lines[expanded.front] to lines[lines.length-1-expanded.back] can NOT be used, the full path should be used in SP calculation!!!
         lrpLines.push(lines[0]);
 
         // 3: determine coverage of the location by a shortest-path
         let shortestPath;
+        // 4: check whether the calculated shortest-path covers the location completely
+        let checkResult;
         if(lines.length === 1){
             //if there is only line, the sp calculation would return the line in the other direction of the given line (but wouldn't be used further in the algoritm
             shortestPath = {
                 lines: [],
                 length: 0
+            };
+            checkResult = {
+                fullyCovered: true,
+                lrpIndexInSP: 1,
+                lrpIndexInLoc: 1
             }
         }
         else{
-            shortestPath = Dijkstra.shortestPath(lines[expanded.front].getEndNode(),lines[lines.length-1-expanded.back].getStartNode());
+            shortestPath = Dijkstra.shortestPath(lines[0].getEndNode(),lines[lines.length-1].getStartNode());
+            checkResult = this.checkShortestPathCoverage(1,lines,shortestPath.lines,lines.length-1);
         }
         shortestPaths.push(shortestPath);
-
-        // 4: check whether the calculated shortest-path covers the location completely
-        let checkResult = this.checkShortestPathCoverage(1+expanded.front,lines,shortestPath.lines,lines.length-expanded.back);
 
         //location not completely covered, intermediate LRPs needed
         LineEncoder.addLRPsUntilFullyCovered(checkResult,lines,lrpLines,shortestPaths,shortestPath,expanded);
@@ -70,13 +75,13 @@ export default class LineEncoder {
             }
             //check if the location is still fully covered
             checkResult = this.checkShortestPathCoverage(0,lines,concatenatedSPResult.shortestPath,lines.length);
-            console.log(checkResult);
-            console.log(concatenatedSPResult.shortestPath);
-            console.log(lines);
             if(!checkResult.fullyCovered){
                 throw Error("something went wrong while making the concatenated shortest path valid");
             }
         }
+
+        console.warn(lrpLines);
+        console.error(shortestPaths[0].lines);
 
         // 10: create physical representation of the location reference (json)
         let LRPs = LRPNodeHelper.lrpLinesToLRPs(lrpLines,shortestPaths);
@@ -296,9 +301,9 @@ export default class LineEncoder {
                 lrpLines.push(lines[checkResult.lrpIndexInLoc]);
                 // 6: go to step 3 and restart shortest path calculation between the new intermediate location
                 // reference point and the end of the location
-                shortestPath = Dijkstra.shortestPath(lines[checkResult.lrpIndexInLoc].getEndNode(),lines[lines.length-1-expanded.back].getStartNode());
+                shortestPath = Dijkstra.shortestPath(lines[checkResult.lrpIndexInLoc].getEndNode(),lines[lines.length-1].getStartNode());
                 shortestPaths.push(shortestPath);
-                checkResult = this.checkShortestPathCoverage(checkResult.lrpIndexInLoc+1,lines,shortestPath.lines,lines.length-1-expanded.back);
+                checkResult = this.checkShortestPathCoverage(checkResult.lrpIndexInLoc+1,lines,shortestPath.lines,lines.length-1);
             }
             else{
                 throw checkResult;
@@ -306,9 +311,9 @@ export default class LineEncoder {
                 //find a valid node on the shortest path that leads to the invalid node
                 let validNodeResult = this.findValidNodeOnSP(shortestPath.lines,checkResult.lrpIndexInSP);
                 //lrpNodes.push(validNodeResult.validNode);
-                shortestPath = Dijkstra.shortestPath(validNodeResult.validNode,lines[lines.length-1-expanded.back].getEndNode());
+                shortestPath = Dijkstra.shortestPath(validNodeResult.validNode,lines[lines.length-1].getEndNode());
                 shortestPaths.push(shortestPath);
-                checkResult = this.checkShortestPathCoverage(validNodeResult.lrpIndexInLoc,lines,shortestPath.lines);
+                checkResult = this.checkShortestPathCoverage(validNodeResult.lrpIndexInLoc,lines,shortestPath.lines,lines.length-1);
             }
         }
 
@@ -379,7 +384,6 @@ export default class LineEncoder {
                         lengthBetweenLRPs += shortestPaths[i].lines[a].getLength();
                         if(i===0){
                             distanceBetweenFirstTwoLength += shortestPaths[i].lines[a].getLength();
-                            console.error("fout!");
                         }
                         if(i===shortestPaths.length-1){
                             distanceBetweenLastTwoLength += shortestPaths[i].lines[a].getLength();

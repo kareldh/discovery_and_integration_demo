@@ -54,11 +54,13 @@ export function mapNodesLinesToID(nodes,lines){
     let mappedLines = {};
 
     nodes.forEach(function (node) {
-        mappedNodes[node.getID()] = node;
+        if(node !== undefined)
+            mappedNodes[node.getID()] = node;
     });
 
     lines.forEach(function (line) {
-        mappedLines[line.getID()] = line;
+        if(line !== undefined)
+            mappedLines[line.getID()] = line;
     });
 
     return {
