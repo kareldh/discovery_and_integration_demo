@@ -60,7 +60,7 @@ export default class LineDecoder{
     }
 
     //lat, long and bearing should never be undefined
-    static findCandidateLines(LRPs,candidateNodes){ //todo lfrcnp gebruiken
+    static findCandidateLines(LRPs,candidateNodes){
         let candidateLines = [];
         for(let i=0;i<LRPs.length;i++){
             candidateLines[i] = [];
@@ -89,20 +89,20 @@ export default class LineDecoder{
                             projected: true,
                             rating: undefined
                         };
-                        candidate.rating = LineDecoder.rateCandidateLine(candidate,candidateNodes[candidate.lrpIndex],LRPs[candidate.lrpIndex]);
+                        candidate.rating = LineDecoder.rateCandidateLine(candidate,node,LRPs[candidate.lrpIndex]);
                         candidateLines[i].push(candidate);
                     }
                 }
                 else{
                     //the node exists in the database and possibly has multiple outgoing lines
                     let lines = i===LRPs.length-1
-                        ? node.getOutgoingLines()
-                        : node.getIncomingLines();
+                        ? node.getIncomingLines()
+                        : node.getOutgoingLines();
                     //for the last LRP, check the incoming lines
                     lines.forEach((line)=>{
                         let bearDiff = i===LRPs.length-1
-                            ? Math.abs(line.getBearing()-LRPs[i].bearing)
-                            : Math.abs(line.getReverseBearing()-LRPs[LRPs.length-1].bearing);
+                            ? Math.abs(line.getReverseBearing()-LRPs[LRPs.length-1].bearing)
+                            : Math.abs(line.getBearing()-LRPs[i].bearing);
                         let frcDiff;
                         if(line.getFRC() !== undefined && line.getFRC() >= frcEnum.FRC_0
                             && line.getFRC() <= frcEnum.FRC_7 && LRPs[i].frc !== undefined){
@@ -116,10 +116,10 @@ export default class LineDecoder{
                                 bearDiff: bearDiff,
                                 frcDiff: frcDiff,
                                 lrpIndex: i,
-                                projected: true,
+                                projected: false,
                                 rating: undefined
                             };
-                            candidate.rating = LineDecoder.rateCandidateLine(candidate,candidateNodes[candidate.lrpIndex],LRPs[candidate.lrpIndex])
+                            candidate.rating = LineDecoder.rateCandidateLine(candidate,node,LRPs[candidate.lrpIndex]);
                             candidateLines[i].push(candidate);
                         }
                     });
@@ -198,11 +198,11 @@ export default class LineDecoder{
             || shortestPath.lines.length === 0
             || Math.abs(shortestPath.length-LRPs[lrpIndex].distanceToNext) >= decoderProperties.distanceToNextDiff) // check validity (step 6 of decoding)
             && tries.count < decoderProperties.maxSPSearchRetries){
-            shortestPath = LineDecoder.findShortestPath(candidateLines[lrpIndex][candidateIndexes[lrpIndex]],candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]]);
-            if(candidateIndexes[lrpIndex+1]<candidateLines[lrpIndex+1].length){
+            shortestPath = LineDecoder.findShortestPath(candidateLines[lrpIndex][candidateIndexes[lrpIndex]].line,candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]].line,LRPs[lrpIndex].lfrcnp);
+            if(candidateIndexes[lrpIndex+1] < candidateLines[lrpIndex+1].length-1){
                 candidateIndexes[lrpIndex+1]++;
             }
-            else if(candidateIndexes[lrpIndex] < candidateLines[lrpIndex].length){
+            else if(candidateIndexes[lrpIndex] < candidateLines[lrpIndex].length-1){
                 candidateIndexes[lrpIndex]++;
                 candidateIndexes[lrpIndex+1] = prevEndCandidateIndex;
                 prevEndChanged = true;
@@ -215,7 +215,7 @@ export default class LineDecoder{
         shortestPaths[lrpIndex] = shortestPath;
         if(prevEndChanged && lrpIndex-1 >= 0){
             //we changed the start line of for this LRP, which means the end line of the last LRP is changed and it's shortest path should be recalculated
-            shortestPaths[lrpIndex-1] = LineDecoder.calcSPforLRP(candidateLines,candidateIndexes,lrpIndex-1,tries,LRPs);
+            shortestPaths[lrpIndex-1] = LineDecoder.calcSPforLRP(candidateLines,candidateIndexes,lrpIndex-1,tries,shortestPaths,LRPs);
         }
         if(shortestPath === undefined || shortestPath.length === 0){
             throw "could not construct a shortest path in time";
