@@ -80,9 +80,6 @@ export default class LineEncoder {
             }
         }
 
-        console.warn(lrpLines);
-        console.error(shortestPaths[0].lines);
-
         // 10: create physical representation of the location reference (json)
         let LRPs = LRPNodeHelper.lrpLinesToLRPs(lrpLines,shortestPaths);
         return {

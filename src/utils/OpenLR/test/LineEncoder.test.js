@@ -47,6 +47,28 @@ test('encode doesn\'t crash with lane existing of two lines and invalid offsets'
     expect(encoded.LRPs.length).toEqual(2);
 });
 
+test('encode 4 lines no offsets no expansions',()=>{
+    let network = generateRealisticLengthTestNetwork();
+    let data = mapNodesLinesToID(network.nodes,network.lines);
+    let mapDataBase = new MapDataBase(data.lines,data.nodes);
+    let LRPs = LineEncoder.encode(mapDataBase,[network.lines[9],network.lines[26],network.lines[7],network.lines[19],network.lines[23],network.lines[5]],0,0);
+    expect(LRPs.LRPs.length).toEqual(4);
+    expect(LRPs.LRPs[0].lat).toEqual(network.lines[9].getStartNode().getLatitudeDeg());
+    expect(LRPs.LRPs[0].long).toEqual(network.lines[9].getStartNode().getLongitudeDeg());
+    expect(LRPs.LRPs[0].distanceToNext).toEqual(network.lines[9].getLength()+network.lines[26].getLength());
+    expect(LRPs.LRPs[1].lat).toEqual(network.lines[7].getStartNode().getLatitudeDeg());
+    expect(LRPs.LRPs[1].long).toEqual(network.lines[7].getStartNode().getLongitudeDeg());
+    expect(LRPs.LRPs[1].distanceToNext).toEqual(network.lines[7].getLength());
+    expect(LRPs.LRPs[2].lat).toEqual(network.lines[19].getStartNode().getLatitudeDeg());
+    expect(LRPs.LRPs[2].long).toEqual(network.lines[19].getStartNode().getLongitudeDeg());
+    expect(LRPs.LRPs[2].distanceToNext).toEqual(network.lines[19].getLength()+network.lines[23].getLength()+network.lines[5].getLength());
+    expect(LRPs.LRPs[3].lat).toEqual(network.lines[5].getEndNode().getLatitudeDeg());
+    expect(LRPs.LRPs[3].long).toEqual(network.lines[5].getEndNode().getLongitudeDeg());
+    expect(LRPs.LRPs[3].distanceToNext).toEqual(0);
+    expect(LRPs.posOffset).toEqual(0);
+    expect(LRPs.negOffset).toEqual(0);
+});
+
 test('encode 4 lines no offsets with expansion',()=>{
     let network = generateRealisticLengthTestNetwork();
     let data = mapNodesLinesToID(network.nodes,network.lines);
@@ -56,17 +78,21 @@ test('encode 4 lines no offsets with expansion',()=>{
     expect(LRPs.LRPs.length).toEqual(4);
     expect(LRPs.LRPs[0].lat).toEqual(network.lines[9].getStartNode().getLatitudeDeg());
     expect(LRPs.LRPs[0].long).toEqual(network.lines[9].getStartNode().getLongitudeDeg());
+    expect(LRPs.LRPs[0].distanceToNext).toEqual(network.lines[9].getLength()+network.lines[26].getLength());
     expect(LRPs.LRPs[1].lat).toEqual(network.lines[7].getStartNode().getLatitudeDeg());
     expect(LRPs.LRPs[1].long).toEqual(network.lines[7].getStartNode().getLongitudeDeg());
+    expect(LRPs.LRPs[1].distanceToNext).toEqual(network.lines[7].getLength());
     expect(LRPs.LRPs[2].lat).toEqual(network.lines[19].getStartNode().getLatitudeDeg());
     expect(LRPs.LRPs[2].long).toEqual(network.lines[19].getStartNode().getLongitudeDeg());
+    expect(LRPs.LRPs[2].distanceToNext).toEqual(network.lines[19].getLength()+network.lines[23].getLength()+network.lines[5].getLength());
     expect(LRPs.LRPs[3].lat).toEqual(network.lines[5].getEndNode().getLatitudeDeg());
     expect(LRPs.LRPs[3].long).toEqual(network.lines[5].getEndNode().getLongitudeDeg());
+    expect(LRPs.LRPs[3].distanceToNext).toEqual(0);
     expect(LRPs.posOffset).toEqual(network.lines[9].getLength());
     expect(LRPs.negOffset).toEqual(network.lines[5].getLength());
 });
 
-test('encode 4 lines no offsets with expansion and valid offsets',()=>{
+test('encode 4 lines with expansion and valid offsets',()=>{
     let network = generateRealisticLengthTestNetwork();
     let data = mapNodesLinesToID(network.nodes,network.lines);
     let mapDataBase = new MapDataBase(data.lines,data.nodes);
@@ -75,17 +101,21 @@ test('encode 4 lines no offsets with expansion and valid offsets',()=>{
     expect(LRPs.LRPs.length).toEqual(4);
     expect(LRPs.LRPs[0].lat).toEqual(network.lines[9].getStartNode().getLatitudeDeg());
     expect(LRPs.LRPs[0].long).toEqual(network.lines[9].getStartNode().getLongitudeDeg());
+    expect(LRPs.LRPs[0].distanceToNext).toEqual(network.lines[9].getLength()+network.lines[26].getLength());
     expect(LRPs.LRPs[1].lat).toEqual(network.lines[7].getStartNode().getLatitudeDeg());
     expect(LRPs.LRPs[1].long).toEqual(network.lines[7].getStartNode().getLongitudeDeg());
+    expect(LRPs.LRPs[1].distanceToNext).toEqual(network.lines[7].getLength());
     expect(LRPs.LRPs[2].lat).toEqual(network.lines[19].getStartNode().getLatitudeDeg());
     expect(LRPs.LRPs[2].long).toEqual(network.lines[19].getStartNode().getLongitudeDeg());
+    expect(LRPs.LRPs[2].distanceToNext).toEqual(network.lines[19].getLength()+network.lines[23].getLength()+network.lines[5].getLength());
     expect(LRPs.LRPs[3].lat).toEqual(network.lines[5].getEndNode().getLatitudeDeg());
     expect(LRPs.LRPs[3].long).toEqual(network.lines[5].getEndNode().getLongitudeDeg());
+    expect(LRPs.LRPs[3].distanceToNext).toEqual(0);
     expect(LRPs.posOffset).toEqual(network.lines[9].getLength()+30);
     expect(LRPs.negOffset).toEqual(network.lines[5].getLength()+30);
 });
 
-test('encode 4 lines no offsets with expansion and invalid pos offset',()=>{
+test('encode 4 lines with expansion and invalid pos offset',()=>{
     let network = generateRealisticLengthTestNetwork();
     let data = mapNodesLinesToID(network.nodes,network.lines);
     let mapDataBase = new MapDataBase(data.lines,data.nodes);
@@ -95,15 +125,18 @@ test('encode 4 lines no offsets with expansion and invalid pos offset',()=>{
     expect(LRPs.LRPs.length).toEqual(3);
     expect(LRPs.LRPs[0].lat).toEqual(network.lines[7].getStartNode().getLatitudeDeg());
     expect(LRPs.LRPs[0].long).toEqual(network.lines[7].getStartNode().getLongitudeDeg());
+    expect(LRPs.LRPs[0].distanceToNext).toEqual(network.lines[7].getLength());
     expect(LRPs.LRPs[1].lat).toEqual(network.lines[19].getStartNode().getLatitudeDeg());
     expect(LRPs.LRPs[1].long).toEqual(network.lines[19].getStartNode().getLongitudeDeg());
+    expect(LRPs.LRPs[1].distanceToNext).toEqual(network.lines[19].getLength()+network.lines[23].getLength()+network.lines[5].getLength());
     expect(LRPs.LRPs[2].lat).toEqual(network.lines[5].getEndNode().getLatitudeDeg());
     expect(LRPs.LRPs[2].long).toEqual(network.lines[5].getEndNode().getLongitudeDeg());
+    expect(LRPs.LRPs[2].distanceToNext).toEqual(0);
     expect(LRPs.posOffset).toEqual(30);
     expect(LRPs.negOffset).toEqual(network.lines[5].getLength());
 });
 
-test('encode 4 lines no offsets with expansion and invalid neg offset',()=>{
+test('encode 4 lines with expansion and invalid neg offset',()=>{
     let network = generateRealisticLengthTestNetwork();
     let data = mapNodesLinesToID(network.nodes,network.lines);
     let mapDataBase = new MapDataBase(data.lines,data.nodes);
@@ -114,8 +147,10 @@ test('encode 4 lines no offsets with expansion and invalid neg offset',()=>{
     expect(LRPs.LRPs.length).toEqual(2);
     expect(LRPs.LRPs[0].lat).toEqual(network.lines[9].getStartNode().getLatitudeDeg());
     expect(LRPs.LRPs[0].long).toEqual(network.lines[9].getStartNode().getLongitudeDeg());
+    expect(LRPs.LRPs[0].distanceToNext).toEqual(network.lines[9].getLength()+network.lines[26].getLength()+network.lines[7].getLength()+network.lines[19].getLength());
     expect(LRPs.LRPs[1].lat).toEqual(network.lines[19].getEndNode().getLatitudeDeg());
     expect(LRPs.LRPs[1].long).toEqual(network.lines[19].getEndNode().getLongitudeDeg());
+    expect(LRPs.LRPs[1].distanceToNext).toEqual(0);
     expect(LRPs.posOffset).toEqual(network.lines[9].getLength());
     expect(LRPs.negOffset).toEqual(30);
 });

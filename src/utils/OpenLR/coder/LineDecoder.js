@@ -32,35 +32,42 @@ export default class LineDecoder{
     static findCandidatesOrProjections(mapDataBase,LRPs){
         let candidates = [];
         for(let i=0;i<LRPs.length;i++){
+            candidates[i] = [];
             //find nodes whereby the coordinates of the candidate nodes are close to the coordinates of the location reference point
-            let nodes = mapDataBase.findNodesCloseByCoordinate(LRPs[i].lat,LRPs[i].lon,decoderProperties.dist);
+            let nodes = mapDataBase.findNodesCloseByCoordinate(LRPs[i].lat,LRPs[i].long,decoderProperties.dist);
 
             //if no candidate nodes are found
-            //todo: the direct search of lines using a projection point may also be executed even if candidate nodes are found. (set in decoderProperties)
-            if(nodes.length === 0){
+            //the direct search of lines using a projection point may also be executed even if candidate nodes are found. (set in decoderProperties)
+            if(nodes.length !== 0){
+                Array.prototype.push.apply(candidates[i],nodes);
+            }
+            if(nodes.length === 0 || decoderProperties.alwaysUseProjections){
                 //determine candidate line directly by projecting the LRP on a line not far away form the coordinate
-                let closeByLines = mapDataBase.findLinesCloseByCoordinate(LRPs[i].lat,LRPs[i].lon,decoderProperties.dist);
+                let closeByLines = mapDataBase.findLinesCloseByCoordinate(LRPs[i].lat,LRPs[i].long,decoderProperties.dist);
+                if(closeByLines.length === 0 && nodes.length === 0){
+                    throw Error("No candidate nodes or projected nodes can be found.");
+                }
                 let projectedPoints = [];
                 closeByLines.forEach(function (line) {
                     let location = line.measureAlongLine(LRPs[i].lat,LRPs[i].long);
                     location.line = line;
                     projectedPoints.push(location);
                 });
-                candidates[i].push(projectedPoints);
-            }
-            else{
-                candidates[i].push(nodes);
+                Array.prototype.push.apply(candidates[i],projectedPoints);
             }
         }
+        return candidates;
     }
 
     //lat, long and bearing should never be undefined
-    static findCandidateLines(LRPs,candidateNodes){
+    static findCandidateLines(LRPs,candidateNodes){ //todo lfrcnp gebruiken
         let candidateLines = [];
         for(let i=0;i<LRPs.length;i++){
+            candidateLines[i] = [];
             //check the outgoing lines of the candidateNodes
-            candidateNodes[i].forEach((node)=>{
-                if(node.getID() === undefined){
+            candidateNodes[i].forEach((n)=>{
+                let node = n.node;
+                if(node.getID === undefined){
                     //the node is a projection point
                     let bearDiff = i===LRPs.length-1
                         ? Math.abs(node.line.getBearing()-LRPs[i].bearing)
@@ -82,7 +89,7 @@ export default class LineDecoder{
                             projected: true,
                             rating: undefined
                         };
-                        candidate.rating = LineDecoder.rateCandidateLine(candidate,candidateNodes[candidate.lrpIndex],LRPs[candidate.lrpIndex])
+                        candidate.rating = LineDecoder.rateCandidateLine(candidate,candidateNodes[candidate.lrpIndex],LRPs[candidate.lrpIndex]);
                         candidateLines[i].push(candidate);
                     }
                 }
@@ -97,15 +104,15 @@ export default class LineDecoder{
                             ? Math.abs(line.getBearing()-LRPs[i].bearing)
                             : Math.abs(line.getReverseBearing()-LRPs[LRPs.length-1].bearing);
                         let frcDiff;
-                        if(node.line.getFRC() !== undefined && node.line.getFRC() >= frcEnum.FRC_0
-                            && node.line.getFRC() <= frcEnum.FRC_7 && LRPs[i].frc !== undefined){
-                            frcDiff = Math.abs(node.line.getFRC()-LRPs[i].frc);
+                        if(line.getFRC() !== undefined && line.getFRC() >= frcEnum.FRC_0
+                            && line.getFRC() <= frcEnum.FRC_7 && LRPs[i].frc !== undefined){
+                            frcDiff = Math.abs(line.getFRC()-LRPs[i].frc);
                         }
                         if( bearDiff <= decoderProperties.bearDiff
                             && frcDiff === undefined ? true : frcDiff <= decoderProperties.frcDiff){
                             //the bearing,frc and fow values are close so this line could be a good candidate
                             let candidate = {
-                                line: node.line,
+                                line: line,
                                 bearDiff: bearDiff,
                                 frcDiff: frcDiff,
                                 lrpIndex: i,
@@ -119,7 +126,7 @@ export default class LineDecoder{
                     //if no candidate line can be found for a location reference point, the decoder should
                     //report an error and stop further processing
                     if(candidateLines[i].length === 0){
-                        throw "No candidate lines found for LRP";
+                        throw Error("No candidate lines found for LRP");
                     }
                 }
             });
