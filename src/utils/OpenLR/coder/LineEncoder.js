@@ -3,7 +3,8 @@ import {locationTypeEnum} from "../map/Enum";
 import LRPNodeHelper from "./LRPNodeHelper";
 
 export default class LineEncoder {
-    static encode(mapDataBase,lines,posOffset,negOffset){
+    static encode(mapDataBase,linesToEncode,posOffset,negOffset){
+        let lines = linesToEncode.slice();
         let lrpLines = [];
         let shortestPaths = [];
         let offsets = {
