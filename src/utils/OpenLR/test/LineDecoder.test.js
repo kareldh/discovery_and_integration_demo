@@ -10,7 +10,11 @@ test('decoder 4 LRPs no offsets perfect candidates',()=>{
     let lines = [network.lines[26],network.lines[7],network.lines[19],network.lines[23]];
     let LRPs = LineEncoder.encode(mapDataBase,lines,0,0);
     let decoded = LineDecoder.decode(mapDataBase,LRPs.LRPs,LRPs.posOffset,LRPs.negOffset);
-    expect(decoded.lines).toEqual(lines);
+    expect(decoded.lines.length).toEqual(lines.length);
+    expect(decoded.lines[0].getID()).toEqual(network.lines[26].getID());
+    expect(decoded.lines[1].getID()).toEqual(network.lines[7].getID());
+    expect(decoded.lines[2].getID()).toEqual(network.lines[19].getID());
+    expect(decoded.lines[3].getID()).toEqual(network.lines[23].getID());
     expect(decoded.negOffset).toEqual(0);
     expect(decoded.posOffset).toEqual(0);
 });

@@ -35,12 +35,12 @@ export default class Dijkstra{
                 if(length<0){
                     throw Error("negative line length found for line: "+line.getID());
                 }
-                let validLine = options === undefined ? 1 : 0 ||
+                let validLine = (options === undefined || line.getFRC() === undefined)? 1 : 0 ||
                     (options.lfrcnp !== undefined
                     && options.lfrcnpDiff !== undefined
                     && line.getFRC() !== undefined
                     && line.getFRC() >= frcEnum.FRC_0 && line.getFRC() <= frcEnum.FRC_7
-                    && Math.abs(line.getFRC()-options.lfrcnpDiff) <= options.lfrcnpDiff);
+                    && Math.abs(line.getFRC()-options.lfrcnp) <= options.lfrcnpDiff);
                 if(validLine && (minLengths[line.getEndNode().getID()] === undefined
                     || minLengths[line.getEndNode().getID()] > length)){
                     minLengths[line.getEndNode().getID()] = length;
@@ -59,7 +59,11 @@ export default class Dijkstra{
             lastStep = line.getStartNode();
         }
 
-        //todo: remove separate length calculations since it is included here
+        //if length is 0, and lines = [], the startnode was equal to the endnode
+        //if length is undefined and lines = [], there isn't a path between the startnode and endnode
+        if(minLengths[endNode.getID()] === 0){
+            throw Error("Something went wrong during Shortest Path calculation, probably because lines exist with 0 or negative lengths");
+        }
         return {
             lines: shortestPathLines,
             length: minLengths[endNode.getID()] //integer value in meter!

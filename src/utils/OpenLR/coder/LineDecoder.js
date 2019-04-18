@@ -20,12 +20,13 @@ export default class LineDecoder{
         let concatShortestPath = LineDecoder.determineShortestPaths(candidateLines,LRPs);
 
         // 7: and trim according to the offsets
-        let trimmed = LineDecoder.trimAccordingToOffsets(concatShortestPath,posOffset,negOffset);
+        let offsets = {posOffset: posOffset, negOffset: negOffset};
+        LineDecoder.trimAccordingToOffsets(concatShortestPath,offsets);
 
         return {
-            lines: trimmed,
-            posOffset: posOffset,
-            negOffset: negOffset
+            lines: concatShortestPath,
+            posOffset: offsets.posOffset,
+            negOffset: offsets.negOffset
         }
     }
 
@@ -194,31 +195,40 @@ export default class LineDecoder{
         }
         let prevEndChanged = false;
         let prevEndCandidateIndex = candidateIndexes[lrpIndex+1];
+        let distanceBetweenLRP = undefined;
         while((shortestPath === undefined
-            || shortestPath.lines.length === 0
-            || Math.abs(shortestPath.length-LRPs[lrpIndex].distanceToNext) >= decoderProperties.distanceToNextDiff) // check validity (step 6 of decoding)
+            || shortestPath.length === undefined
+            || Math.abs(distanceBetweenLRP-LRPs[lrpIndex].distanceToNext) >= decoderProperties.distanceToNextDiff) // check validity (step 6 of decoding)
             && tries.count < decoderProperties.maxSPSearchRetries){
             shortestPath = LineDecoder.findShortestPath(candidateLines[lrpIndex][candidateIndexes[lrpIndex]].line,candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]].line,LRPs[lrpIndex].lfrcnp);
-            if(candidateIndexes[lrpIndex+1] < candidateLines[lrpIndex+1].length-1){
-                candidateIndexes[lrpIndex+1]++;
+            distanceBetweenLRP = shortestPath.length+candidateLines[lrpIndex][candidateIndexes[lrpIndex]].line.getLength();
+            if(lrpIndex === LRPs.length-2){
+                distanceBetweenLRP += candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]].line.getLength();
             }
-            else if(candidateIndexes[lrpIndex] < candidateLines[lrpIndex].length-1){
-                candidateIndexes[lrpIndex]++;
-                candidateIndexes[lrpIndex+1] = prevEndCandidateIndex;
-                prevEndChanged = true;
-            }
-            else{
-                throw "could not construct a shortest path";
+            if(shortestPath === undefined
+                || shortestPath.length === undefined
+                || Math.abs(distanceBetweenLRP-LRPs[lrpIndex].distanceToNext) >= decoderProperties.distanceToNextDiff){
+                if(candidateIndexes[lrpIndex+1] < candidateLines[lrpIndex+1].length-1){
+                    candidateIndexes[lrpIndex+1]++;
+                }
+                else if(candidateIndexes[lrpIndex] < candidateLines[lrpIndex].length-1){
+                    candidateIndexes[lrpIndex]++;
+                    candidateIndexes[lrpIndex+1] = prevEndCandidateIndex;
+                    prevEndChanged = true;
+                }
+                else{
+                    throw Error("No shortest path could be found between the given LRPs");
+                }
             }
             tries.count++;
+        }
+        if(shortestPath === undefined || shortestPath.length === undefined){
+            throw Error("could not construct a shortest path in the given amount of tries");
         }
         shortestPaths[lrpIndex] = shortestPath;
         if(prevEndChanged && lrpIndex-1 >= 0){
             //we changed the start line of for this LRP, which means the end line of the last LRP is changed and it's shortest path should be recalculated
             shortestPaths[lrpIndex-1] = LineDecoder.calcSPforLRP(candidateLines,candidateIndexes,lrpIndex-1,tries,shortestPaths,LRPs);
-        }
-        if(shortestPath === undefined || shortestPath.length === 0){
-            throw "could not construct a shortest path in time";
         }
     }
 
@@ -239,12 +249,12 @@ export default class LineDecoder{
         }
         let concatenatedShortestPath = [];
         for(let i=0;i<shortestPaths.length;i++){
-            concatenatedShortestPath.push(candidateLines[i][candidateIndexes[i]]); //add the startLine of the LRP (endline if last LRP)
-            for(let j=0;j<shortestPaths[i].lines.length;i++){
+            concatenatedShortestPath.push(candidateLines[i][candidateIndexes[i]].line); //add the startLine of the LRP (endline if last LRP)
+            for(let j=0;j<shortestPaths[i].lines.length;j++){
                 concatenatedShortestPath.push(shortestPaths[i].lines[j])
             }
         }
-        concatenatedShortestPath.push(candidateLines[candidateLines.length-1][candidateIndexes[candidateIndexes.length-1]]);
+        concatenatedShortestPath.push(candidateLines[candidateLines.length-1][candidateIndexes[candidateIndexes.length-1]].line);
         return concatenatedShortestPath;
     }
 
