@@ -43,6 +43,7 @@ export default class LineDecoder{
                 Array.prototype.push.apply(candidates[i],nodes);
             }
             if(nodes.length === 0 || decoderProperties.alwaysUseProjections){
+                console.log("bereken projections "+nodes.length===0?"was zeker nodig":"was niet nodig");
                 //determine candidate line directly by projecting the LRP on a line not far away form the coordinate
                 let closeByLines = mapDataBase.findLinesCloseByCoordinate(LRPs[i].lat,LRPs[i].long,decoderProperties.dist);
                 if(closeByLines.length === 0 && nodes.length === 0){
@@ -52,6 +53,7 @@ export default class LineDecoder{
                 closeByLines.forEach(function (line) {
                     let location = line.measureAlongLine(LRPs[i].lat,LRPs[i].long);
                     location.line = line;
+                    console.error(location);
                     projectedPoints.push(location);
                 });
                 Array.prototype.push.apply(candidates[i],projectedPoints);
@@ -70,6 +72,7 @@ export default class LineDecoder{
                 let node = n.node;
                 if(node.getID === undefined){
                     //the node is a projection point
+                    console.log("gebruik projection point");
                     let bearDiff = i===LRPs.length-1
                         ? Math.abs(node.line.getBearing()-LRPs[i].bearing)
                         : Math.abs(node.line.getReverseBearing()-LRPs[LRPs.length-1].bearing);
@@ -101,6 +104,7 @@ export default class LineDecoder{
                         : node.getOutgoingLines();
                     //for the last LRP, check the incoming lines
                     lines.forEach((line)=>{
+                        console.log(line.getID(),line.getBearing());
                         let bearDiff = i===LRPs.length-1
                             ? Math.abs(line.getReverseBearing()-LRPs[LRPs.length-1].bearing)
                             : Math.abs(line.getBearing()-LRPs[i].bearing);
@@ -127,6 +131,7 @@ export default class LineDecoder{
                     //if no candidate line can be found for a location reference point, the decoder should
                     //report an error and stop further processing
                     if(candidateLines[i].length === 0){
+                        console.error(LRPs[i]);
                         throw Error("No candidate lines found for LRP");
                     }
                 }

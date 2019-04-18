@@ -30,7 +30,7 @@ export default class MapDataBase {
         return this.nodes[id];
     }
 
-    //todo: versnellen via custom gegevensstructuur
+    //todo: versnellen via custom gegevensstructuur?
     findNodesCloseByCoordinate(lat,long,dist){
         let resNodes = [];
         for(let key in this.nodes){

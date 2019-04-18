@@ -2,6 +2,7 @@ import Node from "../map/Node";
 import Location from "../coder/Location";
 import Line from "../map/Line";
 import {locationTypeEnum} from "../map/Enum";
+import {map} from "../../../testdata/osmMap";
 
 export function generateStraightLaneTestData(){
     let lines = [];
@@ -157,4 +158,10 @@ export function generateRealisticLengthTestNetwork(){
         nodes: [nodeA,nodeB,nodeC,nodeD,nodeE,nodeF,nodeG,nodeH,nodeI,nodeJ],
         lines: [undefined,line1,line2,line3,line4,line5,line6,line7,line8,line9,line10,line11,line12,line13,line14,line15,line16,line17,line18,line19,line20,line21,line22,line23,line24,line25,line26]
     }
+}
+
+export function loadOsmTestData(){
+    return new Promise((resolve)=>{
+        resolve(map)
+    })
 }

@@ -1,5 +1,5 @@
 let decoderProperties = {
-    dist: 15,    //maximum distance of a candidate node to a LRP
+    dist: 50,    //maximum distance of a candidate node to a LRP
     bearDiff: 15, //maximum difference between the bearing of a candidate node and that of a LRP
     frcDiff: 3, //maximum difference between the FRC of a candidate node and that of a LRP
     lfrcnpDiff: 2, //maximum difference between the lowest FRC until next point of a candidate node and that of a LRP
