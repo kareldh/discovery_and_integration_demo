@@ -1,5 +1,6 @@
 import MapDataBase from "../OpenLR/map/MapDataBase";
 import Line from "../OpenLR/map/Line";
+import Node from "../OpenLR/map/Node";
 
 export default class OSMIntegration{
     static initMapDataBase(lines,nodes){
