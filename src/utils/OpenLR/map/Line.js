@@ -91,7 +91,6 @@ export default class Line {
             [this.startNode.getLatitudeDeg(),this.startNode.getLongitudeDeg()],
             [this.endNode.getLatitudeDeg(), this.endNode.getLongitudeDeg()]
         ]);
-
         let distAlong = along(line,distanceAlong,{units: 'meters'});
         //return distAlong.geometry;
         return {
@@ -103,8 +102,8 @@ export default class Line {
     distanceToPoint(lat,long){
         let pt = point([lat,long]);
         let line = lineString(
-            [this.startNode.getLatitudeDeg(),this.startNode.getLongitudeDeg()],
-            [this.endNode.getLatitudeDeg(), this.endNode.getLongitudeDeg()]
+            [[this.startNode.getLatitudeDeg(),this.startNode.getLongitudeDeg()],
+            [this.endNode.getLatitudeDeg(), this.endNode.getLongitudeDeg()]]
         );
         return pointToLineDistance(pt,line, {units: 'meters'});
     }
@@ -126,7 +125,7 @@ export default class Line {
         if(this.bearing === undefined){
             let startNode = point([this.startNode.getLatitudeDeg(), this.startNode.getLongitudeDeg()]);
             let bearPoint;
-            if(this.lineLength <= configProperties.bearDist){
+            if(this.getLength() <= configProperties.bearDist){
                 bearPoint = point([this.endNode.getLatitudeDeg(), this.endNode.getLongitudeDeg()]);
             }
             else{
@@ -148,11 +147,11 @@ export default class Line {
         if(this.reverseBearing === undefined){
             let startNode = point([this.endNode.getLatitudeDeg(), this.endNode.getLongitudeDeg()]);
             let bearPoint;
-            if(this.lineLength <= configProperties.bearDist){
+            if(this.getLength() <= configProperties.bearDist){
                 bearPoint = point([this.startNode.getLatitudeDeg(), this.startNode.getLongitudeDeg()]);
             }
             else{
-                let bearDistLoc = this.getGeoCoordinateAlongLine(this.lineLength-configProperties.bearDist);
+                let bearDistLoc = this.getGeoCoordinateAlongLine(this.getLength()-configProperties.bearDist);
                 bearPoint = point([bearDistLoc.lat,bearDistLoc.long]);
             }
 

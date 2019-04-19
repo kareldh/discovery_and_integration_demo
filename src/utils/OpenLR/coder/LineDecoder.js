@@ -43,7 +43,6 @@ export default class LineDecoder{
                 Array.prototype.push.apply(candidates[i],nodes);
             }
             if(nodes.length === 0 || decoderProperties.alwaysUseProjections){
-                console.log("bereken projections "+nodes.length===0?"was zeker nodig":"was niet nodig");
                 //determine candidate line directly by projecting the LRP on a line not far away form the coordinate
                 let closeByLines = mapDataBase.findLinesCloseByCoordinate(LRPs[i].lat,LRPs[i].long,decoderProperties.dist);
                 if(closeByLines.length === 0 && nodes.length === 0){
@@ -51,9 +50,8 @@ export default class LineDecoder{
                 }
                 let projectedPoints = [];
                 closeByLines.forEach(function (line) {
-                    let location = line.measureAlongLine(LRPs[i].lat,LRPs[i].long);
-                    location.line = line;
-                    console.error(location);
+                    let location = line.line.measureAlongLine(LRPs[i].lat,LRPs[i].long);
+                    location.line = line.line;
                     projectedPoints.push(location);
                 });
                 Array.prototype.push.apply(candidates[i],projectedPoints);
@@ -68,11 +66,9 @@ export default class LineDecoder{
         for(let i=0;i<LRPs.length;i++){
             candidateLines[i] = [];
             //check the outgoing lines of the candidateNodes
-            candidateNodes[i].forEach((n)=>{
-                let node = n.node;
-                if(node.getID === undefined){
+            candidateNodes[i].forEach((node)=>{
+                if(node.node === undefined){
                     //the node is a projection point
-                    console.log("gebruik projection point");
                     let bearDiff = i===LRPs.length-1
                         ? Math.abs(node.line.getBearing()-LRPs[i].bearing)
                         : Math.abs(node.line.getReverseBearing()-LRPs[LRPs.length-1].bearing);
@@ -83,7 +79,7 @@ export default class LineDecoder{
                     }
                     // note: fow isn't hierarchical, so a difference can't be computed
                     if(bearDiff <= decoderProperties.bearDiff
-                        && frcDiff === undefined ? true : frcDiff <= decoderProperties.frcDiff){
+                        && (frcDiff === undefined ? true : frcDiff <= decoderProperties.frcDiff)){
                         //the bearing,frc and fow values are close so this line could be a good candidate
                         let candidate = {
                             line: node.line,
@@ -100,11 +96,10 @@ export default class LineDecoder{
                 else{
                     //the node exists in the database and possibly has multiple outgoing lines
                     let lines = i===LRPs.length-1
-                        ? node.getIncomingLines()
-                        : node.getOutgoingLines();
+                        ? node.node.getIncomingLines()
+                        : node.node.getOutgoingLines();
                     //for the last LRP, check the incoming lines
                     lines.forEach((line)=>{
-                        console.log(line.getID(),line.getBearing());
                         let bearDiff = i===LRPs.length-1
                             ? Math.abs(line.getReverseBearing()-LRPs[LRPs.length-1].bearing)
                             : Math.abs(line.getBearing()-LRPs[i].bearing);
@@ -114,7 +109,7 @@ export default class LineDecoder{
                             frcDiff = Math.abs(line.getFRC()-LRPs[i].frc);
                         }
                         if( bearDiff <= decoderProperties.bearDiff
-                            && frcDiff === undefined ? true : frcDiff <= decoderProperties.frcDiff){
+                            && (frcDiff === undefined ? true : frcDiff <= decoderProperties.frcDiff)){
                             //the bearing,frc and fow values are close so this line could be a good candidate
                             let candidate = {
                                 line: line,
@@ -124,19 +119,18 @@ export default class LineDecoder{
                                 projected: false,
                                 rating: undefined
                             };
-                            candidate.rating = LineDecoder.rateCandidateLine(candidate,node,LRPs[candidate.lrpIndex]);
+                            candidate.rating = LineDecoder.rateCandidateLine(candidate,node.node,LRPs[candidate.lrpIndex]);
                             candidateLines[i].push(candidate);
                         }
                     });
-                    //if no candidate line can be found for a location reference point, the decoder should
-                    //report an error and stop further processing
-                    if(candidateLines[i].length === 0){
-                        console.error(LRPs[i]);
-                        throw Error("No candidate lines found for LRP");
-                    }
                 }
             });
-            candidateNodes[i] = LineDecoder.sortLines(candidateNodes[i]);
+            //if no candidate line can be found for a location reference point, the decoder should
+            //report an error and stop further processing
+            if(candidateLines[i].length === 0){
+                throw Error("No candidate lines found for LRP");
+            }
+            LineDecoder.sortLines(candidateLines[i]);
         }
         return candidateLines;
     }
@@ -222,13 +216,13 @@ export default class LineDecoder{
                     prevEndChanged = true;
                 }
                 else{
-                    throw Error("No shortest path could be found between the given LRPs");
+                    throw Error("No shortest path could be found between the given LRPs with indexes " +lrpIndex +" and " + (lrpIndex+1));
                 }
             }
             tries.count++;
         }
         if(shortestPath === undefined || shortestPath.length === undefined){
-            throw Error("could not construct a shortest path in the given amount of tries");
+            throw Error("could not construct a shortest path in the given amount of tries between the given LRPs with indexes " +lrpIndex +" and " + (lrpIndex+1));
         }
         shortestPaths[lrpIndex] = shortestPath;
         if(prevEndChanged && lrpIndex-1 >= 0){

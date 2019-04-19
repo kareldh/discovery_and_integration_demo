@@ -21,6 +21,11 @@ export default class OSMIntegration{
                     openLRLine.frc = OSMIntegration.getFRC(ways[id]);
                     openLRLine.fow = OSMIntegration.getFRC(ways[id]);
                     openLRLines[openLRLine.getID()] = openLRLine;
+                    // since OSM doesn't have directed lines for it's roads, we will add the line in the other direction, so it is always present both as an input line and an output line in a node
+                    let reverseOpenLRLine = new Line(id+"_"+ways[id].nd[i]["@_ref"]+"_1",openLRNodes[ways[id].nd[i+1]["@_ref"]],openLRNodes[ways[id].nd[i]["@_ref"]]);
+                    reverseOpenLRLine.frc = OSMIntegration.getFRC(ways[id]);
+                    reverseOpenLRLine.fow = OSMIntegration.getFRC(ways[id]);
+                    openLRLines[reverseOpenLRLine.getID()] = reverseOpenLRLine;
                 }
             }
         }

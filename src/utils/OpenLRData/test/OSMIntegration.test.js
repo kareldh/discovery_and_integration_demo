@@ -26,7 +26,7 @@ test('initMapDataBase initialization',(done)=>{
 });
 
 test('full osm integration test',(done)=>{
-    expect.assertions(4);
+    expect.assertions(3);
     let startData = generateStraightLaneTestData();
     let {nodes,lines} = mapNodesLinesToID(startData.nodes,startData.lines);
     let mapDataBase = new MapDataBase(lines,nodes);
