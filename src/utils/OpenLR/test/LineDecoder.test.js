@@ -20,11 +20,24 @@ test('decoder 4 LRPs no offsets perfect candidates',()=>{
 });
 
 test('findCandidatesOrProjections 4 LRPs no offsets perfect candidates',()=>{
+    let decoderProperties = {
+        dist: 50,    //maximum distance of a candidate node to a LRP
+        bearDiff: 15, //maximum difference between the bearing of a candidate node and that of a LRP
+        frcDiff: 3, //maximum difference between the FRC of a candidate node and that of a LRP
+        lfrcnpDiff: 2, //maximum difference between the lowest FRC until next point of a candidate node and that of a LRP
+        distanceToNextDiff: 100, //maximum difference between the found distance between 2 LRPs and the given distanceToNext of the first LRP
+        alwaysUseProjections: false,
+        distMultiplier: 40,
+        frcMultiplier: 10,
+        fowMultiplier: 20,
+        bearMultiplier: 30,
+        maxSPSearchRetries: 50
+    };
     let network = generateRealisticLengthTestNetwork();
     let data = mapNodesLinesToID(network.nodes,network.lines);
     let mapDataBase = new MapDataBase(data.lines,data.nodes);
     let LRPs = LineEncoder.encode(mapDataBase,[network.lines[26],network.lines[7],network.lines[19],network.lines[23]],0,0);
-    let candidates = LineDecoder.findCandidatesOrProjections(mapDataBase,LRPs.LRPs);
+    let candidates = LineDecoder.findCandidatesOrProjections(mapDataBase,LRPs.LRPs,decoderProperties);
     expect(candidates[0].length).toEqual(1);
     expect(candidates[0][0].node.getID()).toEqual(network.nodes[8].getID());
     expect(candidates[0][0].dist).toEqual(0);
@@ -40,6 +53,19 @@ test('findCandidatesOrProjections 4 LRPs no offsets perfect candidates',()=>{
 });
 
 test('rateCandidateLine 4 LRPs no offsets perfect candidates',()=>{
+    let decoderProperties = {
+        dist: 50,    //maximum distance of a candidate node to a LRP
+        bearDiff: 15, //maximum difference between the bearing of a candidate node and that of a LRP
+        frcDiff: 3, //maximum difference between the FRC of a candidate node and that of a LRP
+        lfrcnpDiff: 2, //maximum difference between the lowest FRC until next point of a candidate node and that of a LRP
+        distanceToNextDiff: 100, //maximum difference between the found distance between 2 LRPs and the given distanceToNext of the first LRP
+        alwaysUseProjections: false,
+        distMultiplier: 40,
+        frcMultiplier: 10,
+        fowMultiplier: 20,
+        bearMultiplier: 30,
+        maxSPSearchRetries: 50
+    };
     let network = generateRealisticLengthTestNetwork();
     let data = mapNodesLinesToID(network.nodes,network.lines);
     let mapDataBase = new MapDataBase(data.lines,data.nodes);
@@ -51,18 +77,31 @@ test('rateCandidateLine 4 LRPs no offsets perfect candidates',()=>{
         lrpIndex: 0,
         projected: false,
         rating: undefined
-    },network.nodes[8],LRPs.LRPs[0]);
+    },network.nodes[8],LRPs.LRPs[0],decoderProperties);
     expect(rating).not.toEqual(0);
     console.log(rating); //todo, wat moet dit precies uitkomen
 });
 
 test('findCandidateLines 4 LRPs no offsets extended perfect candidates',()=>{
+    let decoderProperties = {
+        dist: 50,    //maximum distance of a candidate node to a LRP
+        bearDiff: 15, //maximum difference between the bearing of a candidate node and that of a LRP
+        frcDiff: 3, //maximum difference between the FRC of a candidate node and that of a LRP
+        lfrcnpDiff: 2, //maximum difference between the lowest FRC until next point of a candidate node and that of a LRP
+        distanceToNextDiff: 100, //maximum difference between the found distance between 2 LRPs and the given distanceToNext of the first LRP
+        alwaysUseProjections: false,
+        distMultiplier: 40,
+        frcMultiplier: 10,
+        fowMultiplier: 20,
+        bearMultiplier: 30,
+        maxSPSearchRetries: 50
+    };
     let network = generateRealisticLengthTestNetwork();
     let data = mapNodesLinesToID(network.nodes,network.lines);
     let mapDataBase = new MapDataBase(data.lines,data.nodes);
     let LRPs = LineEncoder.encode(mapDataBase,[network.lines[26],network.lines[7],network.lines[19],network.lines[23]],0,0);
     let candidateNodes = [[{node: network.nodes[8], dist: 0}], [{node: network.nodes[7], dist: 0}], [{node: network.nodes[6], dist: 0}], [{node: network.nodes[5], dist: 0}]];
-    let candidateLines = LineDecoder.findCandidateLines(LRPs.LRPs,candidateNodes);
+    let candidateLines = LineDecoder.findCandidateLines(LRPs.LRPs,candidateNodes,decoderProperties);
     expect(candidateLines[0].length).toEqual(1);
     expect(candidateLines[0][0].line.getID()).toEqual(network.lines[9].getID());
     expect(candidateLines[0][0].bearDiff).toEqual(0);

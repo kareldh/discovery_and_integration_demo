@@ -8,16 +8,16 @@ export default class LineDecoder{
 
     static decode(mapDataBase,LRPs,posOffset,negOffset){
         // 2: For each location reference point find candidate nodes
-        let candidateNodes = LineDecoder.findCandidatesOrProjections(mapDataBase,LRPs);
+        let candidateNodes = LineDecoder.findCandidatesOrProjections(mapDataBase,LRPs,decoderProperties);
 
         // 3: For each location reference point find candidate lines
         // 4: Rate candidate lines for each location reference point
-        let candidateLines = LineDecoder.findCandidateLines(LRPs,candidateNodes);
+        let candidateLines = LineDecoder.findCandidateLines(LRPs,candidateNodes,decoderProperties);
 
         // 5: Determine shortest-path(s) between two subsequent location reference points
         // 6: Check validity of the calculated shortest-path(s)
         // 7: Concatenate shortest-path(s) to form the location
-        let concatShortestPath = LineDecoder.determineShortestPaths(candidateLines,LRPs);
+        let concatShortestPath = LineDecoder.determineShortestPaths(candidateLines,LRPs,decoderProperties);
 
         // 7: and trim according to the offsets
         let offsets = {posOffset: posOffset, negOffset: negOffset};
@@ -30,7 +30,7 @@ export default class LineDecoder{
         }
     }
 
-    static findCandidatesOrProjections(mapDataBase,LRPs){
+    static findCandidatesOrProjections(mapDataBase,LRPs,decoderProperties){
         let candidates = [];
         for(let i=0;i<LRPs.length;i++){
             candidates[i] = [];
@@ -61,7 +61,7 @@ export default class LineDecoder{
     }
 
     //lat, long and bearing should never be undefined
-    static findCandidateLines(LRPs,candidateNodes){
+    static findCandidateLines(LRPs,candidateNodes,decoderProperties){
         let candidateLines = [];
         for(let i=0;i<LRPs.length;i++){
             candidateLines[i] = [];
@@ -89,7 +89,7 @@ export default class LineDecoder{
                             projected: true,
                             rating: undefined
                         };
-                        candidate.rating = LineDecoder.rateCandidateLine(candidate,node,LRPs[candidate.lrpIndex]);
+                        candidate.rating = LineDecoder.rateCandidateLine(candidate,node,LRPs[candidate.lrpIndex],decoderProperties);
                         candidateLines[i].push(candidate);
                     }
                 }
@@ -119,7 +119,7 @@ export default class LineDecoder{
                                 projected: false,
                                 rating: undefined
                             };
-                            candidate.rating = LineDecoder.rateCandidateLine(candidate,node.node,LRPs[candidate.lrpIndex]);
+                            candidate.rating = LineDecoder.rateCandidateLine(candidate,node.node,LRPs[candidate.lrpIndex],decoderProperties);
                             candidateLines[i].push(candidate);
                         }
                     });
@@ -143,7 +143,7 @@ export default class LineDecoder{
         });
     }
 
-    static rateCandidateLine(candidateLine,matchingNode,lrp){
+    static rateCandidateLine(candidateLine,matchingNode,lrp,decoderProperties){
         let rating = 0;
         let maxRating = 0;
         // the start node, end node for the last location reference point or projection point
@@ -175,7 +175,7 @@ export default class LineDecoder{
         return rating/maxRating;
     }
 
-    static findShortestPath(startLine,endLine,lfrcnp){
+    static findShortestPath(startLine,endLine,lfrcnp,decoderProperties){
         if(startLine.getID()===endLine.getID()){
             return [startLine];
         }
@@ -184,7 +184,7 @@ export default class LineDecoder{
         }
     }
 
-    static calcSPforLRP(candidateLines,candidateIndexes,lrpIndex,tries,shortestPaths,LRPs){
+    static calcSPforLRP(candidateLines,candidateIndexes,lrpIndex,tries,shortestPaths,LRPs,decoderProperties){
         let shortestPath = undefined;
         if(candidateIndexes[lrpIndex]===undefined){
             candidateIndexes[lrpIndex] = 0;
@@ -199,7 +199,7 @@ export default class LineDecoder{
             || shortestPath.length === undefined
             || Math.abs(distanceBetweenLRP-LRPs[lrpIndex].distanceToNext) >= decoderProperties.distanceToNextDiff) // check validity (step 6 of decoding)
             && tries.count < decoderProperties.maxSPSearchRetries){
-            shortestPath = LineDecoder.findShortestPath(candidateLines[lrpIndex][candidateIndexes[lrpIndex]].line,candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]].line,LRPs[lrpIndex].lfrcnp);
+            shortestPath = LineDecoder.findShortestPath(candidateLines[lrpIndex][candidateIndexes[lrpIndex]].line,candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]].line,LRPs[lrpIndex].lfrcnp,decoderProperties);
             distanceBetweenLRP = shortestPath.length+candidateLines[lrpIndex][candidateIndexes[lrpIndex]].line.getLength();
             if(lrpIndex === LRPs.length-2){
                 distanceBetweenLRP += candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]].line.getLength();
@@ -227,16 +227,16 @@ export default class LineDecoder{
         shortestPaths[lrpIndex] = shortestPath;
         if(prevEndChanged && lrpIndex-1 >= 0){
             //we changed the start line of for this LRP, which means the end line of the last LRP is changed and it's shortest path should be recalculated
-            shortestPaths[lrpIndex-1] = LineDecoder.calcSPforLRP(candidateLines,candidateIndexes,lrpIndex-1,tries,shortestPaths,LRPs);
+            shortestPaths[lrpIndex-1] = LineDecoder.calcSPforLRP(candidateLines,candidateIndexes,lrpIndex-1,tries,shortestPaths,LRPs,decoderProperties);
         }
     }
 
-    static determineShortestPaths(candidateLines,LRPs){
+    static determineShortestPaths(candidateLines,LRPs,decoderProperties){
         let shortestPaths = [];
         let candidateIndexes = [];
         let tries = {count: 0};
         for(let i=0;i<candidateLines.length-1;i++){
-            LineDecoder.calcSPforLRP(candidateLines,candidateIndexes,i,tries,shortestPaths,LRPs);
+            LineDecoder.calcSPforLRP(candidateLines,candidateIndexes,i,tries,shortestPaths,LRPs,decoderProperties);
         }
 
         return LineDecoder.concatSP(shortestPaths, candidateLines, candidateIndexes);
@@ -259,7 +259,7 @@ export default class LineDecoder{
 
     static trimAccordingToOffsets(concatShortestPath,offsets){
         if(concatShortestPath.length === 0){
-            throw "can't trim empty path";
+            throw Error("can't trim empty path");
         }
         let firstLine = concatShortestPath[0];
         while(offsets.posOffset > 0 && firstLine !== undefined && firstLine.getLength()<=offsets.posOffset){
