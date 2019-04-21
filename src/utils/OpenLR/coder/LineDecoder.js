@@ -1,12 +1,10 @@
-import {decoderProperties} from "./CoderSettings";
-import {calcDistance} from "./GeoFunctions";
 import {fowEnum, frcEnum} from "../map/Enum";
 import Dijkstra from "./Dijkstra";
 
 export default class LineDecoder{
 
 
-    static decode(mapDataBase,LRPs,posOffset,negOffset){
+    static decode(mapDataBase,LRPs,posOffset,negOffset,decoderProperties){
         // 2: For each location reference point find candidate nodes
         let candidateNodes = LineDecoder.findCandidatesOrProjections(mapDataBase,LRPs,decoderProperties);
 
@@ -24,7 +22,7 @@ export default class LineDecoder{
         LineDecoder.trimAccordingToOffsets(concatShortestPath,offsets);
 
         return {
-            lines: concatShortestPath,
+            lines: concatShortestPath.shortestPath,
             posOffset: offsets.posOffset,
             negOffset: offsets.negOffset
         }
@@ -51,8 +49,19 @@ export default class LineDecoder{
                 let projectedPoints = [];
                 closeByLines.forEach(function (line) {
                     let location = line.line.measureAlongLine(LRPs[i].lat,LRPs[i].long);
-                    location.line = line.line;
-                    projectedPoints.push(location);
+                    if(location.lat === line.line.getStartNode().getLatitudeDeg()
+                        || location.lat === line.line.getEndNode().getLatitudeDeg()
+                        || location.long === line.line.getStartNode().getLongitudeDeg()
+                        || location.long === line.line.getEndNode().getLongitudeDeg()
+                    ){
+                        console.log("The found projection point is the same as the start or end node of the line, so it should already be covered by the findNodesCloseByCoordinate function.");
+                    }
+                    else{
+                        location.line = line.line;
+                        location.dist = line.dist;
+                        projectedPoints.push(location);
+                    }
+
                 });
                 Array.prototype.push.apply(candidates[i],projectedPoints);
             }
@@ -70,8 +79,8 @@ export default class LineDecoder{
                 if(node.node === undefined){
                     //the node is a projection point
                     let bearDiff = i===LRPs.length-1
-                        ? Math.abs(node.line.getBearing()-LRPs[i].bearing)
-                        : Math.abs(node.line.getReverseBearing()-LRPs[LRPs.length-1].bearing);
+                        ? Math.abs(node.line.getReverseBearing()-LRPs[LRPs.length-1].bearing)
+                        : Math.abs(node.line.getBearing()-LRPs[i].bearing);
                     let frcDiff;
                     if(node.line.getFRC() !== undefined && node.line.getFRC() >= frcEnum.FRC_0
                         && node.line.getFRC() <= frcEnum.FRC_7 && LRPs[i].frc !== undefined){
@@ -87,9 +96,12 @@ export default class LineDecoder{
                             frcDiff: frcDiff,
                             lrpIndex: i,
                             projected: true,
-                            rating: undefined
+                            rating: undefined,
+                            // if the node is projected, not the full length of the line should be taken in the calculation of the distance between LRPs,
+                            // but only to (or from) the location of the projected point
+                            distToProjection: node.line.getStartNode().getDistance(node.lat,node.long)
                         };
-                        candidate.rating = LineDecoder.rateCandidateLine(candidate,node,LRPs[candidate.lrpIndex],decoderProperties);
+                        candidate.rating = LineDecoder.rateCandidateLine(candidate,node.dist,LRPs[candidate.lrpIndex],decoderProperties);
                         candidateLines[i].push(candidate);
                     }
                 }
@@ -119,7 +131,7 @@ export default class LineDecoder{
                                 projected: false,
                                 rating: undefined
                             };
-                            candidate.rating = LineDecoder.rateCandidateLine(candidate,node.node,LRPs[candidate.lrpIndex],decoderProperties);
+                            candidate.rating = LineDecoder.rateCandidateLine(candidate,node.dist,LRPs[candidate.lrpIndex],decoderProperties);
                             candidateLines[i].push(candidate);
                         }
                     });
@@ -143,12 +155,13 @@ export default class LineDecoder{
         });
     }
 
-    static rateCandidateLine(candidateLine,matchingNode,lrp,decoderProperties){
+    static rateCandidateLine(candidateLine,distance,lrp,decoderProperties){
         let rating = 0;
         let maxRating = 0;
         // the start node, end node for the last location reference point or projection point
         // shall be as close as possible to the coordinates of the location reference point
-        let distance = Math.abs(calcDistance(matchingNode.lat,matchingNode.long,lrp.lat,lrp.long));
+        // let distance = Math.abs(calcDistance(matchingNode.lat,matchingNode.long,lrp.lat,lrp.long));
+        distance = Math.abs(distance);
         let distanceRating = distance/decoderProperties.dist;
         rating += distanceRating * decoderProperties.distMultiplier;
         maxRating += decoderProperties.distMultiplier;
@@ -176,8 +189,11 @@ export default class LineDecoder{
     }
 
     static findShortestPath(startLine,endLine,lfrcnp,decoderProperties){
+        if(startLine.startNode === endLine.endNode){
+            console.log("The first LRP starts in the same point where the second LRP ends. If no valid shortest path is found, retry with projections.");
+        }
         if(startLine.getID()===endLine.getID()){
-            return [startLine];
+            return {lines: [], length: 0};
         }
         else{
             return Dijkstra.shortestPath(startLine.getEndNode(),endLine.getStartNode(),{lfrcnp: lfrcnp, lfrcnpDiff: decoderProperties.lfrcnpDiff});
@@ -195,25 +211,59 @@ export default class LineDecoder{
         let prevEndChanged = false;
         let prevEndCandidateIndex = candidateIndexes[lrpIndex+1];
         let distanceBetweenLRP = undefined;
-        while((shortestPath === undefined
+
+        let distanceBetweenLRPCompensation = 0;
+        if(candidateLines[lrpIndex][candidateIndexes[lrpIndex]].distToProjection !== undefined){
+            //this line was found by using a projection, the total distance between this LRP and the next should be lowered
+            // by the length at which the projection can be found
+            distanceBetweenLRPCompensation = (-1 * candidateLines[lrpIndex][candidateIndexes[lrpIndex]].distToProjection);
+        }
+        if(candidateLines[lrpIndex+1] !== undefined
+            && candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]].distToProjection !== undefined){
+            //next line was found by using a projection, the total distance between this LRP and the next should be heightened
+            // by the length at which the projection can be found
+            distanceBetweenLRPCompensation = (+1 * candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]].distToProjection);
+            //if the next line was the same as this line, the length of the line should be subtracted
+            if(candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]].line.getID() === candidateLines[lrpIndex][candidateIndexes[lrpIndex]].line.getID()){
+                distanceBetweenLRPCompensation -= candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]].line.getLength();
+            }
+        }
+
+        while((shortestPath === undefined   //first time shortestPath is always undefined, so this loop runs minimum 1 time
             || shortestPath.length === undefined
-            || Math.abs(distanceBetweenLRP-LRPs[lrpIndex].distanceToNext) >= decoderProperties.distanceToNextDiff) // check validity (step 6 of decoding)
+            || Math.abs(distanceBetweenLRP+distanceBetweenLRPCompensation-LRPs[lrpIndex].distanceToNext) >= decoderProperties.distanceToNextDiff) // check validity (step 6 of decoding)
             && tries.count < decoderProperties.maxSPSearchRetries){
             shortestPath = LineDecoder.findShortestPath(candidateLines[lrpIndex][candidateIndexes[lrpIndex]].line,candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]].line,LRPs[lrpIndex].lfrcnp,decoderProperties);
             distanceBetweenLRP = shortestPath.length+candidateLines[lrpIndex][candidateIndexes[lrpIndex]].line.getLength();
-            if(lrpIndex === LRPs.length-2){
+
+            if(lrpIndex === LRPs.length-2 && candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]].line.getID() !== candidateLines[lrpIndex][candidateIndexes[lrpIndex]].line.getID()){
                 distanceBetweenLRP += candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]].line.getLength();
             }
+
             if(shortestPath === undefined
                 || shortestPath.length === undefined
-                || Math.abs(distanceBetweenLRP-LRPs[lrpIndex].distanceToNext) >= decoderProperties.distanceToNextDiff){
+                || Math.abs(distanceBetweenLRP+distanceBetweenLRPCompensation-LRPs[lrpIndex].distanceToNext) >= decoderProperties.distanceToNextDiff){
                 if(candidateIndexes[lrpIndex+1] < candidateLines[lrpIndex+1].length-1){
                     candidateIndexes[lrpIndex+1]++;
+                    if(candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]].distToProjection !== undefined){
+                        //next line was found by using a projection, the total distance between this LRP and the next should be heightened
+                        // by the length at which the projection can be found
+                        distanceBetweenLRPCompensation = (+1 * candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]].distToProjection);
+                        //if the next line was the same as this line, the length of the line should be subtracted
+                        if(candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]].line.getID() !== candidateLines[lrpIndex][candidateIndexes[lrpIndex]].line.getID()){
+                            distanceBetweenLRPCompensation -= candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]].line.getLength();
+                        }
+                    }
                 }
                 else if(candidateIndexes[lrpIndex] < candidateLines[lrpIndex].length-1){
                     candidateIndexes[lrpIndex]++;
                     candidateIndexes[lrpIndex+1] = prevEndCandidateIndex;
                     prevEndChanged = true;
+                    if(candidateLines[lrpIndex][candidateIndexes[lrpIndex]].distToProjection !== undefined){
+                        //this line was found by using a projection, the total distance between this LRP and the next should be lowered
+                        // by the length at which the projection can be found
+                        distanceBetweenLRPCompensation = (-1 * candidateLines[lrpIndex][candidateIndexes[lrpIndex]].distToProjection);
+                    }
                 }
                 else{
                     throw Error("No shortest path could be found between the given LRPs with indexes " +lrpIndex +" and " + (lrpIndex+1));
@@ -244,34 +294,53 @@ export default class LineDecoder{
 
     static concatSP(shortestPaths,candidateLines,candidateIndexes){
         if(shortestPaths.length !== candidateLines.length-1){
-            throw "length of shortestPaths !== length of candidateLines-1";
+            throw Error("length of shortestPaths !== length of candidateLines-1");
         }
         let concatenatedShortestPath = [];
         for(let i=0;i<shortestPaths.length;i++){
-            concatenatedShortestPath.push(candidateLines[i][candidateIndexes[i]].line); //add the startLine of the LRP (endline if last LRP)
+            if(concatenatedShortestPath.length === 0 || candidateLines[i][candidateIndexes[i]].line.getID() !== concatenatedShortestPath[concatenatedShortestPath.length-1].getID()){
+                // if the line to add isn't the same as the last line added (could be the same if two LRPs are mapped or projected on the same line)
+                concatenatedShortestPath.push(candidateLines[i][candidateIndexes[i]].line); //add the startLine of the LRP (endline if last LRP)
+            }
             for(let j=0;j<shortestPaths[i].lines.length;j++){
                 concatenatedShortestPath.push(shortestPaths[i].lines[j])
             }
         }
-        concatenatedShortestPath.push(candidateLines[candidateLines.length-1][candidateIndexes[candidateIndexes.length-1]].line);
-        return concatenatedShortestPath;
+        if(concatenatedShortestPath.length === 0 || candidateLines[candidateLines.length-1][candidateIndexes[candidateIndexes.length-1]].line.getID() !== concatenatedShortestPath[concatenatedShortestPath.length-1].getID()){
+            // if the line to add isn't the same as the last line added (could be the same if two LRPs are mapped or projected on the same line)
+            concatenatedShortestPath.push(candidateLines[candidateLines.length-1][candidateIndexes[candidateIndexes.length-1]].line); // add the line of the last LRP
+        }
+        return {
+            shortestPath: concatenatedShortestPath,
+            posProjDist: candidateLines[0][candidateIndexes[0]].distToProjection === undefined
+                ? 0
+                : candidateLines[0][candidateIndexes[0]].distToProjection,
+            negProjDist: candidateLines[candidateLines.length-1][candidateIndexes[candidateIndexes.length-1]].distToProjection === undefined
+                ? 0
+                : candidateLines[candidateLines.length-1][candidateIndexes[candidateIndexes.length-1]].line.getLength() - candidateLines[candidateLines.length-1][candidateIndexes[candidateIndexes.length-1]].distToProjection
+        };
     }
 
     static trimAccordingToOffsets(concatShortestPath,offsets){
-        if(concatShortestPath.length === 0){
+        offsets.posOffset+=concatShortestPath.posProjDist;
+        offsets.negOffset+=concatShortestPath.negProjDist;
+        if(concatShortestPath.shortestPath.length === 0){
             throw Error("can't trim empty path");
         }
-        let firstLine = concatShortestPath[0];
+        let firstLine = concatShortestPath.shortestPath[0];
         while(offsets.posOffset > 0 && firstLine !== undefined && firstLine.getLength()<=offsets.posOffset){
             offsets.posOffset  -= firstLine.getLength();
-            concatShortestPath.shift();
-            firstLine = concatShortestPath[0];
+            concatShortestPath.shortestPath.shift();
+            firstLine = concatShortestPath.shortestPath[0];
         }
-        let lastLine = concatShortestPath[concatShortestPath.length-1];
+        let lastLine = concatShortestPath.shortestPath[concatShortestPath.shortestPath.length-1];
         while(offsets.negOffset > 0 && lastLine !== undefined && lastLine.getLength()<=offsets.negOffset){
             offsets.negOffset -= lastLine.getLength();
-            concatShortestPath.pop();
-            lastLine = concatShortestPath[concatShortestPath.length-1];
+            concatShortestPath.shortestPath.pop();
+            lastLine = concatShortestPath.shortestPath[concatShortestPath.shortestPath.length-1];
+        }
+        if(concatShortestPath.shortestPath.length === 0){
+            throw Error("The remaining shortest path after trimming according to offsets is empty.");
         }
     }
 }

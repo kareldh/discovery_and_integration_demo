@@ -50,12 +50,12 @@ export default class Line {
     getLength(){
         if(this.lineLength === undefined && this.startNode !== undefined && this.endNode !== undefined){
             let from = point([
-                this.startNode.getLatitudeDeg(),
-                this.startNode.getLongitudeDeg()
+                this.startNode.getLongitudeDeg(),
+                this.startNode.getLatitudeDeg()
             ]);
             let to = point([
-                this.endNode.getLatitudeDeg(),
-                this.endNode.getLongitudeDeg()
+                this.endNode.getLongitudeDeg(),
+                this.endNode.getLatitudeDeg()
             ]);
             this.lineLength = Math.round(distance(from,to,{units: "meters"})); //work with integer values
         }
@@ -88,56 +88,54 @@ export default class Line {
 
     getGeoCoordinateAlongLine(distanceAlong){
         let line = lineString([
-            [this.startNode.getLatitudeDeg(),this.startNode.getLongitudeDeg()],
-            [this.endNode.getLatitudeDeg(), this.endNode.getLongitudeDeg()]
+            [this.startNode.getLongitudeDeg(),this.startNode.getLatitudeDeg()],
+            [this.endNode.getLongitudeDeg(),this.endNode.getLatitudeDeg()]
         ]);
         let distAlong = along(line,distanceAlong,{units: 'meters'});
         //return distAlong.geometry;
         return {
-            lat: distAlong.geometry.coordinates[0],
-            long: distAlong.geometry.coordinates[1]
+            lat: distAlong.geometry.coordinates[1],
+            long: distAlong.geometry.coordinates[0]
         }
     }
 
     distanceToPoint(lat,long){
-        let pt = point([lat,long]);
+        let pt = point([long,lat]);
         let line = lineString(
-            [[this.startNode.getLatitudeDeg(),this.startNode.getLongitudeDeg()],
-            [this.endNode.getLatitudeDeg(), this.endNode.getLongitudeDeg()]]
+            [[this.startNode.getLongitudeDeg(),this.startNode.getLatitudeDeg()],
+            [this.endNode.getLongitudeDeg(),this.endNode.getLatitudeDeg()]]
         );
         return pointToLineDistance(pt,line, {units: 'meters'});
     }
 
     measureAlongLine(lat,long){
-        let pt = point([lat,long]);
+        let pt = point([long,lat]);
         let line = lineString([
-            [this.startNode.getLatitudeDeg(),this.startNode.getLongitudeDeg()],
-            [this.endNode.getLatitudeDeg(), this.endNode.getLongitudeDeg()]
+            [this.startNode.getLongitudeDeg(),this.startNode.getLatitudeDeg()],
+            [this.endNode.getLongitudeDeg(),this.endNode.getLatitudeDeg()]
         ]);
         let snapped = nearestPointOnLine(line,pt,{units: 'meters'});
         return {
-            lat: snapped.geometry.coordinates[0],
-            long: snapped.geometry.coordinates[1]
+            lat: snapped.geometry.coordinates[1],
+            long: snapped.geometry.coordinates[0]
         }
     }
 
     getBearing(){
         if(this.bearing === undefined){
-            let startNode = point([this.startNode.getLatitudeDeg(), this.startNode.getLongitudeDeg()]);
+            let startNode = point([this.startNode.getLongitudeDeg(),this.startNode.getLatitudeDeg()]);
             let bearPoint;
             if(this.getLength() <= configProperties.bearDist){
-                bearPoint = point([this.endNode.getLatitudeDeg(), this.endNode.getLongitudeDeg()]);
+                bearPoint = point([this.endNode.getLongitudeDeg(),this.endNode.getLatitudeDeg()]);
             }
             else{
                 let bearDistLoc = this.getGeoCoordinateAlongLine(configProperties.bearDist);
-                bearPoint = point([bearDistLoc.lat,bearDistLoc.long]);
+                bearPoint = point([bearDistLoc.long,bearDistLoc.lat]);
             }
 
             let calcBear = bearing(startNode, bearPoint);
-            if(calcBear < 0){
-                // bear is always positive, counterclockwise
-                calcBear += 360;
-            }
+            // bear is always positive, counterclockwise
+            calcBear = (calcBear+360.0)%360.0;
             this.bearing = calcBear;
         }
         return this.bearing;
@@ -145,21 +143,19 @@ export default class Line {
 
     getReverseBearing(){
         if(this.reverseBearing === undefined){
-            let startNode = point([this.endNode.getLatitudeDeg(), this.endNode.getLongitudeDeg()]);
+            let startNode = point([this.endNode.getLongitudeDeg(),this.endNode.getLatitudeDeg()]);
             let bearPoint;
             if(this.getLength() <= configProperties.bearDist){
-                bearPoint = point([this.startNode.getLatitudeDeg(), this.startNode.getLongitudeDeg()]);
+                bearPoint = point([this.startNode.getLongitudeDeg(),this.startNode.getLatitudeDeg()]);
             }
             else{
                 let bearDistLoc = this.getGeoCoordinateAlongLine(this.getLength()-configProperties.bearDist);
-                bearPoint = point([bearDistLoc.lat,bearDistLoc.long]);
+                bearPoint = point([bearDistLoc.long,bearDistLoc.lat]);
             }
 
             let calcBear = bearing(startNode, bearPoint);
-            if(calcBear < 0){
-                // bear is always positive, counterclockwise
-                calcBear += 360;
-            }
+            // bear is always positive, counterclockwise
+            calcBear = (calcBear+360.0)%360.0;
             this.reverseBearing = calcBear;
         }
         return this.reverseBearing;

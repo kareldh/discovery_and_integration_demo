@@ -28,7 +28,7 @@ export default class LRPNodeHelper{
                 bearing = lrpLines[i].getBearing();
                 lfrcnp = properties.lfrcnp;
                 distanceToNext = lrpLines[i].getLength() + properties.pathLength;
-                if(i === lrpLines.length-2){
+                if(i === lrpLines.length-2 && lrpLines[lrpLines.length-2].getID() !== lrpLines[lrpLines.length-1].getID()){
                     distanceToNext+=lrpLines[lrpLines.length-1].getLength();
                 }
             }
@@ -60,16 +60,19 @@ export default class LRPNodeHelper{
             let i = 0;
             let pathLength = 0;
             let leastFRCtillNextPoint = frcEnum.FRC_0;
+            let frcIsDefined = false;
             while(i < shortestPath.length && shortestPath[i].getStartNode() !== nextNode){
                 pathLength += shortestPath[i].getLength();
                 if(shortestPath[i].getFRC() !== undefined && shortestPath[i].getFRC() > leastFRCtillNextPoint){
                     leastFRCtillNextPoint = shortestPath[i].getFRC();
+                    frcIsDefined = true;
                 }
                 i++;
             }
+            console.log(pathLength);
             return {
                 pathLength: pathLength,
-                lfrcnp: leastFRCtillNextPoint
+                lfrcnp: frcIsDefined ? leastFRCtillNextPoint : frcEnum.FRC_7
             }
         }
 

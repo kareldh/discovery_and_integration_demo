@@ -59,12 +59,12 @@ export default class Node{
 
     getDistance(lat,long){
         let from = point([
-           this.lat,
-           this.long
+            this.long,
+            this.lat
         ]);
         let to = point([
-           lat,
-           long
+            long,
+            lat
         ]);
         return distance(from,to,{units: "meters"});
     }
