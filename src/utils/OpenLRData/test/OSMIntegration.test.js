@@ -416,7 +416,7 @@ test('osm integration findCandidateLines 50 dist',(done)=>{
 });
 
 test('osm integration findCandidateLines 50 dist always project',(done)=>{
-    expect.assertions(6);
+    expect.assertions(14);
     let decoderProperties = {
         dist: 50,    //maximum distance of a candidate node to a LRP
         bearDiff: 60, //maximum difference between the bearing of a candidate node and that of a LRP
@@ -452,13 +452,15 @@ test('osm integration findCandidateLines 50 dist always project',(done)=>{
                         expect(candidateLines[0][0].projected).toEqual(true);
                         expect(candidateLines[0][1].line.getID()).toEqual("4579317_28929725_1");
                         expect(candidateLines[0][1].projected).toEqual(false);
-                        expect(candidateLines[1].length).toEqual(3);
+                        expect(candidateLines[1].length).toEqual(4);
                         expect(candidateLines[1][0].line.getID()).toEqual("4579317_28929725_1");
                         expect(candidateLines[1][0].projected).toEqual(true);
                         expect(candidateLines[1][1].line.getID()).toEqual("211184913_28929726_1");
                         expect(candidateLines[1][1].projected).toEqual(false);
                         expect(candidateLines[1][2].line.getID()).toEqual("51356773_28929726_1");
                         expect(candidateLines[1][2].projected).toEqual(false);
+                        expect(candidateLines[1][3].line.getID()).toEqual("7940936_28929726");
+                        expect(candidateLines[1][3].projected).toEqual(true);
                         done();
                     })})})});
 });

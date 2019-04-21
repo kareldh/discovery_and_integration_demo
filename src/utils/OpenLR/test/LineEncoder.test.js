@@ -158,10 +158,11 @@ test('encode 4 lines with expansion and invalid neg offset',()=>{
 test('checkValidityAndAdjustOffsets with end adjustments',()=>{
     let startData = generateStraightLaneTestData();
     let locLines = startData.doubleLineLane.locationLines;
+    console.log(locLines[1].getLength());
     let offsets = {posOffset: 5, negOffset: 10};
     let expected = locLines[0];
     LineEncoder.checkValidityAndAdjustOffsets(locLines,offsets);
-    expect(offsets).toEqual({posOffset:5,negOffset:4});
+    expect(offsets).toEqual({posOffset:5,negOffset:6});
     expect(locLines).toEqual([expected]);
 });
 
@@ -177,10 +178,11 @@ test('checkValidityAndAdjustOffsets without adjustments',()=>{
 test('checkValidityAndAdjustOffsets with start adjustments',()=>{
     let startData = generateStraightLaneTestData();
     let locLines = startData.doubleLineLane.locationLines;
-    let offsets = {posOffset: 27, negOffset: 3};
+    console.log(locLines[0].getLength());
+    let offsets = {posOffset: 17, negOffset: 2};
     let expected = locLines[1];
     LineEncoder.checkValidityAndAdjustOffsets(locLines,offsets);
-    expect(offsets).toEqual({posOffset:1,negOffset:3});
+    expect(offsets).toEqual({posOffset:1,negOffset:2});
     expect(locLines).toEqual([expected]);
 });
 
@@ -210,7 +212,7 @@ test('adjustToValidStartEnd with one invalid start node ',()=>{
     let expanded = LineEncoder.adjustToValidStartEnd(mapDataBase,locLines,offsets);
     expect(expanded).toEqual({front: 1, back: 0});
     expect(locLines.length).toEqual(locLinesLength+1);
-    expect(offsets).toEqual({posOffset: 56, negOffset: 30});
+    expect(offsets).toEqual({posOffset: 30+lines[2].getLength(), negOffset: 30});
 });
 
 test('adjustToValidStartEnd with one invalid end node ',()=>{
@@ -223,7 +225,7 @@ test('adjustToValidStartEnd with one invalid end node ',()=>{
     let expanded = LineEncoder.adjustToValidStartEnd(mapDataBase,locLines,offsets);
     expect(expanded).toEqual({front: 0, back: 1});
     expect(locLines.length).toEqual(locLinesLength+1);
-    expect(offsets).toEqual({posOffset: 30, negOffset: 36});
+    expect(offsets).toEqual({posOffset: 30, negOffset: 30+lines[3].getLength()});
 });
 
 test('adjustToValidStartEnd with one invalid end node with 2 outgoing lines',()=>{
@@ -249,7 +251,7 @@ test('adjustToValidStartEnd with one invalid end node with 2 outgoing lines',()=
     let expanded = LineEncoder.adjustToValidStartEnd(mapDataBase,locLines,offsets);
     expect(expanded).toEqual({front: 0, back: 1});
     expect(locLines.length).toEqual(locLinesLength+1);
-    expect(offsets).toEqual({posOffset: 30, negOffset: 36});
+    expect(offsets).toEqual({posOffset: 30, negOffset: 30+lines[3].getLength()});
     expect(locLines[locLines.length-1].getEndNode().getID()).toEqual(node5.getID());
 });
 
@@ -276,7 +278,7 @@ test('adjustToValidStartEnd with one invalid end node with 2 outgoing lines othe
     let expanded = LineEncoder.adjustToValidStartEnd(mapDataBase,locLines,offsets);
     expect(expanded).toEqual({front: 0, back: 1});
     expect(locLines.length).toEqual(locLinesLength+1);
-    expect(offsets).toEqual({posOffset: 30, negOffset: 36});
+    expect(offsets).toEqual({posOffset: 30, negOffset: 30+lines[3].getLength()});
     expect(locLines[locLines.length-1].getEndNode().getID()).toEqual(node5.getID());
 });
 
@@ -648,8 +650,8 @@ test('concatenateAndValidateShortestPaths valid',()=>{
     expect(concatenatedSPResult.wrongPosOffset).toEqual(false);
     expect(concatenatedSPResult.wrongNegOffset).toEqual(false);
     expect(concatenatedSPResult.wrongIntermediateDistance).toEqual(false);
-    expect(concatenatedSPResult.distanceBetweenFirstTwo).toEqual(555);
-    expect(concatenatedSPResult.distanceBetweenLastTwo).toEqual(1276);
+    expect(concatenatedSPResult.distanceBetweenFirstTwo).toEqual(network.lines[26].getLength());
+    expect(concatenatedSPResult.distanceBetweenLastTwo).toEqual(network.lines[19].getLength()+network.lines[23].getLength()+network.lines[7].getLength());
     expect(concatenatedSPResult.shortestPath[0].getID()).toEqual(network.lines[26].getID());
     expect(concatenatedSPResult.shortestPath[1].getID()).toEqual(network.lines[7].getID());
     expect(concatenatedSPResult.shortestPath[2].getID()).toEqual(network.lines[19].getID());
@@ -666,8 +668,8 @@ test('concatenateAndValidateShortestPaths valid 2 LRP lines with wrong SP betwee
     expect(concatenatedSPResult.wrongPosOffset).toEqual(false);
     expect(concatenatedSPResult.wrongNegOffset).toEqual(false);
     expect(concatenatedSPResult.wrongIntermediateDistance).toEqual(false);
-    expect(concatenatedSPResult.distanceBetweenFirstTwo).toEqual(889);
-    expect(concatenatedSPResult.distanceBetweenLastTwo).toEqual(889);
+    expect(concatenatedSPResult.distanceBetweenFirstTwo).toEqual(network.lines[26].getLength()+network.lines[7].getLength());
+    expect(concatenatedSPResult.distanceBetweenLastTwo).toEqual(network.lines[26].getLength()+network.lines[7].getLength());
     expect(concatenatedSPResult.shortestPath[0].getID()).toEqual(network.lines[26].getID());
     expect(concatenatedSPResult.shortestPath[1].getID()).toEqual(network.lines[7].getID());
 });
@@ -683,8 +685,8 @@ test('concatenateAndValidateShortestPaths 1 line',()=>{
     expect(concatenatedSPResult.wrongPosOffset).toEqual(false);
     expect(concatenatedSPResult.wrongNegOffset).toEqual(false);
     expect(concatenatedSPResult.wrongIntermediateDistance).toEqual(false);
-    expect(concatenatedSPResult.distanceBetweenFirstTwo).toEqual(555);
-    expect(concatenatedSPResult.distanceBetweenLastTwo).toEqual(555);
+    expect(concatenatedSPResult.distanceBetweenFirstTwo).toEqual(network.lines[26].getLength());
+    expect(concatenatedSPResult.distanceBetweenLastTwo).toEqual(network.lines[26].getLength());
     expect(concatenatedSPResult.shortestPath.length).toEqual(1);
     expect(concatenatedSPResult.shortestPath[0].getID()).toEqual(network.lines[26].getID());
 });
@@ -700,8 +702,8 @@ test('concatenateAndValidateShortestPaths wrongPosOffset',()=>{
     expect(concatenatedSPResult.wrongPosOffset).toEqual(true);
     expect(concatenatedSPResult.wrongNegOffset).toEqual(false);
     expect(concatenatedSPResult.wrongIntermediateDistance).toEqual(false);
-    expect(concatenatedSPResult.distanceBetweenFirstTwo).toEqual(555);
-    expect(concatenatedSPResult.distanceBetweenLastTwo).toEqual(1276);
+    expect(concatenatedSPResult.distanceBetweenFirstTwo).toEqual(network.lines[26].getLength());
+    expect(concatenatedSPResult.distanceBetweenLastTwo).toEqual(network.lines[7].getLength()+network.lines[19].getLength()+network.lines[23].getLength());
     expect(concatenatedSPResult.shortestPath[0].getID()).toEqual(network.lines[26].getID());
     expect(concatenatedSPResult.shortestPath[1].getID()).toEqual(network.lines[7].getID());
     expect(concatenatedSPResult.shortestPath[2].getID()).toEqual(network.lines[19].getID());
@@ -719,8 +721,8 @@ test('concatenateAndValidateShortestPaths wrongNegOFfset',()=>{
     expect(concatenatedSPResult.wrongPosOffset).toEqual(false);
     expect(concatenatedSPResult.wrongNegOffset).toEqual(true);
     expect(concatenatedSPResult.wrongIntermediateDistance).toEqual(false);
-    expect(concatenatedSPResult.distanceBetweenFirstTwo).toEqual(555);
-    expect(concatenatedSPResult.distanceBetweenLastTwo).toEqual(1276);
+    expect(concatenatedSPResult.distanceBetweenFirstTwo).toEqual(network.lines[26].getLength());
+    expect(concatenatedSPResult.distanceBetweenLastTwo).toEqual(network.lines[7].getLength()+network.lines[19].getLength()+network.lines[23].getLength());
     expect(concatenatedSPResult.shortestPath[0].getID()).toEqual(network.lines[26].getID());
     expect(concatenatedSPResult.shortestPath[1].getID()).toEqual(network.lines[7].getID());
     expect(concatenatedSPResult.shortestPath[2].getID()).toEqual(network.lines[19].getID());

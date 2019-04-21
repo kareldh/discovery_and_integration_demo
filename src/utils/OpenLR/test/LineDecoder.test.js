@@ -4,12 +4,25 @@ import LineEncoder from "../coder/LineEncoder";
 import LineDecoder from "../coder/LineDecoder";
 
 test('decoder 4 LRPs no offsets perfect candidates',()=>{
+    let decoderProperties = {
+        dist: 35,    //maximum distance of a candidate node to a LRP
+        bearDiff: 60, //maximum difference between the bearing of a candidate node and that of a LRP
+        frcDiff: 3, //maximum difference between the FRC of a candidate node and that of a LRP
+        lfrcnpDiff: 2, //maximum difference between the lowest FRC until next point of a candidate node and that of a LRP
+        distanceToNextDiff: 100, //maximum difference between the found distance between 2 LRPs and the given distanceToNext of the first LRP
+        alwaysUseProjections: false,
+        distMultiplier: 40,
+        frcMultiplier: 10,
+        fowMultiplier: 20,
+        bearMultiplier: 30,
+        maxSPSearchRetries: 50
+    };
     let network = generateRealisticLengthTestNetwork();
     let data = mapNodesLinesToID(network.nodes,network.lines);
     let mapDataBase = new MapDataBase(data.lines,data.nodes);
     let lines = [network.lines[26],network.lines[7],network.lines[19],network.lines[23]];
     let LRPs = LineEncoder.encode(mapDataBase,lines,0,0);
-    let decoded = LineDecoder.decode(mapDataBase,LRPs.LRPs,LRPs.posOffset,LRPs.negOffset);
+    let decoded = LineDecoder.decode(mapDataBase,LRPs.LRPs,LRPs.posOffset,LRPs.negOffset,decoderProperties);
     expect(decoded.lines.length).toEqual(lines.length);
     expect(decoded.lines[0].getID()).toEqual(network.lines[26].getID());
     expect(decoded.lines[1].getID()).toEqual(network.lines[7].getID());
