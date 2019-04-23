@@ -69,7 +69,6 @@ export default class LRPNodeHelper{
                 }
                 i++;
             }
-            console.log(pathLength);
             return {
                 pathLength: pathLength,
                 lfrcnp: frcIsDefined ? leastFRCtillNextPoint : frcEnum.FRC_7
