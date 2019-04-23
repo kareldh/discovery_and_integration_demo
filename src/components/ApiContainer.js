@@ -40,7 +40,7 @@ export default class ApiContainer extends React.Component{
         }
         else if(mode === 2){
             fetchOsmData()
-                .then((data)=>{parseToJson(data).then((json)=>{getMappedElements(json).then((elements)=>{filterHighwayData(elements).then((highwayData)=>{this.createLineStrings(highwayData)})})})});
+                .then((data)=>{parseToJson(data).then((json)=>{getMappedElements(json).then((elements)=>{filterHighwayData(elements).then((highwayData)=>{this.createLineStringsOsm(highwayData)})})})});
                 // .then((data)=>{this.createLineStrings(getMappedElements(parseToJson(data)))});
         }
     }
@@ -68,7 +68,7 @@ export default class ApiContainer extends React.Component{
         this.setState({data: markers, lat: lat, lng: lng});
     }
 
-    createLineStrings(data){
+    createLineStringsOsm(data){
         let i = 0;
         let lat = 51.21205;
         let lng = 4.39717;
@@ -103,7 +103,7 @@ export default class ApiContainer extends React.Component{
 
     render(){
         let {data,lat,lng} = this.state;
-        console.log(data);
+        // console.log(data);
         return <div>
             <div>
                 <TileView zoom={14} lat={lat} lng={lng} data={data}/>

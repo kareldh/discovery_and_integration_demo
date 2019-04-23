@@ -1,11 +1,11 @@
 import {decoderProperties} from "./coder/CoderSettings";
 import {locationTypeEnum} from "./map/Enum";
-import LineEncoder from "./coder/LineEncoder";
+import LineDecoder from "./coder/LineDecoder";
 
 export default class OpenLRDecoder {
-    static decode(location,mapDataBase){
-        if(location.type === locationTypeEnum.LINE_LOCATION){
-            return LineEncoder.encode(mapDataBase,location.locationLines,location.posOffset,location.negOffset,decoderProperties);
+    static decode(encoded,mapDataBase){
+        if(encoded.type === locationTypeEnum.LINE_LOCATION){
+            return LineDecoder.decode(mapDataBase,encoded.LRPs,encoded.posOffset,encoded.negOffset,decoderProperties);
         }
     }
 }
