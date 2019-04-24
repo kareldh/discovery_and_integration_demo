@@ -213,60 +213,72 @@ export default class LineDecoder{
         let distanceBetweenLRP = undefined;
 
         let distanceBetweenLRPCompensation = 0;
-        if(candidateLines[lrpIndex][candidateIndexes[lrpIndex]].distToProjection !== undefined){
-            //this line was found by using a projection, the total distance between this LRP and the next should be lowered
-            // by the length at which the projection can be found
-            distanceBetweenLRPCompensation = (-1 * candidateLines[lrpIndex][candidateIndexes[lrpIndex]].distToProjection);
-        }
-        if(candidateLines[lrpIndex+1] !== undefined
-            && candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]].distToProjection !== undefined){
-            //next line was found by using a projection, the total distance between this LRP and the next should be heightened
-            // by the length at which the projection can be found
-            distanceBetweenLRPCompensation = (+1 * candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]].distToProjection);
-            //if the next line was the same as this line, the length of the line should be subtracted
-            if(candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]].line.getID() === candidateLines[lrpIndex][candidateIndexes[lrpIndex]].line.getID()){
-                distanceBetweenLRPCompensation -= candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]].line.getLength();
-            }
-        }
 
-        while((shortestPath === undefined   //first time shortestPath is always undefined, so this loop runs minimum 1 time
-            || shortestPath.length === undefined
-            || Math.abs(distanceBetweenLRP+distanceBetweenLRPCompensation-LRPs[lrpIndex].distanceToNext) >= decoderProperties.distanceToNextDiff) // check validity (step 6 of decoding)
+        while(shortestPath === undefined   //first time shortestPath is always undefined, so this loop runs minimum 1 time
             && tries.count < decoderProperties.maxSPSearchRetries){
             shortestPath = LineDecoder.findShortestPath(candidateLines[lrpIndex][candidateIndexes[lrpIndex]].line,candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]].line,LRPs[lrpIndex].lfrcnp,decoderProperties);
-            distanceBetweenLRP = shortestPath.length+candidateLines[lrpIndex][candidateIndexes[lrpIndex]].line.getLength();
 
-            if(lrpIndex === LRPs.length-2 && candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]].line.getID() !== candidateLines[lrpIndex][candidateIndexes[lrpIndex]].line.getID()){
+            // the total length of the first line can be added to distanceBetweenLRP
+            distanceBetweenLRP = candidateLines[lrpIndex][candidateIndexes[lrpIndex]].line.getLength();
+
+            if(candidateLines[lrpIndex][candidateIndexes[lrpIndex]].distToProjection !== undefined){
+                // this first line was found by using a projection, the total distance between this LRP and the next should be lowered
+                // by the length at which the projection can be found
+                distanceBetweenLRPCompensation += (-1 * candidateLines[lrpIndex][candidateIndexes[lrpIndex]].distToProjection);
+            }
+
+            if(candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]].distToProjection !== undefined){
+                // next line was found by using a projection, the total distance between this LRP and the next should be heightened
+                // by the length at which the projection can be found
+                distanceBetweenLRPCompensation += (+1 * candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]].distToProjection);
+                // if the next line was the same as this line, the length of the line should be subtracted
+                // because we already added it's length to distanceBetweenLRP
+                if(candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]].line.getID() === candidateLines[lrpIndex][candidateIndexes[lrpIndex]].line.getID()){
+                    distanceBetweenLRP -= candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]].line.getLength();
+                }
+            }
+
+            if(lrpIndex === LRPs.length-2
+                // if this is the second last LRP
+                && candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]].line.getID() !== candidateLines[lrpIndex][candidateIndexes[lrpIndex]].line.getID()
+                // and the line of this LRP isn't the same as the line of the last LRP (if it would be the same, it's length was already added)
+                && candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]].distToProjection === undefined
+                // the length of the last line shouldn't be added if it was projected, because it's length is already compensated in distanceBetweenLRPCompensation
+            ){
                 distanceBetweenLRP += candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]].line.getLength();
             }
 
+            if(shortestPath.length !== undefined){
+                //if the shortest path has a length, it should be added to distanceBetweenLRP
+                //if it doesn't, the while loop will restart because shortestPath.length === undefined
+                distanceBetweenLRP += shortestPath.length;
+            }
+
+            console.warn(distanceBetweenLRP,distanceBetweenLRPCompensation,LRPs[lrpIndex].distanceToNext,decoderProperties.distanceToNextDiff);
             if(shortestPath === undefined
                 || shortestPath.length === undefined
-                || Math.abs(distanceBetweenLRP+distanceBetweenLRPCompensation-LRPs[lrpIndex].distanceToNext) >= decoderProperties.distanceToNextDiff){
+                || Math.abs(distanceBetweenLRP+distanceBetweenLRPCompensation-LRPs[lrpIndex].distanceToNext) >= decoderProperties.distanceToNextDiff) // check validity (step 6 of decoding)
+            {
                 if(candidateIndexes[lrpIndex+1] < candidateLines[lrpIndex+1].length-1){
+                    //we can try a different end line (which has our preference because it can't change previous path calculations)
                     candidateIndexes[lrpIndex+1]++;
-                    if(candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]].distToProjection !== undefined){
-                        //next line was found by using a projection, the total distance between this LRP and the next should be heightened
-                        // by the length at which the projection can be found
-                        distanceBetweenLRPCompensation = (+1 * candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]].distToProjection);
-                        //if the next line was the same as this line, the length of the line should be subtracted
-                        if(candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]].line.getID() !== candidateLines[lrpIndex][candidateIndexes[lrpIndex]].line.getID()){
-                            distanceBetweenLRPCompensation -= candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]].line.getLength();
-                        }
-                    }
+                    //manually reset shortestPath to trigger while loop rerun
+                    shortestPath = undefined;
                 }
                 else if(candidateIndexes[lrpIndex] < candidateLines[lrpIndex].length-1){
+                    //we can try a different start line (which might change the end line of the shortest path calculation of our previous LRP)
                     candidateIndexes[lrpIndex]++;
+                    //we should reset the index of the end line to the previously tried end line
+                    //is 0 unless this method is called recursively because our end line changed further in the LRP list
                     candidateIndexes[lrpIndex+1] = prevEndCandidateIndex;
                     prevEndChanged = true;
-                    if(candidateLines[lrpIndex][candidateIndexes[lrpIndex]].distToProjection !== undefined){
-                        //this line was found by using a projection, the total distance between this LRP and the next should be lowered
-                        // by the length at which the projection can be found
-                        distanceBetweenLRPCompensation = (-1 * candidateLines[lrpIndex][candidateIndexes[lrpIndex]].distToProjection);
-                    }
+                    //manually reset shortestPath to trigger while loop rerun
+                    shortestPath = undefined;
                 }
                 else{
-                    throw Error("No shortest path could be found between the given LRPs with indexes " +lrpIndex +" and " + (lrpIndex+1));
+                    throw Error("No shortest path could be found between the given LRPs with indexes " +lrpIndex +" and " + (lrpIndex+1) +
+                        " You either tried to decode a loop that isn't present in the current map " +
+                        "or you tried decoding a line between two points that are to close together and decoded as a single node");
                 }
             }
             tries.count++;
@@ -276,7 +288,8 @@ export default class LineDecoder{
         }
         shortestPaths[lrpIndex] = shortestPath;
         if(prevEndChanged && lrpIndex-1 >= 0){
-            //we changed the start line of for this LRP, which means the end line of the last LRP is changed and it's shortest path should be recalculated
+            // we changed the start line of for this LRP, which means the end line of the last LRP is changed and it's shortest path should be recalculated
+            // this can happen recursively until we reach our first LRP
             shortestPaths[lrpIndex-1] = LineDecoder.calcSPforLRP(candidateLines,candidateIndexes,lrpIndex-1,tries,shortestPaths,LRPs,decoderProperties);
         }
     }

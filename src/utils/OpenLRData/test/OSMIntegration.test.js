@@ -538,7 +538,9 @@ test('osm integration determineShortestPaths 50 dist',(done)=>{
                         osmDataBase = OSMIntegration.initMapDataBase(highwayData.nodes,highwayData.ways,highwayData.relations);
                         let candidateNodes = LineDecoder.findCandidatesOrProjections(osmDataBase,LRPs.LRPs,decoderProperties);
                         let candidateLines = LineDecoder.findCandidateLines(LRPs.LRPs,candidateNodes,decoderProperties);
-                        expect(()=>{LineDecoder.determineShortestPaths(candidateLines,LRPs.LRPs,decoderProperties)}).toThrow(Error("No shortest path could be found between the given LRPs with indexes 0 and 1"));
+                        expect(()=>{LineDecoder.determineShortestPaths(candidateLines,LRPs.LRPs,decoderProperties)}).toThrow(Error("No shortest path could be found between the given LRPs with indexes 0 and 1" +
+                            " You either tried to decode a loop that isn't present in the current map " +
+                            "or you tried decoding a line between two points that are to close together and decoded as a single node"));
                         done();
                     })})})});
 });
@@ -711,4 +713,63 @@ test('osm integration trimAccordingToOffsets valid offsets',(done)=>{
                         expect(offsets.negOffset).toEqual(osmDataBase.lines["4579317_28929725_1"].getLength()-40.34184067201833+7);
                         done();
                     })})})});
+});
+
+test('osm integration full integration previously crashing because bad length calculation',(done)=>{
+    expect.assertions(4);
+    let decoderProperties = {
+        dist: 35,    //maximum distance of a candidate node to a LRP
+        bearDiff: 60, //maximum difference between the bearing of a candidate node and that of a LRP
+        frcDiff: 3, //maximum difference between the FRC of a candidate node and that of a LRP
+        lfrcnpDiff: 2, //maximum difference between the lowest FRC until next point of a candidate node and that of a LRP
+        distanceToNextDiff: 100, //maximum difference between the found distance between 2 LRPs and the given distanceToNext of the first LRP
+        alwaysUseProjections: true,
+        distMultiplier: 40,
+        frcMultiplier: 10,
+        fowMultiplier: 20,
+        bearMultiplier: 30,
+        maxSPSearchRetries: 50
+    };
+
+    let LRP_0 = {
+        bearing: 36.15816556660661,
+        distanceToNext: 33,
+        fow: 0,
+        frc: undefined,
+        isLast: false,
+        lat: 51.21201178548282,
+        lfrcnp: 7,
+        long: 4.397157132625581,
+        seqNr: 1
+    };
+    let LRP_1 = {
+        bearing: 287.9390391708996,
+        distanceToNext: 0,
+        fow: 0,
+        frc: undefined,
+        isLast: true,
+        lat: 51.211979860833395,
+        lfrcnp: 7,
+        long: 4.397580921649934,
+        seqNr: 2
+    };
+    let LRPs = [LRP_0,LRP_1];
+
+    let osmDataBase;
+
+    loadOsmTestData()
+        .then((data)=>{parseToJson(data)
+            .then((json)=>{getMappedElements(json)
+                .then((elements)=>{filterHighwayData(elements)
+                    .then((highwayData)=>{
+                        osmDataBase = OSMIntegration.initMapDataBase(highwayData.nodes,highwayData.ways,highwayData.relations);
+                        let decoded = LineDecoder.decode(osmDataBase,LRPs,0,0,decoderProperties);
+                        console.log(decoded);
+                        expect(decoded.lines[0].getID()).toEqual("51356773_28929726_1");
+                        expect(decoded.lines[1].getID()).toEqual("4579317_28929725_1");
+                        expect(decoded.posOffset).toEqual(57.235960971534844);
+                        expect(decoded.negOffset).toEqual(112.3557074140935);
+                        done();
+                    })})})});
+
 });
