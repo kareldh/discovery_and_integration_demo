@@ -93,6 +93,106 @@ export function getNodesWithTrafficSignals(triples){
     });
 }
 
+/*
+Gaat er van uit dat de eerst de lat en long van node wordt vermeld in een triple, dan de node zijn ID binnen de tile
+en dan vervolgens de Ways die verwijzen naar deze interne ID's zodat een lijst van alle nodes en lines opstellen in 1 run kan gebeuren.
+ */
+export function getRoutableTilesNodesAndLines(triples){
+    return new Promise((resolve)=>{
+        let nodes = {};
+        let ways = {};
+
+        let prevInternalNodeID = undefined;
+        let currentWayElement = undefined;
+        triples.forEach(function(element){
+            if(element.subject && element.predicate && element.object){
+                let foundNodeInObject = /^http:\/\/www\.openstreetmap\.org\/node\/\d*$/g.exec(element.object.value);
+                let foundNodeInSubject = /^http:\/\/www\.openstreetmap\.org\/node\/\d*$/g.exec(element.subject.value);
+                // let foundWayInObject = /^http:\/\/www\.openstreetmap\.org\/way\/\d*$/g.exec(element.object.value);
+                let foundWayInSubject = /^http:\/\/www\.openstreetmap\.org\/way\/\d*$/g.exec(element.subject.value);
+
+                // if(element.subject.value === "http://www.openstreetmap.org/node/1085435860"){
+                //     console.log(element);
+                // }
+                if(foundNodeInObject){
+                  if(element.predicate.value === "http://www.w3.org/1999/02/22-rdf-syntax-ns#first"){
+                      if(nodes[element.object.value] === undefined){
+                          nodes[element.object.value] = {id: element.object.value, ref: []}
+                      }
+                      nodes[element.object.value].ref.push(element.subject.value);
+                  }
+                  else{
+                      console.warn(element);
+                  }
+                }
+                else if(foundNodeInSubject){
+                    // console.log(element);
+                    if(element.predicate.value === "http://www.w3.org/2003/01/geo/wgs84_pos#lat"){
+                        if(nodes[element.subject.value] === undefined){
+                            nodes[element.subject.value] = {id: element.subject.value, ref: []}
+                        }
+                        nodes[element.subject.value].lat = Number(element.object.value);
+                    }
+                    else if(element.predicate.value === "http://www.w3.org/2003/01/geo/wgs84_pos#long"){
+                        if(nodes[element.subject.value] === undefined){
+                            nodes[element.subject.value] = {id: element.subject.value, ref: []}
+                        }
+                        nodes[element.subject.value].long = Number(element.object.value);
+                    }
+                }
+                // else if(foundWayInObject){
+                //     // console.log(element);
+                // }
+                else if(foundWayInSubject){
+                    if(element.predicate.value === "https://w3id.org/openstreetmap/terms#nodes") {
+                        if (ways[element.subject.value] === undefined) {
+                            ways[element.subject.value] = {
+                                nodes: [],
+                                id: element.subject.value
+                            };
+                        }
+                        ways[element.subject.value].nodes.push(element.object.value.toString());
+                        currentWayElement = element.subject.value;
+                        prevInternalNodeID = element.object.value;
+                    }
+                    else {
+                        let match = (/^https:\/\/w3id.org\/openstreetmap\/terms#(.*)$/g.exec(element.predicate.value));
+                        if(match){
+                            if (ways[element.subject.value] === undefined) {
+                                ways[element.subject.value] = {
+                                    nodes: [],
+                                    id: element.subject.value
+                                };
+                            }
+                            ways[element.subject.value][match[1]] = element.object.value;
+                        }
+                    }
+                }
+                else if(element.predicate.value === "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest"){
+                    if(element.subject.value === prevInternalNodeID && element.object.value !== "http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"){
+                        if(currentWayElement === undefined){
+                            throw Error("Found a node for an undefined way.");
+                        }
+                        else{
+                            ways[currentWayElement].nodes.push(element.object.value);
+                            prevInternalNodeID = element.object.value;
+                        }
+                    }
+                    else{
+                        currentWayElement = undefined;
+                        prevInternalNodeID = undefined;
+                    }
+                }
+                // else{
+                //     console.log(element);
+                // }
+            }
+        });
+
+        resolve({nodes: nodes, lines: ways});
+    });
+}
+
 function getLatLng(triples,intersections){
     triples.forEach(function(element){
         if(element.subject && element.predicate && element.object){
@@ -107,7 +207,6 @@ function getLatLng(triples,intersections){
         }
     });
 }
-
 
 export function fetchOsmData(){
     return new Promise((resolve,reject)=>{

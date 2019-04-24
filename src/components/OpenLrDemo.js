@@ -3,7 +3,7 @@ import TileView from "./TileView";
 import {
     fetchOsmData,
     fetchRoutableTile, filterHighwayData,
-    getIntersectionNodes, getMappedElements,
+    getIntersectionNodes, getMappedElements, getRoutableTilesNodesAndLines,
     parseToJson
 } from "../data/api";
 import {Marker, Polyline, Popup, Circle} from "react-leaflet";
@@ -15,6 +15,7 @@ import LineEncoder from "../utils/OpenLR/coder/LineEncoder";
 import MapDataBase from "../utils/OpenLR/map/MapDataBase";
 import Line from "../utils/OpenLR/map/Line";
 import Node from "../utils/OpenLR/map/Node";
+import RoutableTilesIntegration from "../utils/OpenLRData/RoutableTilesIntegration";
 
 let inputDataEnum = {
     "RoutableTiles": 0,
@@ -33,14 +34,16 @@ export default class OpenLrDemo extends React.Component{
         this.x = 8392;
         this.y = 5469;
         this.coordinates =[];
+        this.dataSource = inputDataEnum.OpenStreetMap;
         this.addMarker = this.addMarker.bind(this);
         this.createMarker = this.createMarker.bind(this);
         this.reset = this.reset.bind(this);
-        this.findMarkers = this.findMarkers.bind(this);
+        this.findMarkersOsm = this.findMarkersOsm.bind(this);
+        this.findMarkersRoutableTiles = this.findMarkersRoutableTiles.bind(this);
     }
 
     componentDidMount(){
-        this.init(0,this.x,this.y);
+        this.init(inputDataEnum.OpenStreetMap,this.x,this.y);
     }
 
     init(mode,x,y){
@@ -49,11 +52,10 @@ export default class OpenLrDemo extends React.Component{
             y = 5469;
         }
         if(mode === inputDataEnum.RoutableTiles){
-            fetchRoutableTile(14,x,y).then((data)=>{getIntersectionNodes(data.triples).then((intersections)=>{this.createMarker(intersections)})});
+            this.dataSource = inputDataEnum.RoutableTiles;
         }
         else if(mode === inputDataEnum.OpenStreetMap){
-            fetchOsmData()
-                .then((data)=>{parseToJson(data).then((json)=>{getMappedElements(json).then((elements)=>{filterHighwayData(elements).then((highwayData)=>{this.createLineStringsOsm(highwayData)})})})});
+            this.dataSource = inputDataEnum.OpenStreetMap;
         }
     }
 
@@ -65,7 +67,7 @@ export default class OpenLrDemo extends React.Component{
             </Marker>;
     }
 
-    findMarkers(){
+    findMarkersOsm(){
         let {coordinates} = this;
         if(coordinates.length >= 2){
             let l = [];
@@ -89,7 +91,7 @@ export default class OpenLrDemo extends React.Component{
                             .then((highwayData)=>{
                                 osmDataBase = OSMIntegration.initMapDataBase(highwayData.nodes,highwayData.ways,highwayData.relations);
                                 let decoded = OpenLRDecoder.decode(encoded,osmDataBase);
-                                console.log(decoded);
+                                console.log("Found in Open Street Maps",decoded);
                                 this.createLineStringsOpenLr(decoded.lines,decoded.posOffset,decoded.negOffset);
                             })})})});
         }
@@ -98,9 +100,39 @@ export default class OpenLrDemo extends React.Component{
         }
     }
 
+    findMarkersRoutableTiles(){
+        let {coordinates} = this;
+        if(coordinates.length >= 2){
+            let l = [];
+            let n = [];
+            n.push(new Node(0,coordinates[0].lat,coordinates[0].lng));
+            for(let i=1;i<coordinates.length;i++){
+                n.push(new Node(i,coordinates[i].lat,coordinates[i].lng));
+                l.push(new Line(i,n[i-1],n[i]));
+            }
+            let {nodes,lines} = mapNodesLinesToID(n,l);
+            let mapDataBase = new MapDataBase(lines,nodes);
+            let encoded = LineEncoder.encode(mapDataBase,l,0,0);
+            console.log(encoded);
+
+            let rtDataBase;
+            fetchRoutableTile(14,this.x,this.y)
+                .then((data)=>{getRoutableTilesNodesAndLines(data.triples)
+                    .then((nodesAndLines)=>{
+                    rtDataBase = RoutableTilesIntegration.initMapDataBase(nodesAndLines.nodes,nodesAndLines.lines);
+                    let decoded = OpenLRDecoder.decode(encoded,rtDataBase);
+                    console.log("Found in RoutableTiles",decoded);
+                    this.createLineStringsOpenLr(decoded.lines,decoded.posOffset,decoded.negOffset);
+                })});
+        }
+        else{
+            console.log("Not enough coordinates given to form a line",this.state.coordinates);
+        }
+    }
+
     addMarker(latlng){
         this.coordinates.push(latlng);
-        let marker = this.createMarker(latlng.lat,latlng.lng);
+        // let marker = this.createMarker(latlng.lat,latlng.lng);
         this.setState((state, props)=>{
             let d = this.coordinates.map((c)=>{
                     return this.createMarker(c.lat,c.lng);
@@ -114,8 +146,8 @@ export default class OpenLrDemo extends React.Component{
     }
 
     createLineStringsOpenLr(lines,posOffset,negOffset){
-        let lat = 51.21205;
-        let lng = 4.39717;
+        // let lat = 51.21205;
+        // let lng = 4.39717;
         let lineStrings = [];
         if(lines !== undefined){
             for (let line of lines) {
@@ -128,7 +160,7 @@ export default class OpenLrDemo extends React.Component{
             }
             let firstOffsetCoord = lines[0].getGeoCoordinateAlongLine(posOffset);
             let lastOffsetCoord = lines[lines.length-1].getGeoCoordinateAlongLine(lines[lines.length-1].getLength()-negOffset);
-            lineStrings.push(<Circle key={"firstOffsetPoint"} center={[firstOffsetCoord.lat,firstOffsetCoord.long]} radius={1} color={"orange"}/>);
+            lineStrings.push(<Circle key={"firstOffsetPoint"} center={[firstOffsetCoord.lat,firstOffsetCoord.long]} radius={1} color={"red"}/>);
             lineStrings.push(<Circle key={"lastOffsetPoint"} center={[lastOffsetCoord.lat,lastOffsetCoord.long]} radius={1} color={"orange"}/>);
             this.setState((state, props)=>{
                 return {
@@ -159,9 +191,9 @@ export default class OpenLrDemo extends React.Component{
             <div>
                 <TileView zoom={14} lat={lat} lng={lng} data={data} onMouseClick={this.addMarker}/>
             </div>
-            <button onClick={()=>{this.init(inputDataEnum.RoutableTiles,this.x,this.y)}}>Common Nodes between Ways</button>
-            <button onClick={()=>{this.init(inputDataEnum.OpenStreetMap,this.x,this.y)}}>Highway:traffic_signals Nodes</button>
-            <button onClick={this.findMarkers}>Find lines in data</button>
+            <button onClick={()=>{this.init(inputDataEnum.RoutableTiles,this.x,this.y)}}>Routable Tiles data</button>
+            <button onClick={()=>{this.init(inputDataEnum.OpenStreetMap,this.x,this.y)}}>Open Street Map data</button>
+            <button onClick={this.dataSource===inputDataEnum.OpenStreetMap?this.findMarkersOsm:this.findMarkersRoutableTiles}>Find lines in data</button>
             <button onClick={this.reset}>Reset</button>
             current tile x value: {this.x}   current tile y value: {this.y}
             <Input placeholder="tile x value" onChange={(e,data)=>{this.x = data.value}}/>

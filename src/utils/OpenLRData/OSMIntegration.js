@@ -28,7 +28,7 @@ export default class OSMIntegration{
                     reverseOpenLRLine.fow = OSMIntegration.getFRC(ways[id]);
                     openLRLines[reverseOpenLRLine.getID()] = reverseOpenLRLine;
                     //since we only want to keep the nodes that are part of the road network, and not the other nodes of OSM, so we will add only those in the openLRNodes map
-                    openLRNodes[ways[id].nd[i+1]["@_ref"]] = osmNodes[ways[id].nd[i+1]["@_ref"]];
+                    openLRNodes[ways[id].nd[i]["@_ref"]] = osmNodes[ways[id].nd[i]["@_ref"]];
                     openLRNodes[ways[id].nd[i+1]["@_ref"]] = osmNodes[ways[id].nd[i+1]["@_ref"]];
                 }
             }
