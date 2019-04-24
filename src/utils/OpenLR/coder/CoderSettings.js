@@ -4,7 +4,7 @@ let decoderProperties = {
     frcDiff: 3, //maximum difference between the FRC of a candidate node and that of a LRP
     lfrcnpDiff: 2, //maximum difference between the lowest FRC until next point of a candidate node and that of a LRP
     distanceToNextDiff: 100, //maximum difference between the found distance between 2 LRPs and the given distanceToNext of the first LRP
-    alwaysUseProjections: false,
+    alwaysUseProjections: true,
     distMultiplier: 40,
     frcMultiplier: 10,
     fowMultiplier: 20,

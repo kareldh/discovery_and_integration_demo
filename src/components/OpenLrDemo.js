@@ -6,7 +6,7 @@ import {
     getIntersectionNodes, getMappedElements,
     parseToJson
 } from "../data/api";
-import {Marker, Polyline, Popup} from "react-leaflet";
+import {Marker, Polyline, Popup, Circle} from "react-leaflet";
 import {Input} from "semantic-ui-react";
 import {loadOsmTestData, mapNodesLinesToID} from "../utils/OpenLR/test/Helperfunctions";
 import OSMIntegration from "../utils/OpenLRData/OSMIntegration";
@@ -26,14 +26,13 @@ export default class OpenLrDemo extends React.Component{
         super(props);
         this.init = this.init.bind(this);
         this.state = {
-            // data: [],
-            coordinates: [],
+            data: [],
             lat: 51.21205,
             lng: 4.39717,
         };
         this.x = 8392;
         this.y = 5469;
-        // this.coordinates =[];
+        this.coordinates =[];
         this.addMarker = this.addMarker.bind(this);
         this.createMarker = this.createMarker.bind(this);
         this.reset = this.reset.bind(this);
@@ -67,7 +66,7 @@ export default class OpenLrDemo extends React.Component{
     }
 
     findMarkers(){
-        let {coordinates} = this.state;
+        let {coordinates} = this;
         if(coordinates.length >= 2){
             let l = [];
             let n = [];
@@ -91,6 +90,7 @@ export default class OpenLrDemo extends React.Component{
                                 osmDataBase = OSMIntegration.initMapDataBase(highwayData.nodes,highwayData.ways,highwayData.relations);
                                 let decoded = OpenLRDecoder.decode(encoded,osmDataBase);
                                 console.log(decoded);
+                                this.createLineStringsOpenLr(decoded.lines,decoded.posOffset,decoded.negOffset);
                             })})})});
         }
         else{
@@ -99,16 +99,14 @@ export default class OpenLrDemo extends React.Component{
     }
 
     addMarker(latlng){
-        // this.coordinates.push(latlng);
-        // let marker = this.createMarker(latlng.lat,latlng.lng);
+        this.coordinates.push(latlng);
+        let marker = this.createMarker(latlng.lat,latlng.lng);
         this.setState((state, props)=>{
-            // let data = state.data;
-            // data.push(marker);
-            let coordinates = state.coordinates;
-            coordinates.push(latlng);
+            let d = this.coordinates.map((c)=>{
+                    return this.createMarker(c.lat,c.lng);
+                });
             return {
-                // data: data,
-                coordinates: coordinates,
+                data: d,
                 lat: state.lat,
                 lng: state.lng,
             }
@@ -122,13 +120,23 @@ export default class OpenLrDemo extends React.Component{
         if(lines !== undefined){
             for (let line of lines) {
                 lineStrings.push(
-                    <Polyline positions = {[line.getLatitudeDeg(),line.getLongitudeDeg()]} key={line.getID()}>
+                    <Polyline positions = {[[line.getStartNode().getLatitudeDeg(),line.getStartNode().getLongitudeDeg()],[line.getEndNode().getLatitudeDeg(),line.getEndNode().getLongitudeDeg()]]} key={line.getID()}>
                         <Popup>
                             <p>{line.getID()}</p>
                         </Popup>
                     </Polyline>);
             }
-            this.setState({data: lineStrings, lat: lat, lng: lng});
+            let firstOffsetCoord = lines[0].getGeoCoordinateAlongLine(posOffset);
+            let lastOffsetCoord = lines[lines.length-1].getGeoCoordinateAlongLine(lines[lines.length-1].getLength()-negOffset);
+            lineStrings.push(<Circle key={"firstOffsetPoint"} center={[firstOffsetCoord.lat,firstOffsetCoord.long]} radius={1} color={"orange"}/>);
+            lineStrings.push(<Circle key={"lastOffsetPoint"} center={[lastOffsetCoord.lat,lastOffsetCoord.long]} radius={1} color={"orange"}/>);
+            this.setState((state, props)=>{
+                return {
+                    data: lineStrings,
+                    lat: state.lat,
+                    lng: state.lng,
+                }
+            });
         }
     }
 
@@ -141,18 +149,15 @@ export default class OpenLrDemo extends React.Component{
                 lng: state.lng,
             }
         });
-        // this.coordinates =[];
+        this.coordinates =[];
     }
 
     render(){
-        let {/*data,*/lat,lng} = this.state;
-        // console.log(data);
-        let d = this.state.coordinates.map((c)=>{
-            return this.createMarker(c.lat,c.lng);
-        });
+        let {data,lat,lng} = this.state;
+        console.log(data);
         return <div>
             <div>
-                <TileView zoom={14} lat={lat} lng={lng} data={d} onMouseClick={this.addMarker}/>
+                <TileView zoom={14} lat={lat} lng={lng} data={data} onMouseClick={this.addMarker}/>
             </div>
             <button onClick={()=>{this.init(inputDataEnum.RoutableTiles,this.x,this.y)}}>Common Nodes between Ways</button>
             <button onClick={()=>{this.init(inputDataEnum.OpenStreetMap,this.x,this.y)}}>Highway:traffic_signals Nodes</button>

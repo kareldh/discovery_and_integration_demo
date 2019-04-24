@@ -33,6 +33,7 @@ export default class TileView extends React.Component {
                 center = {position}
                 zoom = {zoom}
                 onClick = {this.handleMouseClick}
+                ref={Map => this.map = Map}
             >
                 <
                     TileLayer
