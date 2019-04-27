@@ -44,6 +44,9 @@ export default class OpenLrDemo extends React.Component{
         this.findMarkersOsm = this.findMarkersOsm.bind(this);
         this.findMarkersRoutableTiles = this.findMarkersRoutableTiles.bind(this);
         this.findMarkers = this.findMarkers.bind(this);
+        this.osmDataBase = undefined;
+        this.routableTilesDataBase = undefined;
+        this.wegenretisterDataBase = undefined;
     }
 
     componentDidMount(){
@@ -105,39 +108,57 @@ export default class OpenLrDemo extends React.Component{
     }
 
     findMarkersOsm(encoded){
-        let osmDataBase;
-        //
-        loadOsmTestData()
-            .then((data)=>{parseToJson(data)
-                .then((json)=>{getMappedElements(json)
-                    .then((elements)=>{filterHighwayData(elements)
-                        .then((highwayData)=>{
-                            osmDataBase = OSMIntegration.initMapDataBase(highwayData.nodes,highwayData.ways,highwayData.relations);
-                            let decoded = OpenLRDecoder.decode(encoded,osmDataBase);
-                            console.log("Found in Open Street Maps",decoded);
-                            this.createLineStringsOpenLr(decoded.lines,decoded.posOffset,decoded.negOffset);
-                        })})})});
+        if(this.osmDataBase === undefined){
+            loadOsmTestData()
+                .then((data)=>{parseToJson(data)
+                    .then((json)=>{getMappedElements(json)
+                        .then((elements)=>{filterHighwayData(elements)
+                            .then((highwayData)=>{
+                                this.osmDataBase = OSMIntegration.initMapDataBase(highwayData.nodes,highwayData.ways,highwayData.relations);
+                                let decoded = OpenLRDecoder.decode(encoded,this.osmDataBase);
+                                console.log("Found in Open Street Maps",decoded);
+                                this.createLineStringsOpenLr(decoded.lines,decoded.posOffset,decoded.negOffset);
+                            })})})});
+        }
+        else{
+            let decoded = OpenLRDecoder.decode(encoded,this.osmDataBase);
+            console.log("Found in Open Street Maps",decoded);
+            this.createLineStringsOpenLr(decoded.lines,decoded.posOffset,decoded.negOffset);
+        }
     }
 
     findMarkersRoutableTiles(encoded){
-        let rtDataBase;
-        fetchRoutableTile(14,this.x,this.y)
-            .then((data)=>{getRoutableTilesNodesAndLines(data.triples)
-                .then((nodesAndLines)=>{
-                rtDataBase = RoutableTilesIntegration.initMapDataBase(nodesAndLines.nodes,nodesAndLines.lines);
-                let decoded = OpenLRDecoder.decode(encoded,rtDataBase);
-                console.log("Found in RoutableTiles",decoded);
-                this.createLineStringsOpenLr(decoded.lines,decoded.posOffset,decoded.negOffset);
-            })});
+        if(this.routableTilesDataBase === undefined){
+            fetchRoutableTile(14,this.x,this.y)
+                .then((data)=>{getRoutableTilesNodesAndLines(data.triples)
+                    .then((nodesAndLines)=>{
+                        this.routableTilesDataBase = RoutableTilesIntegration.initMapDataBase(nodesAndLines.nodes,nodesAndLines.lines);
+                        let decoded = OpenLRDecoder.decode(encoded,this.routableTilesDataBase);
+                        console.log("Found in RoutableTiles",decoded);
+                        this.createLineStringsOpenLr(decoded.lines,decoded.posOffset,decoded.negOffset);
+                    })});
+        }
+        else{
+            let decoded = OpenLRDecoder.decode(encoded,this.routableTilesDataBase);
+            console.log("Found in RoutableTiles",decoded);
+            this.createLineStringsOpenLr(decoded.lines,decoded.posOffset,decoded.negOffset);
+        }
     }
 
     findMarkersWegenregisterAntwerpen(encoded){
-        loadNodesLineStringsWegenregsterAntwerpen().then(features => {
-            let mapDatabase = WegenregisterAntwerpenIntegration.initMapDataBase(features);
-            let decoded = OpenLRDecoder.decode(encoded,mapDatabase);
+        if(this.wegenretisterDataBase === undefined){
+            loadNodesLineStringsWegenregsterAntwerpen().then(features => {
+                this.wegenretisterDataBase = WegenregisterAntwerpenIntegration.initMapDataBase(features);
+                let decoded = OpenLRDecoder.decode(encoded,this.wegenretisterDataBase);
+                console.log("Found in Wegenregister Antwerpen",decoded);
+                this.createLineStringsOpenLr(decoded.lines,decoded.posOffset,decoded.negOffset);
+            });
+        }
+        else{
+            let decoded = OpenLRDecoder.decode(encoded,this.wegenretisterDataBase);
             console.log("Found in Wegenregister Antwerpen",decoded);
             this.createLineStringsOpenLr(decoded.lines,decoded.posOffset,decoded.negOffset);
-        });
+        }
     }
 
     addMarker(latlng){
