@@ -254,7 +254,7 @@ export default class LineDecoder{
                 distanceBetweenLRP += shortestPath.length;
             }
 
-            console.warn(distanceBetweenLRP,distanceBetweenLRPCompensation,LRPs[lrpIndex].distanceToNext,decoderProperties.distanceToNextDiff);
+            // console.warn(distanceBetweenLRP,distanceBetweenLRPCompensation,LRPs[lrpIndex].distanceToNext,decoderProperties.distanceToNextDiff);
             if(shortestPath === undefined
                 || shortestPath.length === undefined
                 || Math.abs(distanceBetweenLRP+distanceBetweenLRPCompensation-LRPs[lrpIndex].distanceToNext) >= decoderProperties.distanceToNextDiff) // check validity (step 6 of decoding)
