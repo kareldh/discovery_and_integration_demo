@@ -1,4 +1,5 @@
-import RbushSearchTree from '../SearchTree/RbushNodeSearchTree';
+import RbushNodeSearchTree from '../SearchTree/RbushNodeSearchTree';
+import RbushLineSearchTree from "../SearchTree/RbushLineSearchTree";
 
 export default class MapDataBase {
     constructor(
@@ -18,7 +19,8 @@ export default class MapDataBase {
         this.mapBoundingBox = boundingBox;
         this.lines = lines;
         this.nodes = nodes;
-        this.searchTree = new RbushSearchTree(nodes);
+        this.nodeSearchTree = new RbushNodeSearchTree(nodes);
+        this.lineSearchTree = new RbushLineSearchTree(lines);
     }
 
     setData(
@@ -36,7 +38,8 @@ export default class MapDataBase {
         this.mapBoundingBox = boundingBox;
         this.lines = lines;
         this.nodes = nodes;
-        this.searchTree = new RbushSearchTree(nodes);
+        this.nodeSearchTree = new RbushNodeSearchTree(nodes);
+        this.lineSearchTree = new RbushLineSearchTree(lines);
     }
 
     hasTurnRestrictions(){
@@ -51,10 +54,9 @@ export default class MapDataBase {
         return this.nodes[id];
     }
 
-    //todo: versnellen via custom gegevensstructuur?
     findNodesCloseByCoordinate(lat,long,dist){
         let resNodes = [];
-        let possibleNodes = this.searchTree.findCloseBy(lat,long,dist);
+        let possibleNodes = this.nodeSearchTree.findCloseBy(lat,long,dist);
         possibleNodes.forEach((node)=>{
             let distance = this.nodes[node[2]].getDistance(lat,long);
             if(distance <= dist){
@@ -67,14 +69,13 @@ export default class MapDataBase {
     //todo: versnellen via custom gegevensstructuur
     findLinesCloseByCoordinate(lat,long,dist){
         let resLines = [];
-        for(let key in this.lines){
-            if(this.lines.hasOwnProperty(key)){
-                let distance = this.lines[key].distanceToPoint(lat,long);
-                if(distance <= dist){
-                    resLines.push({line: this.lines[key], dist: distance})
-                }
+        let possibleLines = this.lineSearchTree.findCloseBy(lat,long,dist);
+        possibleLines.forEach((line)=>{
+            let distance = this.lines[line.id].distanceToPoint(lat,long);
+            if(distance <= dist){
+                resLines.push({line: this.lines[line.id], dist: distance})
             }
-        }
+        });
         return resLines;
     }
 

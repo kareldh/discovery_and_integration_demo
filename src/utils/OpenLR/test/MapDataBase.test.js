@@ -36,3 +36,21 @@ test('findNodesCloseByCoordinate use with a lot of nodes (from wegenregister Ant
     });
 });
 
+test('findLinesCloseByCoordinate use with a lot of lines (from wegenregister Antwerpen)',(done)=>{
+    expect.assertions(5);
+    loadNodesLineStringsWegenregsterAntwerpen().then(features => {
+        let slowMapDataBase = new SlowMapDataBase();
+        let mapDataBase = new MapDataBase();
+        WegenregisterAntwerpenIntegration.initMapDataBase(slowMapDataBase,features);
+        WegenregisterAntwerpenIntegration.initMapDataBase(mapDataBase,features);
+        expect(mapDataBase).toBeDefined();
+        let foundLines = mapDataBase.findLinesCloseByCoordinate(51.2120497, 4.3971693, 50);
+        expect(slowMapDataBase).toBeDefined();
+        let foundLinesSlow = slowMapDataBase.findLinesCloseByCoordinate(51.2120497, 4.3971693, 50);
+        expect(foundLines.length).not.toEqual(0);
+        expect(foundLinesSlow.length).not.toEqual(0);
+        expect(foundLines.length).toEqual(foundLinesSlow.length);
+        done();
+    });
+});
+
