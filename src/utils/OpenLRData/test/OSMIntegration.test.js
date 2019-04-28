@@ -10,14 +10,14 @@ import {filterHighwayData, getMappedElements, parseToJson} from "../../../data/a
 
 test('initMapDataBase initialization',(done)=>{
     expect.assertions(5);
-    let osmDataBase;
+    let osmDataBase = new MapDataBase();
 
     loadOsmTestData()
         .then((data)=>{parseToJson(data)
             .then((json)=>{getMappedElements(json)
                 .then((elements)=>{filterHighwayData(elements)
                     .then((highwayData)=>{
-                        osmDataBase = OSMIntegration.initMapDataBase(highwayData.nodes,highwayData.ways,highwayData.relations);
+                        OSMIntegration.initMapDataBase(osmDataBase,highwayData.nodes,highwayData.ways,highwayData.relations);
                         expect(osmDataBase).toBeDefined();
                         expect(osmDataBase.lines.length).not.toEqual(0);
                         expect(osmDataBase.nodes.length).not.toEqual(0);
@@ -51,14 +51,14 @@ test('full osm integration test singleLineLane',(done)=>{
     let locLines = startData.singleLineLane.locationLines;
     let LRPs = LineEncoder.encode(mapDataBase,locLines,0,0);
 
-    let osmDataBase;
+    let osmDataBase = new MapDataBase();
 
     loadOsmTestData()
         .then((data)=>{parseToJson(data)
             .then((json)=>{getMappedElements(json)
                 .then((elements)=>{filterHighwayData(elements)
                     .then((highwayData)=>{
-                        osmDataBase = OSMIntegration.initMapDataBase(highwayData.nodes,highwayData.ways,highwayData.relations);
+                        OSMIntegration.initMapDataBase(osmDataBase,highwayData.nodes,highwayData.ways,highwayData.relations);
                         let decoded = LineDecoder.decode(osmDataBase,LRPs.LRPs,LRPs.posOffset,LRPs.negOffset,decoderProperties);
                         expect(decoded.lines.length).toEqual(1);
                         expect(decoded.lines[0].getID()).toEqual("4579317_28929725_1");
@@ -90,14 +90,14 @@ test('full osm integration test singleLineLane with projections',(done)=>{
     let locLines = startData.singleLineLane.locationLines;
     let LRPs = LineEncoder.encode(mapDataBase,locLines,0,0);
 
-    let osmDataBase;
+    let osmDataBase = new MapDataBase();
 
     loadOsmTestData()
         .then((data)=>{parseToJson(data)
             .then((json)=>{getMappedElements(json)
                 .then((elements)=>{filterHighwayData(elements)
                     .then((highwayData)=>{
-                        osmDataBase = OSMIntegration.initMapDataBase(highwayData.nodes,highwayData.ways,highwayData.relations);
+                        OSMIntegration.initMapDataBase(osmDataBase,highwayData.nodes,highwayData.ways,highwayData.relations);
                         let decoded = LineDecoder.decode(osmDataBase,LRPs.LRPs,LRPs.posOffset,LRPs.negOffset,decoderProperties);
                         expect(decoded.lines.length).toEqual(1);
                         expect(decoded.lines[0].getID()).toEqual("4579317_28929725_1");
@@ -129,14 +129,14 @@ test('full osm integration test doubleLineLane',(done)=>{
     let locLines = startData.doubleLineLane.locationLines;
     let LRPs = LineEncoder.encode(mapDataBase,locLines,0,0);
 
-    let osmDataBase;
+    let osmDataBase = new MapDataBase();
 
     loadOsmTestData()
         .then((data)=>{parseToJson(data)
             .then((json)=>{getMappedElements(json)
                 .then((elements)=>{filterHighwayData(elements)
                     .then((highwayData)=>{
-                        osmDataBase = OSMIntegration.initMapDataBase(highwayData.nodes,highwayData.ways,highwayData.relations);
+                        OSMIntegration.initMapDataBase(osmDataBase,highwayData.nodes,highwayData.ways,highwayData.relations);
                         let decoded = LineDecoder.decode(osmDataBase,LRPs.LRPs,LRPs.posOffset,LRPs.negOffset,decoderProperties);
                         expect(decoded.lines.length).toEqual(1);
                         expect(decoded.lines[0].getID()).toEqual("4579317_28929725_1");
@@ -168,14 +168,14 @@ test('osm integration findCandidatesOrProjections 35 dist',(done)=>{
     let locLines = startData.doubleLineLane.locationLines;
     let LRPs = LineEncoder.encode(mapDataBase,locLines,0,0);
 
-    let osmDataBase;
+    let osmDataBase = new MapDataBase();
 
     loadOsmTestData()
         .then((data)=>{parseToJson(data)
             .then((json)=>{getMappedElements(json)
                 .then((elements)=>{filterHighwayData(elements)
                     .then((highwayData)=>{
-                        osmDataBase = OSMIntegration.initMapDataBase(highwayData.nodes,highwayData.ways,highwayData.relations);
+                        OSMIntegration.initMapDataBase(osmDataBase,highwayData.nodes,highwayData.ways,highwayData.relations);
                         expect(osmDataBase.nodes[28929726].getLatitudeDeg()).toEqual(51.2120497);
                         expect(osmDataBase.nodes[28929726].getLongitudeDeg()).toEqual(4.3971693);
 
@@ -183,14 +183,14 @@ test('osm integration findCandidatesOrProjections 35 dist',(done)=>{
                         let candidateNodes = LineDecoder.findCandidatesOrProjections(osmDataBase,LRPs.LRPs,decoderProperties);
                         // the first LRP should have a real node, the second LRP should have two projected points
                         expect(candidateNodes[0].length).toEqual(2);
-                        expect(candidateNodes[0][0].node).toBeDefined();
-                        expect(candidateNodes[0][0].node.id).toEqual("28929726");
-                        expect(candidateNodes[0][0].node.lat).toEqual(51.2120497);
-                        expect(candidateNodes[0][0].node.long).toEqual(4.3971693);
                         expect(candidateNodes[0][1].node).toBeDefined();
-                        expect(candidateNodes[0][1].node.id).toEqual("5917934406");
-                        expect(candidateNodes[0][1].node.lat).toEqual(51.2118663);
-                        expect(candidateNodes[0][1].node.long).toEqual(4.3971962);
+                        expect(candidateNodes[0][1].node.id).toEqual("28929726");
+                        expect(candidateNodes[0][1].node.lat).toEqual(51.2120497);
+                        expect(candidateNodes[0][1].node.long).toEqual(4.3971693);
+                        expect(candidateNodes[0][0].node).toBeDefined();
+                        expect(candidateNodes[0][0].node.id).toEqual("5917934406");
+                        expect(candidateNodes[0][0].node.lat).toEqual(51.2118663);
+                        expect(candidateNodes[0][0].node.long).toEqual(4.3971962);
                         expect(candidateNodes[1].length).toEqual(2);
                         expect(candidateNodes[1][0].node).toBeUndefined();
                         expect(candidateNodes[1][0].line).toBeDefined();
@@ -224,14 +224,14 @@ test('osm integration findCandidatesOrProjections 50 dist',(done)=>{
     let locLines = startData.doubleLineLane.locationLines;
     let LRPs = LineEncoder.encode(mapDataBase,locLines,0,0);
 
-    let osmDataBase;
+    let osmDataBase = new MapDataBase();
 
     loadOsmTestData()
         .then((data)=>{parseToJson(data)
             .then((json)=>{getMappedElements(json)
                 .then((elements)=>{filterHighwayData(elements)
                     .then((highwayData)=>{
-                        osmDataBase = OSMIntegration.initMapDataBase(highwayData.nodes,highwayData.ways,highwayData.relations);
+                        OSMIntegration.initMapDataBase(osmDataBase,highwayData.nodes,highwayData.ways,highwayData.relations);
                         expect(osmDataBase.nodes[28929726].getLatitudeDeg()).toEqual(51.2120497);
                         expect(osmDataBase.nodes[28929726].getLongitudeDeg()).toEqual(4.3971693);
 
@@ -239,23 +239,23 @@ test('osm integration findCandidatesOrProjections 50 dist',(done)=>{
                         let candidateNodes = LineDecoder.findCandidatesOrProjections(osmDataBase,LRPs.LRPs,decoderProperties);
                         // the first LRP should have a real node, the second LRP should have two projected points
                         expect(candidateNodes[0].length).toEqual(2);
-                        expect(candidateNodes[0][0].node).toBeDefined();
-                        expect(candidateNodes[0][0].node.id).toEqual("28929726");
-                        expect(candidateNodes[0][0].node.lat).toEqual(51.2120497);
-                        expect(candidateNodes[0][0].node.long).toEqual(4.3971693);
                         expect(candidateNodes[0][1].node).toBeDefined();
-                        expect(candidateNodes[0][1].node.id).toEqual("5917934406");
-                        expect(candidateNodes[0][1].node.lat).toEqual(51.2118663);
-                        expect(candidateNodes[0][1].node.long).toEqual(4.3971962);
+                        expect(candidateNodes[0][1].node.id).toEqual("28929726");
+                        expect(candidateNodes[0][1].node.lat).toEqual(51.2120497);
+                        expect(candidateNodes[0][1].node.long).toEqual(4.3971693);
+                        expect(candidateNodes[0][0].node).toBeDefined();
+                        expect(candidateNodes[0][0].node.id).toEqual("5917934406");
+                        expect(candidateNodes[0][0].node.lat).toEqual(51.2118663);
+                        expect(candidateNodes[0][0].node.long).toEqual(4.3971962);
                         expect(candidateNodes[1].length).toEqual(2);
-                        expect(candidateNodes[1][0].node).toBeDefined();
-                        expect(candidateNodes[1][0].node.id).toEqual("28929726");
-                        expect(candidateNodes[1][0].node.lat).toEqual(51.2120497);
-                        expect(candidateNodes[1][0].node.long).toEqual(4.3971693);
                         expect(candidateNodes[1][1].node).toBeDefined();
-                        expect(candidateNodes[1][1].node.id).toEqual("5917934406");
-                        expect(candidateNodes[1][1].node.lat).toEqual(51.2118663);
-                        expect(candidateNodes[1][1].node.long).toEqual(4.3971962);
+                        expect(candidateNodes[1][1].node.id).toEqual("28929726");
+                        expect(candidateNodes[1][1].node.lat).toEqual(51.2120497);
+                        expect(candidateNodes[1][1].node.long).toEqual(4.3971693);
+                        expect(candidateNodes[1][0].node).toBeDefined();
+                        expect(candidateNodes[1][0].node.id).toEqual("5917934406");
+                        expect(candidateNodes[1][0].node.lat).toEqual(51.2118663);
+                        expect(candidateNodes[1][0].node.long).toEqual(4.3971962);
                         done();
                     })})})});
 });
@@ -282,14 +282,14 @@ test('osm integration findCandidatesOrProjections 50 dist always project',(done)
     let locLines = startData.doubleLineLane.locationLines;
     let LRPs = LineEncoder.encode(mapDataBase,locLines,0,0);
 
-    let osmDataBase;
+    let osmDataBase = new MapDataBase();
 
     loadOsmTestData()
         .then((data)=>{parseToJson(data)
             .then((json)=>{getMappedElements(json)
                 .then((elements)=>{filterHighwayData(elements)
                     .then((highwayData)=>{
-                        osmDataBase = OSMIntegration.initMapDataBase(highwayData.nodes,highwayData.ways,highwayData.relations);
+                        OSMIntegration.initMapDataBase(osmDataBase,highwayData.nodes,highwayData.ways,highwayData.relations);
                         expect(osmDataBase.nodes[28929726].getLatitudeDeg()).toEqual(51.2120497);
                         expect(osmDataBase.nodes[28929726].getLongitudeDeg()).toEqual(4.3971693);
 
@@ -297,14 +297,14 @@ test('osm integration findCandidatesOrProjections 50 dist always project',(done)
                         let candidateNodes = LineDecoder.findCandidatesOrProjections(osmDataBase,LRPs.LRPs,decoderProperties);
                         // the first LRP should have a real node, the second LRP should have two projected points
                         expect(candidateNodes[0].length).toEqual(8);
-                        expect(candidateNodes[0][0].node).toBeDefined();
-                        expect(candidateNodes[0][0].node.id).toEqual("28929726");
-                        expect(candidateNodes[0][0].node.lat).toEqual(51.2120497);
-                        expect(candidateNodes[0][0].node.long).toEqual(4.3971693);
                         expect(candidateNodes[0][1].node).toBeDefined();
-                        expect(candidateNodes[0][1].node.id).toEqual("5917934406");
-                        expect(candidateNodes[0][1].node.lat).toEqual(51.2118663);
-                        expect(candidateNodes[0][1].node.long).toEqual(4.3971962);
+                        expect(candidateNodes[0][1].node.id).toEqual("28929726");
+                        expect(candidateNodes[0][1].node.lat).toEqual(51.2120497);
+                        expect(candidateNodes[0][1].node.long).toEqual(4.3971693);
+                        expect(candidateNodes[0][0].node).toBeDefined();
+                        expect(candidateNodes[0][0].node.id).toEqual("5917934406");
+                        expect(candidateNodes[0][0].node.lat).toEqual(51.2118663);
+                        expect(candidateNodes[0][0].node.long).toEqual(4.3971962);
                         expect(candidateNodes[0][2].node).toBeUndefined();
                         expect(candidateNodes[0][2].line).toBeDefined();
                         expect(candidateNodes[0][2].line.getID()).toEqual("4579317_28929725");
@@ -312,14 +312,14 @@ test('osm integration findCandidatesOrProjections 50 dist always project',(done)
                         expect(candidateNodes[0][3].line).toBeDefined();
                         expect(candidateNodes[0][3].line.getID()).toEqual("4579317_28929725_1");
                         expect(candidateNodes[1].length).toEqual(8);
-                        expect(candidateNodes[1][0].node).toBeDefined();
-                        expect(candidateNodes[1][0].node.id).toEqual("28929726");
-                        expect(candidateNodes[1][0].node.lat).toEqual(51.2120497);
-                        expect(candidateNodes[1][0].node.long).toEqual(4.3971693);
                         expect(candidateNodes[1][1].node).toBeDefined();
-                        expect(candidateNodes[1][1].node.id).toEqual("5917934406");
-                        expect(candidateNodes[1][1].node.lat).toEqual(51.2118663);
-                        expect(candidateNodes[1][1].node.long).toEqual(4.3971962);
+                        expect(candidateNodes[1][1].node.id).toEqual("28929726");
+                        expect(candidateNodes[1][1].node.lat).toEqual(51.2120497);
+                        expect(candidateNodes[1][1].node.long).toEqual(4.3971693);
+                        expect(candidateNodes[1][0].node).toBeDefined();
+                        expect(candidateNodes[1][0].node.id).toEqual("5917934406");
+                        expect(candidateNodes[1][0].node.lat).toEqual(51.2118663);
+                        expect(candidateNodes[1][0].node.long).toEqual(4.3971962);
                         expect(candidateNodes[1][2].node).toBeUndefined();
                         expect(candidateNodes[1][2].line).toBeDefined();
                         expect(candidateNodes[1][2].line.getID()).toEqual("4579317_28929725");
@@ -352,14 +352,14 @@ test('osm integration findCandidateLines',(done)=>{
     let locLines = startData.doubleLineLane.locationLines;
     let LRPs = LineEncoder.encode(mapDataBase,locLines,0,0);
 
-    let osmDataBase;
+    let osmDataBase = new MapDataBase();
 
     loadOsmTestData()
         .then((data)=>{parseToJson(data)
             .then((json)=>{getMappedElements(json)
                 .then((elements)=>{filterHighwayData(elements)
                     .then((highwayData)=>{
-                        osmDataBase = OSMIntegration.initMapDataBase(highwayData.nodes,highwayData.ways,highwayData.relations);
+                        OSMIntegration.initMapDataBase(osmDataBase,highwayData.nodes,highwayData.ways,highwayData.relations);
                         let candidateNodes = LineDecoder.findCandidatesOrProjections(osmDataBase,LRPs.LRPs,decoderProperties);
                         let candidateLines = LineDecoder.findCandidateLines(LRPs.LRPs,candidateNodes,decoderProperties);
                         //the first LRP had a real candidate node, which should be the start node of the found line,
@@ -395,14 +395,14 @@ test('osm integration findCandidateLines 50 dist',(done)=>{
     let locLines = startData.doubleLineLane.locationLines;
     let LRPs = LineEncoder.encode(mapDataBase,locLines,0,0);
 
-    let osmDataBase;
+    let osmDataBase = new MapDataBase();
 
     loadOsmTestData()
         .then((data)=>{parseToJson(data)
             .then((json)=>{getMappedElements(json)
                 .then((elements)=>{filterHighwayData(elements)
                     .then((highwayData)=>{
-                        osmDataBase = OSMIntegration.initMapDataBase(highwayData.nodes,highwayData.ways,highwayData.relations);
+                        OSMIntegration.initMapDataBase(osmDataBase,highwayData.nodes,highwayData.ways,highwayData.relations);
                         let candidateNodes = LineDecoder.findCandidatesOrProjections(osmDataBase,LRPs.LRPs,decoderProperties);
                         let candidateLines = LineDecoder.findCandidateLines(LRPs.LRPs,candidateNodes,decoderProperties);
                         expect(candidateLines[0].length).toEqual(1);
@@ -437,14 +437,14 @@ test('osm integration findCandidateLines 50 dist always project',(done)=>{
     let locLines = startData.doubleLineLane.locationLines;
     let LRPs = LineEncoder.encode(mapDataBase,locLines,0,0);
 
-    let osmDataBase;
+    let osmDataBase = new MapDataBase();
 
     loadOsmTestData()
         .then((data)=>{parseToJson(data)
             .then((json)=>{getMappedElements(json)
                 .then((elements)=>{filterHighwayData(elements)
                     .then((highwayData)=>{
-                        osmDataBase = OSMIntegration.initMapDataBase(highwayData.nodes,highwayData.ways,highwayData.relations);
+                        OSMIntegration.initMapDataBase(osmDataBase,highwayData.nodes,highwayData.ways,highwayData.relations);
                         let candidateNodes = LineDecoder.findCandidatesOrProjections(osmDataBase,LRPs.LRPs,decoderProperties);
                         let candidateLines = LineDecoder.findCandidateLines(LRPs.LRPs,candidateNodes,decoderProperties);
                         expect(candidateLines[0].length).toEqual(2);
@@ -487,14 +487,14 @@ test('osm integration determineShortestPaths',(done)=>{
     let locLines = startData.doubleLineLane.locationLines;
     let LRPs = LineEncoder.encode(mapDataBase,locLines,0,0);
 
-    let osmDataBase;
+    let osmDataBase = new MapDataBase();
 
     loadOsmTestData()
         .then((data)=>{parseToJson(data)
             .then((json)=>{getMappedElements(json)
                 .then((elements)=>{filterHighwayData(elements)
                     .then((highwayData)=>{
-                        osmDataBase = OSMIntegration.initMapDataBase(highwayData.nodes,highwayData.ways,highwayData.relations);
+                        OSMIntegration.initMapDataBase(osmDataBase,highwayData.nodes,highwayData.ways,highwayData.relations);
                         let candidateNodes = LineDecoder.findCandidatesOrProjections(osmDataBase,LRPs.LRPs,decoderProperties);
                         let candidateLines = LineDecoder.findCandidateLines(LRPs.LRPs,candidateNodes,decoderProperties);
                         let concatShortestPath = LineDecoder.determineShortestPaths(candidateLines,LRPs.LRPs,decoderProperties);
@@ -528,14 +528,14 @@ test('osm integration determineShortestPaths 50 dist',(done)=>{
     let locLines = startData.doubleLineLane.locationLines;
     let LRPs = LineEncoder.encode(mapDataBase,locLines,0,0);
 
-    let osmDataBase;
+    let osmDataBase = new MapDataBase();
 
     loadOsmTestData()
         .then((data)=>{parseToJson(data)
             .then((json)=>{getMappedElements(json)
                 .then((elements)=>{filterHighwayData(elements)
                     .then((highwayData)=>{
-                        osmDataBase = OSMIntegration.initMapDataBase(highwayData.nodes,highwayData.ways,highwayData.relations);
+                        OSMIntegration.initMapDataBase(osmDataBase,highwayData.nodes,highwayData.ways,highwayData.relations);
                         let candidateNodes = LineDecoder.findCandidatesOrProjections(osmDataBase,LRPs.LRPs,decoderProperties);
                         let candidateLines = LineDecoder.findCandidateLines(LRPs.LRPs,candidateNodes,decoderProperties);
                         expect(()=>{LineDecoder.determineShortestPaths(candidateLines,LRPs.LRPs,decoderProperties)}).toThrow(Error("No shortest path could be found between the given LRPs with indexes 0 and 1" +
@@ -567,14 +567,14 @@ test('osm integration determineShortestPaths 50 dist always project',(done)=>{
     let locLines = startData.doubleLineLane.locationLines;
     let LRPs = LineEncoder.encode(mapDataBase,locLines,0,0);
 
-    let osmDataBase;
+    let osmDataBase = new MapDataBase();
 
     loadOsmTestData()
         .then((data)=>{parseToJson(data)
             .then((json)=>{getMappedElements(json)
                 .then((elements)=>{filterHighwayData(elements)
                     .then((highwayData)=>{
-                        osmDataBase = OSMIntegration.initMapDataBase(highwayData.nodes,highwayData.ways,highwayData.relations);
+                        OSMIntegration.initMapDataBase(osmDataBase,highwayData.nodes,highwayData.ways,highwayData.relations);
                         let candidateNodes = LineDecoder.findCandidatesOrProjections(osmDataBase,LRPs.LRPs,decoderProperties);
                         let candidateLines = LineDecoder.findCandidateLines(LRPs.LRPs,candidateNodes,decoderProperties);
                         let concatShortestPath = LineDecoder.determineShortestPaths(candidateLines,LRPs.LRPs,decoderProperties);
@@ -608,14 +608,14 @@ test('osm integration trimAccordingToOffsets no offsets',(done)=>{
     let locLines = startData.doubleLineLane.locationLines;
     let LRPs = LineEncoder.encode(mapDataBase,locLines,0,0);
 
-    let osmDataBase;
+    let osmDataBase = new MapDataBase();
 
     loadOsmTestData()
         .then((data)=>{parseToJson(data)
             .then((json)=>{getMappedElements(json)
                 .then((elements)=>{filterHighwayData(elements)
                     .then((highwayData)=>{
-                        osmDataBase = OSMIntegration.initMapDataBase(highwayData.nodes,highwayData.ways,highwayData.relations);
+                        OSMIntegration.initMapDataBase(osmDataBase,highwayData.nodes,highwayData.ways,highwayData.relations);
                         let candidateNodes = LineDecoder.findCandidatesOrProjections(osmDataBase,LRPs.LRPs,decoderProperties);
                         let candidateLines = LineDecoder.findCandidateLines(LRPs.LRPs,candidateNodes,decoderProperties);
                         let concatShortestPath = LineDecoder.determineShortestPaths(candidateLines,LRPs.LRPs,decoderProperties);
@@ -653,14 +653,14 @@ test('osm integration trimAccordingToOffsets with invalid offsets',(done)=>{
     let locLines = startData.doubleLineLane.locationLines;
     let LRPs = LineEncoder.encode(mapDataBase,locLines,0,0);
 
-    let osmDataBase;
+    let osmDataBase = new MapDataBase();
 
     loadOsmTestData()
         .then((data)=>{parseToJson(data)
             .then((json)=>{getMappedElements(json)
                 .then((elements)=>{filterHighwayData(elements)
                     .then((highwayData)=>{
-                        osmDataBase = OSMIntegration.initMapDataBase(highwayData.nodes,highwayData.ways,highwayData.relations);
+                        OSMIntegration.initMapDataBase(osmDataBase,highwayData.nodes,highwayData.ways,highwayData.relations);
                         let candidateNodes = LineDecoder.findCandidatesOrProjections(osmDataBase,LRPs.LRPs,decoderProperties);
                         let candidateLines = LineDecoder.findCandidateLines(LRPs.LRPs,candidateNodes,decoderProperties);
                         let concatShortestPath = LineDecoder.determineShortestPaths(candidateLines,LRPs.LRPs,decoderProperties);
@@ -692,14 +692,14 @@ test('osm integration trimAccordingToOffsets valid offsets',(done)=>{
     let locLines = startData.doubleLineLane.locationLines;
     let LRPs = LineEncoder.encode(mapDataBase,locLines,0,0);
 
-    let osmDataBase;
+    let osmDataBase = new MapDataBase();
 
     loadOsmTestData()
         .then((data)=>{parseToJson(data)
             .then((json)=>{getMappedElements(json)
                 .then((elements)=>{filterHighwayData(elements)
                     .then((highwayData)=>{
-                        osmDataBase = OSMIntegration.initMapDataBase(highwayData.nodes,highwayData.ways,highwayData.relations);
+                        OSMIntegration.initMapDataBase(osmDataBase,highwayData.nodes,highwayData.ways,highwayData.relations);
                         let candidateNodes = LineDecoder.findCandidatesOrProjections(osmDataBase,LRPs.LRPs,decoderProperties);
                         let candidateLines = LineDecoder.findCandidateLines(LRPs.LRPs,candidateNodes,decoderProperties);
                         let concatShortestPath = LineDecoder.determineShortestPaths(candidateLines,LRPs.LRPs,decoderProperties);
@@ -755,14 +755,14 @@ test('osm integration full integration previously crashing because bad length ca
     };
     let LRPs = [LRP_0,LRP_1];
 
-    let osmDataBase;
+    let osmDataBase = new MapDataBase();
 
     loadOsmTestData()
         .then((data)=>{parseToJson(data)
             .then((json)=>{getMappedElements(json)
                 .then((elements)=>{filterHighwayData(elements)
                     .then((highwayData)=>{
-                        osmDataBase = OSMIntegration.initMapDataBase(highwayData.nodes,highwayData.ways,highwayData.relations);
+                        OSMIntegration.initMapDataBase(osmDataBase,highwayData.nodes,highwayData.ways,highwayData.relations);
                         let decoded = LineDecoder.decode(osmDataBase,LRPs,0,0,decoderProperties);
                         console.log(decoded);
                         expect(decoded.lines[0].getID()).toEqual("51356773_28929726_1");

@@ -1,5 +1,3 @@
-import RbushSearchTree from '../SearchTree/RbushNodeSearchTree';
-
 export default class MapDataBase {
     constructor(
         lines = {},
@@ -18,16 +16,15 @@ export default class MapDataBase {
         this.mapBoundingBox = boundingBox;
         this.lines = lines;
         this.nodes = nodes;
-        this.searchTree = new RbushSearchTree(nodes);
     }
 
     setData(
         lines={},nodes={},boundingBox = {
-            left: undefined,
-            top: undefined,
-            right: undefined,
-            bottom: undefined
-        },turnRestrictions = false
+        left: undefined,
+        top: undefined,
+        right: undefined,
+        bottom: undefined
+    },turnRestrictions = false
     )
     {
         this.numberOfNodes = lines.length;
@@ -36,7 +33,6 @@ export default class MapDataBase {
         this.mapBoundingBox = boundingBox;
         this.lines = lines;
         this.nodes = nodes;
-        this.searchTree = new RbushSearchTree(nodes);
     }
 
     hasTurnRestrictions(){
@@ -54,13 +50,14 @@ export default class MapDataBase {
     //todo: versnellen via custom gegevensstructuur?
     findNodesCloseByCoordinate(lat,long,dist){
         let resNodes = [];
-        let possibleNodes = this.searchTree.findCloseBy(lat,long,dist);
-        possibleNodes.forEach((node)=>{
-            let distance = this.nodes[node[2]].getDistance(lat,long);
-            if(distance <= dist){
-                resNodes.push({node: this.nodes[node[2]], dist: distance})
+        for(let key in this.nodes){
+            if(this.nodes.hasOwnProperty(key)){
+                let distance = this.nodes[key].getDistance(lat,long);
+                if( distance <= dist){
+                    resNodes.push({node: this.nodes[key], dist: distance})
+                }
             }
-        });
+        }
         return resNodes;
     }
 

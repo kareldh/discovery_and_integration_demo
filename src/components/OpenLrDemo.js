@@ -114,7 +114,8 @@ export default class OpenLrDemo extends React.Component{
                     .then((json)=>{getMappedElements(json)
                         .then((elements)=>{filterHighwayData(elements)
                             .then((highwayData)=>{
-                                this.osmDataBase = OSMIntegration.initMapDataBase(highwayData.nodes,highwayData.ways,highwayData.relations);
+                                this.osmDataBase = new MapDataBase();
+                                OSMIntegration.initMapDataBase(this.osmDataBase,highwayData.nodes,highwayData.ways,highwayData.relations);
                                 let decoded = OpenLRDecoder.decode(encoded,this.osmDataBase);
                                 console.log("Found in Open Street Maps",decoded);
                                 this.createLineStringsOpenLr(decoded.lines,decoded.posOffset,decoded.negOffset);
@@ -132,7 +133,8 @@ export default class OpenLrDemo extends React.Component{
             fetchRoutableTile(14,this.x,this.y)
                 .then((data)=>{getRoutableTilesNodesAndLines(data.triples)
                     .then((nodesAndLines)=>{
-                        this.routableTilesDataBase = RoutableTilesIntegration.initMapDataBase(nodesAndLines.nodes,nodesAndLines.lines);
+                        this.routableTilesDataBase = new MapDataBase();
+                        RoutableTilesIntegration.initMapDataBase(this.routableTilesDataBase,nodesAndLines.nodes,nodesAndLines.lines);
                         let decoded = OpenLRDecoder.decode(encoded,this.routableTilesDataBase);
                         console.log("Found in RoutableTiles",decoded);
                         this.createLineStringsOpenLr(decoded.lines,decoded.posOffset,decoded.negOffset);
@@ -148,7 +150,8 @@ export default class OpenLrDemo extends React.Component{
     findMarkersWegenregisterAntwerpen(encoded){
         if(this.wegenretisterDataBase === undefined){
             loadNodesLineStringsWegenregsterAntwerpen().then(features => {
-                this.wegenretisterDataBase = WegenregisterAntwerpenIntegration.initMapDataBase(features);
+                this.wegenretisterDataBase = new MapDataBase();
+                WegenregisterAntwerpenIntegration.initMapDataBase(this.wegenretisterDataBase,features);
                 let decoded = OpenLRDecoder.decode(encoded,this.wegenretisterDataBase);
                 console.log("Found in Wegenregister Antwerpen",decoded);
                 this.createLineStringsOpenLr(decoded.lines,decoded.posOffset,decoded.negOffset);

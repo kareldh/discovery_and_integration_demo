@@ -2,12 +2,12 @@
 //todo: moet ook oude tile kunnen wegnemen?
 //currently uses the nodes and ways it is given, doesn't care if those are coming from a single or multiple tiles
 
-import MapDataBase from "../OpenLR/map/MapDataBase";
+// import MapDataBase from "../OpenLR/map/MapDataBase";
 import Line from "../OpenLR/map/Line";
 import Node from "../OpenLR/map/Node";
 
 export default class RoutableTilesIntegration{
-    static initMapDataBase(nodes,ways,relations){
+    static initMapDataBase(mapDataBase,nodes,ways,relations){
         let openLRLines = {};
         let openLRNodes = {};
         let osmNodes = {};
@@ -45,7 +45,8 @@ export default class RoutableTilesIntegration{
                 }
             }
         }
-        return new MapDataBase(openLRLines,openLRNodes);
+        mapDataBase.setData(openLRLines,openLRNodes);
+        // return new MapDataBase(openLRLines,openLRNodes);
     }
 
     static getFRC(osmWay){

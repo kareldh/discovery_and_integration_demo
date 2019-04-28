@@ -1,9 +1,9 @@
-import MapDataBase from "../OpenLR/map/MapDataBase";
+// import MapDataBase from "../OpenLR/map/MapDataBase";
 import Line from "../OpenLR/map/Line";
 import Node from "../OpenLR/map/Node";
 
 export default class OSMIntegration{
-    static initMapDataBase(nodes,ways,relations){
+    static initMapDataBase(mapDataBase,nodes,ways,relations){
         let openLRLines = {};
         let openLRNodes = {};
         let osmNodes = {};
@@ -33,7 +33,8 @@ export default class OSMIntegration{
                 }
             }
         }
-        return new MapDataBase(openLRLines,openLRNodes);
+        // return new MapDataBase(openLRLines,openLRNodes);
+        mapDataBase.setData(openLRLines,openLRNodes);
     }
     
     static getFRC(osmWay){
