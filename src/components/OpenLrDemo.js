@@ -1,9 +1,8 @@
 import React from 'react';
 import TileView from "./TileView";
 import {
-    fetchOsmData,
     fetchRoutableTile, filterHighwayData,
-    getIntersectionNodes, getMappedElements, getRoutableTilesNodesAndLines,
+    getMappedElements, getRoutableTilesNodesAndLines,
     parseToJson
 } from "../data/api";
 import {Marker, Polyline, Popup, Circle} from "react-leaflet";
