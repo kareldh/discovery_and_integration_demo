@@ -6,16 +6,12 @@ export default class RbushNodeSearchTree{
         let data = [];
 
         //todo: this could already be made in the openlr integration classes
-        let count = 0;
         for(let id in nodes){
             if(nodes.hasOwnProperty(id)){
-                if(count <90000){
-                    if(isNaN(nodes[id].getLongitudeDeg()) || isNaN(nodes[id].getLatitudeDeg())){
-                        throw nodes[id];
-                    }
-                    data.push([nodes[id].getLongitudeDeg(),nodes[id].getLatitudeDeg(),nodes[id].getID()]);
+                if(isNaN(nodes[id].getLongitudeDeg()) || isNaN(nodes[id].getLatitudeDeg())){
+                    throw nodes[id];
                 }
-                count++;
+                data.push([nodes[id].getLongitudeDeg(),nodes[id].getLatitudeDeg(),nodes[id].getID()]);
             }
         }
         this.tree.load(data);
