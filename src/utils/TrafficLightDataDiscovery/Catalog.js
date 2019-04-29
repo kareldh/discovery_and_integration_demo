@@ -1,5 +1,4 @@
 import PolygonLookup from 'polygon-lookup';
-import {fetchCatalog} from "./Api";
 
 export default class Catalog{
     constructor(catalogRDF){

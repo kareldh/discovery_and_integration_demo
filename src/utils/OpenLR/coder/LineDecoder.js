@@ -188,7 +188,7 @@ export default class LineDecoder{
         return rating/maxRating;
     }
 
-    static findShortestPath(startLine,endLine,lfrcnp,decoderProperties){
+    static findShortestPath(startLine,endLine,lfrcnp,decoderProperties,distanceToNext){
         if(startLine.startNode === endLine.endNode){
             console.log("The first LRP starts in the same point where the second LRP ends. If no valid shortest path is found, retry with projections.");
         }
@@ -196,7 +196,14 @@ export default class LineDecoder{
             return {lines: [], length: 0};
         }
         else{
-            return Dijkstra.shortestPath(startLine.getEndNode(),endLine.getStartNode(),{lfrcnp: lfrcnp, lfrcnpDiff: decoderProperties.lfrcnpDiff});
+            return Dijkstra.shortestPath(
+                startLine.getEndNode(),
+                endLine.getStartNode(),
+                {
+                    lfrcnp: lfrcnp,
+                    lfrcnpDiff: decoderProperties.lfrcnpDiff,
+                    maxDist: distanceToNext !== undefined ? decoderProperties.distanceToNextDiff + distanceToNext : undefined
+                });
         }
     }
 
@@ -216,7 +223,7 @@ export default class LineDecoder{
 
         while(shortestPath === undefined   //first time shortestPath is always undefined, so this loop runs minimum 1 time
             && tries.count < decoderProperties.maxSPSearchRetries){
-            shortestPath = LineDecoder.findShortestPath(candidateLines[lrpIndex][candidateIndexes[lrpIndex]].line,candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]].line,LRPs[lrpIndex].lfrcnp,decoderProperties);
+            shortestPath = LineDecoder.findShortestPath(candidateLines[lrpIndex][candidateIndexes[lrpIndex]].line,candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]].line,LRPs[lrpIndex].lfrcnp,decoderProperties,LRPs[lrpIndex].distanceToNext);
 
             // the total length of the first line can be added to distanceBetweenLRP
             distanceBetweenLRP = candidateLines[lrpIndex][candidateIndexes[lrpIndex]].line.getLength();

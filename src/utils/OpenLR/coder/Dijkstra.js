@@ -45,7 +45,20 @@ export default class Dijkstra{
                     || minLengths[line.getEndNode().getID()] > length)){
                     minLengths[line.getEndNode().getID()] = length;
                     followedLine[line.getEndNode().getID()] = line;
-                    heap.push([length,line.getEndNode()]);
+                    if(options !== undefined && options.maxDist !== undefined){
+                        // if a max distance is given, the shortest path can not be longer than this max distance
+                        // which means that nodes that have a eagle's eye distance longer than this max distance will
+                        // never be part of the shortest path we want to calculate, and the shortest path found in this
+                        // way would always be discarded since the total distance would always be longer than
+                        // the max distance (which is the distanceToNextLrp + decoderProperties.dist)
+                        // so we can speed up this SP calculation by not taking these nodes into account
+                        if(line.getEndNode().getDistance(startNode.getLatitudeDeg(),startNode.getLongitudeDeg()) <= options.maxDist){
+                            heap.push([length,line.getEndNode()]);
+                        }
+                    }
+                    else{
+                        heap.push([length,line.getEndNode()]);
+                    }
                 }
             });
         }

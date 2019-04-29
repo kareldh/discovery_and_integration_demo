@@ -41,7 +41,6 @@ export default class WegenregisterAntwerpenIntegration{
                                 // }
                                 openLRLines[prevLat+"_"+prevLong+"_"+lat+"_"+long]
                                     = new Line(prevLat+"_"+prevLong+"_"+lat+"_"+long,openLRNodes[prevLat+"_"+prevLong],openLRNodes[lat+"_"+long]);
-                                //todo if rijrichting is beide, dan ook omgekeerd toevoegen?
                                 openLRLines[prevLat+"_"+prevLong+"_"+lat+"_"+long].frc = WegenregisterAntwerpenIntegration.getFRC(features[i].properties);
                                 openLRLines[prevLat+"_"+prevLong+"_"+lat+"_"+long].fwo = WegenregisterAntwerpenIntegration.getFOW(features[i].properties);
                             }
@@ -52,7 +51,6 @@ export default class WegenregisterAntwerpenIntegration{
                                 // }
                                 openLRLines[lat+"_"+long+"_"+prevLat+"_"+prevLong]
                                     = new Line(lat+"_"+long+"_"+prevLat+"_"+prevLong,openLRNodes[lat+"_"+long],openLRNodes[prevLat+"_"+prevLong]);
-                                //todo if rijrichting is beide, dan ook omgekeerd toevoegen?
                                 openLRLines[lat+"_"+long+"_"+prevLat+"_"+prevLong].frc = WegenregisterAntwerpenIntegration.getFRC(features[i].properties);
                                 openLRLines[lat+"_"+long+"_"+prevLat+"_"+prevLong].fwo = WegenregisterAntwerpenIntegration.getFOW(features[i].properties);
                             }
@@ -72,6 +70,48 @@ export default class WegenregisterAntwerpenIntegration{
         // console.log(openLRLines!=={});
         mapDataBase.setData(openLRLines,openLRNodes);
         // return new MapDataBase(openLRLines,openLRNodes);
+    }
+
+    static initMapDataBaseDeprecatedNoRoadDirections(mapDataBase,features){
+        let openLRLines = {};
+        let openLRNodes = {};
+
+        for(let i=0;i<features.length;i++){
+
+            if(features[i].geometry.type === "LineString"){
+
+                //todo: gebruik properties voor bepalen frc en fow
+                if(features[i].geometry.coordinates.length >= 2){
+                    let lat = features[i].geometry.coordinates[0][1];
+                    let long = features[i].geometry.coordinates[0][0];
+                    if(openLRNodes[lat+"_"+long] === undefined){
+                        openLRNodes[lat+"_"+long] = new Node(lat+"_"+long,lat,long);
+                    }
+                    for(let j=1;j<features[i].geometry.coordinates.length;j++){
+                        lat = features[i].geometry.coordinates[j][1];
+                        long = features[i].geometry.coordinates[j][0];
+                        if(openLRNodes[lat+"_"+long] === undefined){
+                            openLRNodes[lat+"_"+long] = new Node(lat+"_"+long,lat,long);
+                        }
+                        let prevLat = features[i].geometry.coordinates[j-1][1];
+                        let prevLong = features[i].geometry.coordinates[j-1][0];
+
+
+                        openLRLines[prevLat+"_"+prevLong+"_"+lat+"_"+long]
+                            = new Line(prevLat+"_"+prevLong+"_"+lat+"_"+long,openLRNodes[prevLat+"_"+prevLong],openLRNodes[lat+"_"+long]);
+                        openLRLines[prevLat+"_"+prevLong+"_"+lat+"_"+long].frc = WegenregisterAntwerpenIntegration.getFRC(features[i].properties);
+                        openLRLines[prevLat+"_"+prevLong+"_"+lat+"_"+long].fwo = WegenregisterAntwerpenIntegration.getFOW(features[i].properties);
+
+                        openLRLines[lat+"_"+long+"_"+prevLat+"_"+prevLong]
+                            = new Line(lat+"_"+long+"_"+prevLat+"_"+prevLong,openLRNodes[lat+"_"+long],openLRNodes[prevLat+"_"+prevLong]);
+                        openLRLines[lat+"_"+long+"_"+prevLat+"_"+prevLong].frc = WegenregisterAntwerpenIntegration.getFRC(features[i].properties);
+                        openLRLines[lat+"_"+long+"_"+prevLat+"_"+prevLong].fwo = WegenregisterAntwerpenIntegration.getFOW(features[i].properties);
+
+                    }
+                }
+            }
+        }
+        mapDataBase.setData(openLRLines,openLRNodes);
     }
 
     static getFRC(properties){
