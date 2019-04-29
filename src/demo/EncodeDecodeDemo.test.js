@@ -15,7 +15,7 @@ function demo(){
     return new Promise(resolve=>{
         loadNodesLineStringsWegenregsterAntwerpen().then(features => {
             let wegenregisterMapDataBase = new MapDataBase();
-            WegenregisterAntwerpenIntegration.initMapDataBaseDeprecatedNoRoadDirections(wegenregisterMapDataBase,features);
+            WegenregisterAntwerpenIntegration.initMapDataBase(wegenregisterMapDataBase,features);
 
             loadOsmTestData()
                 .then((data)=>{parseToJson(data)
