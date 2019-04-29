@@ -192,12 +192,12 @@ test('osm integration findCandidatesOrProjections 35 dist',(done)=>{
                         expect(candidateNodes[0][0].node.lat).toEqual(51.2118663);
                         expect(candidateNodes[0][0].node.long).toEqual(4.3971962);
                         expect(candidateNodes[1].length).toEqual(2);
-                        expect(candidateNodes[1][1].node).toBeUndefined();
-                        expect(candidateNodes[1][1].line).toBeDefined();
-                        expect(candidateNodes[1][1].line.getID()).toEqual("4579317_28929725");
                         expect(candidateNodes[1][0].node).toBeUndefined();
                         expect(candidateNodes[1][0].line).toBeDefined();
-                        expect(candidateNodes[1][0].line.getID()).toEqual("4579317_28929725_1");
+                        expect(candidateNodes[1][0].line.getID()).toEqual("4579317_28929725");
+                        expect(candidateNodes[1][1].node).toBeUndefined();
+                        expect(candidateNodes[1][1].line).toBeDefined();
+                        expect(candidateNodes[1][1].line.getID()).toEqual("4579317_28929725_1");
                         done();
                     })})})});
 });
@@ -295,7 +295,6 @@ test('osm integration findCandidatesOrProjections 50 dist always project',(done)
 
                         expect(osmDataBase).toBeDefined();
                         let candidateNodes = LineDecoder.findCandidatesOrProjections(osmDataBase,LRPs.LRPs,decoderProperties);
-                        // the first LRP should have a real node, the second LRP should have two projected points
                         expect(candidateNodes[0].length).toEqual(8);
                         expect(candidateNodes[0][1].node).toBeDefined();
                         expect(candidateNodes[0][1].node.id).toEqual("28929726");
@@ -305,12 +304,13 @@ test('osm integration findCandidatesOrProjections 50 dist always project',(done)
                         expect(candidateNodes[0][0].node.id).toEqual("5917934406");
                         expect(candidateNodes[0][0].node.lat).toEqual(51.2118663);
                         expect(candidateNodes[0][0].node.long).toEqual(4.3971962);
-                        expect(candidateNodes[0][3].node).toBeUndefined();
-                        expect(candidateNodes[0][3].line).toBeDefined();
-                        expect(candidateNodes[0][3].line.getID()).toEqual("4579317_28929725");
-                        expect(candidateNodes[0][2].node).toBeUndefined();
-                        expect(candidateNodes[0][2].line).toBeDefined();
-                        expect(candidateNodes[0][2].line.getID()).toEqual("4579317_28929725_1");
+                        expect(candidateNodes[0][5].node).toBeUndefined();
+                        expect(candidateNodes[0][5].line).toBeDefined();
+                        expect(candidateNodes[0][5].line.getID()).toEqual("4579317_28929725");
+                        expect(candidateNodes[0][6].node).toBeUndefined();
+                        expect(candidateNodes[0][6].line).toBeDefined();
+                        expect(candidateNodes[0][6].line.getID()).toEqual("4579317_28929725_1");
+
                         expect(candidateNodes[1].length).toEqual(8);
                         expect(candidateNodes[1][1].node).toBeDefined();
                         expect(candidateNodes[1][1].node.id).toEqual("28929726");
@@ -320,12 +320,12 @@ test('osm integration findCandidatesOrProjections 50 dist always project',(done)
                         expect(candidateNodes[1][0].node.id).toEqual("5917934406");
                         expect(candidateNodes[1][0].node.lat).toEqual(51.2118663);
                         expect(candidateNodes[1][0].node.long).toEqual(4.3971962);
-                        expect(candidateNodes[1][3].node).toBeUndefined();
-                        expect(candidateNodes[1][3].line).toBeDefined();
-                        expect(candidateNodes[1][3].line.getID()).toEqual("4579317_28929725");
-                        expect(candidateNodes[1][2].node).toBeUndefined();
-                        expect(candidateNodes[1][2].line).toBeDefined();
-                        expect(candidateNodes[1][2].line.getID()).toEqual("4579317_28929725_1");
+                        expect(candidateNodes[1][5].node).toBeUndefined();
+                        expect(candidateNodes[1][5].line).toBeDefined();
+                        expect(candidateNodes[1][5].line.getID()).toEqual("4579317_28929725");
+                        expect(candidateNodes[1][6].node).toBeUndefined();
+                        expect(candidateNodes[1][6].line).toBeDefined();
+                        expect(candidateNodes[1][6].line.getID()).toEqual("4579317_28929725_1");
                         done();
                     })})})});
 });

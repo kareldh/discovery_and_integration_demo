@@ -22,11 +22,86 @@ export default class OSMIntegration{
                     openLRLine.frc = OSMIntegration.getFRC(ways[id]);
                     openLRLine.fow = OSMIntegration.getFRC(ways[id]);
                     openLRLines[openLRLine.getID()] = openLRLine;
-                    // since OSM doesn't have directed lines for it's roads, we will add the line in the other direction, so it is always present both as an input line and an output line in a node
-                    let reverseOpenLRLine = new Line(id+"_"+ways[id].nd[i]["@_ref"]+"_1",osmNodes[ways[id].nd[i+1]["@_ref"]],osmNodes[ways[id].nd[i]["@_ref"]]);
-                    reverseOpenLRLine.frc = OSMIntegration.getFRC(ways[id]);
-                    reverseOpenLRLine.fow = OSMIntegration.getFRC(ways[id]);
-                    openLRLines[reverseOpenLRLine.getID()] = reverseOpenLRLine;
+
+                    // check if OSM does specify if this is strictly a one way street
+                    let oneWay = false;
+                    if(Array.isArray(ways[id].tag)){
+                        let i=0;
+                        let oneWayTagFound = false;
+                        while(!oneWayTagFound && i<ways[id].tag.length){
+                            if(ways[id].tag[i]["@_k"]==="oneway" && ways[id].tag[i]["@_v"]==="yes"){
+                                oneWay = true;
+                            }
+                            i++;
+                        }
+                    }
+                    else if(ways[id].tag["@_k"]==="oneway" && ways[id].tag["@_v"]==="yes"){
+                        oneWay = true;
+                    }
+
+                    if(!oneWay){
+                        // since OSM doesn't have directed lines for it's roads, we will add the line in the other direction, so it is always present both as an input line and an output line in a node
+                        let reverseOpenLRLine = new Line(id+"_"+ways[id].nd[i]["@_ref"]+"_1",osmNodes[ways[id].nd[i+1]["@_ref"]],osmNodes[ways[id].nd[i]["@_ref"]]);
+                        reverseOpenLRLine.frc = OSMIntegration.getFRC(ways[id]);
+                        reverseOpenLRLine.fow = OSMIntegration.getFRC(ways[id]);
+                        openLRLines[reverseOpenLRLine.getID()] = reverseOpenLRLine;
+                    }
+
+                    //since we only want to keep the nodes that are part of the road network, and not the other nodes of OSM, so we will add only those in the openLRNodes map
+                    openLRNodes[ways[id].nd[i]["@_ref"]] = osmNodes[ways[id].nd[i]["@_ref"]];
+                    openLRNodes[ways[id].nd[i+1]["@_ref"]] = osmNodes[ways[id].nd[i+1]["@_ref"]];
+                }
+            }
+        }
+        // return new MapDataBase(openLRLines,openLRNodes);
+        mapDataBase.setData(openLRLines,openLRNodes);
+    }
+
+    /*depricated, old code, only used to test that one way doesn't affect lanes that aren't one way only*/
+    static initMapDataBaseDepricatedNoOneWay(mapDataBase,nodes,ways,relations){
+        let openLRLines = {};
+        let openLRNodes = {};
+        let osmNodes = {};
+        for(let id in nodes){
+            if(nodes.hasOwnProperty(id)){
+                let openLRNode = new Node(id,nodes[id]["@_lat"],nodes[id]["@_lon"]);
+                osmNodes[openLRNode.getID()] = openLRNode;
+            }
+        }
+        for(let id in ways){
+            if(ways.hasOwnProperty(id)){
+                for(let i =0;i<ways[id].nd.length-1;i++){
+                    // add a line from this node to the next one
+                    // the id of the line is created out of the id of the way + underscore + id of the start node (since these lines aren't directly identified in osm)
+                    let openLRLine = new Line(id+"_"+ways[id].nd[i]["@_ref"],osmNodes[ways[id].nd[i]["@_ref"]],osmNodes[ways[id].nd[i+1]["@_ref"]]);
+                    openLRLine.frc = OSMIntegration.getFRC(ways[id]);
+                    openLRLine.fow = OSMIntegration.getFRC(ways[id]);
+                    openLRLines[openLRLine.getID()] = openLRLine;
+
+                    // check if OSM does specify if this is strictly a one way street
+                    let oneWay = false;
+                    // if(Array.isArray(ways[id].tag)){
+                    //     let i=0;
+                    //     let oneWayTagFound = false;
+                    //     while(!oneWayTagFound && i<ways[id].tag.length){
+                    //         if(ways[id].tag[i]["@_k"]==="oneway" && ways[id].tag[i]["@_v"]==="yes"){
+                    //             oneWay = true;
+                    //         }
+                    //         i++;
+                    //     }
+                    // }
+                    // else if(ways[id].tag["@_k"]==="oneway" && ways[id].tag["@_v"]==="yes"){
+                    //     oneWay = true;
+                    // }
+
+                    if(!oneWay){
+                        // since OSM doesn't have directed lines for it's roads, we will add the line in the other direction, so it is always present both as an input line and an output line in a node
+                        let reverseOpenLRLine = new Line(id+"_"+ways[id].nd[i]["@_ref"]+"_1",osmNodes[ways[id].nd[i+1]["@_ref"]],osmNodes[ways[id].nd[i]["@_ref"]]);
+                        reverseOpenLRLine.frc = OSMIntegration.getFRC(ways[id]);
+                        reverseOpenLRLine.fow = OSMIntegration.getFRC(ways[id]);
+                        openLRLines[reverseOpenLRLine.getID()] = reverseOpenLRLine;
+                    }
+
                     //since we only want to keep the nodes that are part of the road network, and not the other nodes of OSM, so we will add only those in the openLRNodes map
                     openLRNodes[ways[id].nd[i]["@_ref"]] = osmNodes[ways[id].nd[i]["@_ref"]];
                     openLRNodes[ways[id].nd[i+1]["@_ref"]] = osmNodes[ways[id].nd[i+1]["@_ref"]];

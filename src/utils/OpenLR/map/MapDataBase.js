@@ -66,7 +66,6 @@ export default class MapDataBase {
         return resNodes;
     }
 
-    //todo: versnellen via custom gegevensstructuur
     findLinesCloseByCoordinate(lat,long,dist){
         let resLines = [];
         let possibleLines = this.lineSearchTree.findCloseBy(lat,long,dist);

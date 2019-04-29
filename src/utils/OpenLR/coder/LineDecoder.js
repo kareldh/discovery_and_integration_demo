@@ -54,7 +54,7 @@ export default class LineDecoder{
                         || location.long === line.line.getStartNode().getLongitudeDeg()
                         || location.long === line.line.getEndNode().getLongitudeDeg()
                     ){
-                        // console.log("The found projection point is the same as the start or end node of the line, so it should already be covered by the findNodesCloseByCoordinate function.");
+                        //console.log("The found projection point is the same as the start or end node of the line, so it should already be covered by the findNodesCloseByCoordinate function.");
                     }
                     else{
                         location.line = line.line;
