@@ -1,4 +1,4 @@
-import {fetchCatalog} from "../Api";
+import {fetchCatalog, fetchNextPage} from "../Api";
 import Catalog from "../Catalog";
 import {CATALOG_URL} from "../config";
 
@@ -25,7 +25,10 @@ test('getDataSetsByDistance',(done)=>{
         catalog.addCatalogPage(c);
         expect(catalog).toBeDefined();
         expect(catalog.searchTree).toBeDefined();
+        let t1 = performance.now();
         let result = catalog.getDataSetsByDistance(51.2120497, 4.3971693, 0);
+        let t2 = performance.now();
+        console.log("found in",t2-t1,"ms");
         // console.log(result[0].feature.geometry.coordinates);
         expect(result).toBeDefined();
         expect(result.length).toBeDefined();
@@ -34,10 +37,9 @@ test('getDataSetsByDistance',(done)=>{
     });
 });
 
-test('add multiple pages',(done)=>{
-    jest.setTimeout(50000);
-    expect.assertions(95);
-    fetchCatalog(CATALOG_URL).then((c)=>{
+test('add multiple pages', (done)=>{
+    expect.assertions(7);
+    fetchCatalog(CATALOG_URL).then(async (c)=>{
         expect(c).toBeDefined();
         let catalog = new Catalog();
         let res = catalog.addCatalogPage(c);
@@ -47,24 +49,36 @@ test('add multiple pages',(done)=>{
         expect(res.nextPage).toEqual("https://opendata.vlaanderen.be/catalog.rdf?page=2");
         expect(res.lastPage).toBeDefined();
 
-        fetchNextPage(res,catalog).then((res)=>{
-            console.log(res);
-            done();
-        });
+        let last = await fetchNextPage(res,catalog,[]);
+        expect(last.currentPage).toEqual(res.lastPage);
+        done();
     });
-});
+},200000);
 
-function fetchNextPage(res,catalog,tags=[]){
-    console.log("fetch",res);
-    expect(res).toBeDefined();
-    return new Promise(resolve=>{
-        fetchCatalog(res.nextPage).then((c)=>{
-            let r = catalog.addCatalogPage(c,tags);
-            if(r.currentPage !== r.lastPage){
-                resolve(r);
-            }
-        });
-    }).then((r2)=>{
-        return r2 ? fetchNextPage(r2,catalog,tags) : res;
+test('getDataSetsByDistance after fetching all the pages',(done)=>{
+    expect.assertions(10);
+    fetchCatalog(CATALOG_URL).then(async (c)=>{
+        expect(c).toBeDefined();
+        let catalog = new Catalog();
+        let res = catalog.addCatalogPage(c);
+        expect(catalog).toBeDefined();
+        expect(catalog.searchTree).toBeDefined();
+        expect(res.currentPage).toEqual("https://opendata.vlaanderen.be/catalog.rdf?page=1");
+        expect(res.nextPage).toEqual("https://opendata.vlaanderen.be/catalog.rdf?page=2");
+        expect(res.lastPage).toBeDefined();
+
+        let last = await fetchNextPage(res,catalog,[]);
+        expect(last.currentPage).toEqual(res.lastPage);
+
+        let t1 = performance.now();
+        let result = catalog.getDataSetsByDistance(51.2120497, 4.3971693, 0);
+        let t2 = performance.now();
+        console.log("found in",t2-t1,"ms");
+        // console.log(result[0].feature.geometry.coordinates);
+        expect(result).toBeDefined();
+        expect(result.length).toBeDefined();
+        expect(result.length).not.toEqual(0);
+        console.log(result.length);
+        done();
     });
-}
+},200000);
