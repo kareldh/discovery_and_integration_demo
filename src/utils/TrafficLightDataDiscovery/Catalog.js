@@ -1,12 +1,14 @@
 import RbushPolygonSearchTree from './searchTree/RbushPolygonSearchTree'
 
 export default class Catalog{
-    constructor(catalogRDF){
+    constructor(){
         this.searchTree = undefined;
-        this.init(catalogRDF);
+        this.currentPage = undefined;
+        this.nextPage = undefined;
+        this.lastPage = undefined;
     }
 
-    init(catalogRDF,tags=[]){
+    addCatalogPage(catalogRDF,tags=[]){
         // 1: check if the data set in the catalog has a spatial tag (filled with a polygon)
         // 2: check if the data set in the catalog has one of the tags from the tags list
         // 3: if both 1 and 2 are satisfied, get the geo+json data, a unique id (URL to the opendata.vlaanderen page for this dataset) and the distribution url of the data set
@@ -18,7 +20,18 @@ export default class Catalog{
             type: 'FeatureCollection',
             features: features
         };
-        this.searchTree = new RbushPolygonSearchTree(featureCollection);
+        if(this.searchTree === undefined){
+            this.searchTree = new RbushPolygonSearchTree(featureCollection);
+        }
+        else{
+            this.searchTree.addPolygons(featureCollection);
+        }
+
+        return {
+            currentPage: this.currentPage,
+            nextPage: this.nextPage,
+            lastPage: this.lastPage
+        }
     }
 
     _getDataSets(catalog,keywords=[]){
@@ -68,6 +81,19 @@ export default class Catalog{
 
             if(distributions[triple.subject.value] !== undefined){
                 distributions[triple.subject.value][triple.predicate.value] = triple.object.value ;
+            }
+
+            if(triple.object.value === "http://www.w3.org/ns/hydra/core#PagedCollection"){
+                this.currentPage = triple.subject.value;
+            }
+
+            if(this.currentPage !== undefined && triple.subject.value === this.currentPage){
+                if(triple.predicate.value === "http://www.w3.org/ns/hydra/core#lastPage"){
+                    this.lastPage = triple.object.value;
+                }
+                if(triple.predicate.value === "http://www.w3.org/ns/hydra/core#nextPage"){
+                    this.nextPage = triple.object.value;
+                }
             }
         });
         return {
