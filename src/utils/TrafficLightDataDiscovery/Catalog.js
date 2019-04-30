@@ -1,4 +1,3 @@
-import PolygonLookup from 'polygon-lookup';
 import RbushPolygonSearchTree from './searchTree/RbushPolygonSearchTree'
 
 export default class Catalog{
@@ -7,7 +6,7 @@ export default class Catalog{
         this.init(catalogRDF);
     }
 
-    async init(catalogRDF,tags=[]){
+    init(catalogRDF,tags=[]){
         // 1: check if the data set in the catalog has a spatial tag (filled with a polygon)
         // 2: check if the data set in the catalog has one of the tags from the tags list
         // 3: if both 1 and 2 are satisfied, get the geo+json data, a unique id (URL to the opendata.vlaanderen page for this dataset) and the distribution url of the data set

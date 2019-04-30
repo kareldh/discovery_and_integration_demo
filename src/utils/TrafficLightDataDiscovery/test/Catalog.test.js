@@ -7,7 +7,7 @@ test('init',(done)=>{
         expect(c).toBeDefined();
         let catalog = new Catalog(c);
         expect(catalog).toBeDefined();
-        expect(catalog.searchTrees).toBeDefined();
+        expect(catalog.searchTree).toBeDefined();
         done();
     });
 });
