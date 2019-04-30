@@ -18,7 +18,6 @@
     "leaflet": "^1.4.0",
     "leaflet-ant-path": "^1.2.1",
     "openlr-js": "^3.0.4",
-    "polygon-lookup": "^2.5.0",
     "rbush": "^2.0.2",
     "react": "^16.8.2",
     "react-dom": "^16.8.2",

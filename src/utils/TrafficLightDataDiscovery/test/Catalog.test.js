@@ -7,21 +7,23 @@ test('init',(done)=>{
         expect(c).toBeDefined();
         let catalog = new Catalog(c);
         expect(catalog).toBeDefined();
-        expect(catalog.lookup).toBeDefined();
+        expect(catalog.searchTrees).toBeDefined();
         done();
     });
 });
 
 test('getDataSetsByPosition',(done)=>{
-    expect.assertions(3);
+    expect.assertions(6);
     fetchCatalog().then((c)=>{
         expect(c).toBeDefined();
         let catalog = new Catalog(c);
         expect(catalog).toBeDefined();
-        expect(catalog.lookup).toBeDefined();
-        console.log(catalog.lookup.polygons[0]);
-        let result = catalog.getDataSetsByPosition(51.2120497, 4.3971693,50);
-        expect(result.features.length).not.toEqual(0);
+        expect(catalog.searchTree).toBeDefined();
+        let result = catalog.getDataSetsByDistance(51.2120497, 4.3971693, 0);
+        // console.log(result[0].feature.geometry.coordinates);
+        expect(result).toBeDefined();
+        expect(result.length).toBeDefined();
+        expect(result.length).not.toEqual(0);
         done();
     });
 });
