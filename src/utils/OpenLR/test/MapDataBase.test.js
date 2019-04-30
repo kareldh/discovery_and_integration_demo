@@ -196,7 +196,7 @@ test('findNodesCloseByCoordinate OSM data 3',(done)=>{
                         let slowMapDataBase = new SlowMapDataBase();
                         let mapDataBase = new MapDataBase();
                         OSMIntegration.initMapDataBase(mapDataBase,highwayData.nodes,highwayData.ways,highwayData.relations);
-                        OSMIntegration.initMapDataBaseDepricatedNoOneWay(slowMapDataBase,highwayData.nodes,highwayData.ways,highwayData.relations);
+                        OSMIntegration.initMapDataBaseDeprecatedNoOneWay(slowMapDataBase,highwayData.nodes,highwayData.ways,highwayData.relations);
                         expect(mapDataBase).toBeDefined();
                         let foundNodes = mapDataBase.findNodesCloseByCoordinate(51.2120361, 4.3974671, 50);
                         expect(slowMapDataBase).toBeDefined();
@@ -225,7 +225,7 @@ test('findLinesCloseByCoordinate OSM data 3',(done)=>{
                         let slowMapDataBase = new SlowMapDataBase();
                         let mapDataBase = new MapDataBase();
                         OSMIntegration.initMapDataBase(mapDataBase,highwayData.nodes,highwayData.ways,highwayData.relations);
-                        OSMIntegration.initMapDataBaseDepricatedNoOneWay(slowMapDataBase,highwayData.nodes,highwayData.ways,highwayData.relations);
+                        OSMIntegration.initMapDataBaseDeprecatedNoOneWay(slowMapDataBase,highwayData.nodes,highwayData.ways,highwayData.relations);
                         expect(mapDataBase).toBeDefined();
                         let foundLines = mapDataBase.findLinesCloseByCoordinate(51.2120361, 4.3974671, 50);
                         expect(slowMapDataBase).toBeDefined();

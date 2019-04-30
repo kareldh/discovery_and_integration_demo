@@ -29,13 +29,13 @@ export default class RoutableTilesIntegration{
                         // the id of the line is created out of the id of the way + underscore + id of the start node (since these lines aren't directly identified in RoutableTiles)
                         let openLRLine = new Line(id+"_"+refToNodeId[ways[id].nodes[i]],osmNodes[refToNodeId[ways[id].nodes[i]]],osmNodes[refToNodeId[ways[id].nodes[i+1]]]);
                         openLRLine.frc = RoutableTilesIntegration.getFRC(ways[id]);
-                        openLRLine.fow = RoutableTilesIntegration.getFRC(ways[id]);
+                        openLRLine.fow = RoutableTilesIntegration.getFOW(ways[id]);
                         openLRLines[openLRLine.getID()] = openLRLine;
                         if(ways[id].oneway === undefined || ways[id].oneway === "osm:no"){
                             // since OSM doesn't have directed lines for it's roads, we will add the line in the other direction, so it is always present both as an input line and an output line in a node
                             let reverseOpenLRLine = new Line(id+"_"+refToNodeId[ways[id].nodes[i]]+"_1",osmNodes[refToNodeId[ways[id].nodes[i+1]]],osmNodes[refToNodeId[ways[id].nodes[i]]]);
                             reverseOpenLRLine.frc = RoutableTilesIntegration.getFRC(ways[id]);
-                            reverseOpenLRLine.fow = RoutableTilesIntegration.getFRC(ways[id]);
+                            reverseOpenLRLine.fow = RoutableTilesIntegration.getFOW(ways[id]);
                             openLRLines[reverseOpenLRLine.getID()] = reverseOpenLRLine;
                         }
                         //since we only want to keep the nodes that are part of the road network, and not the other nodes of OSM, so we will add only those in the openLRNodes map

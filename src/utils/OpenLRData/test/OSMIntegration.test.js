@@ -764,7 +764,6 @@ test('osm integration full integration previously crashing because bad length ca
                     .then((highwayData)=>{
                         OSMIntegration.initMapDataBase(osmDataBase,highwayData.nodes,highwayData.ways,highwayData.relations);
                         let decoded = LineDecoder.decode(osmDataBase,LRPs,0,0,decoderProperties);
-                        console.log(decoded);
                         expect(decoded.lines[0].getID()).toEqual("51356773_28929726_1");
                         expect(decoded.lines[1].getID()).toEqual("4579317_28929725_1");
                         expect(decoded.posOffset).toEqual(57.235960971534844);
