@@ -101,8 +101,8 @@ test('full osm integration test singleLineLane with projections',(done)=>{
                         let decoded = LineDecoder.decode(osmDataBase,LRPs.LRPs,LRPs.posOffset,LRPs.negOffset,decoderProperties);
                         expect(decoded.lines.length).toEqual(1);
                         expect(decoded.lines[0].getID()).toEqual("4579317_28929725_1");
-                        expect(decoded.posOffset).toEqual(20.14936515639738);
-                        expect(decoded.negOffset).toEqual(2.958238966655955);
+                        expect(decoded.posOffset).toEqual(20.300928126062445);
+                        expect(decoded.negOffset).toEqual(3.0706616311418884);
                         done();
                     })})})});
 });
@@ -141,7 +141,7 @@ test('full osm integration test doubleLineLane',(done)=>{
                         expect(decoded.lines.length).toEqual(1);
                         expect(decoded.lines[0].getID()).toEqual("4579317_28929725_1");
                         expect(decoded.posOffset).toEqual(0);
-                        expect(decoded.negOffset).toEqual(osmDataBase.lines["4579317_28929725_1"].getLength()-40.34184067201833);
+                        expect(decoded.negOffset).toEqual(osmDataBase.lines["4579317_28929725_1"].getLength()-40.29965345915303);
                         done();
                     })})})});
 });
@@ -501,7 +501,7 @@ test('osm integration determineShortestPaths',(done)=>{
                         expect(concatShortestPath.shortestPath.length).toEqual(1);
                         expect(concatShortestPath.shortestPath[0].getID()).toEqual("4579317_28929725_1");
                         expect(concatShortestPath.posProjDist).toEqual(0);
-                        expect(concatShortestPath.negProjDist).toEqual(osmDataBase.lines["4579317_28929725_1"].getLength()-40.34184067201833);
+                        expect(concatShortestPath.negProjDist).toEqual(osmDataBase.lines["4579317_28929725_1"].getLength()-40.29965345915303);
                         done();
                     })})})});
 });
@@ -580,8 +580,8 @@ test('osm integration determineShortestPaths 50 dist always project',(done)=>{
                         let concatShortestPath = LineDecoder.determineShortestPaths(candidateLines,LRPs.LRPs,decoderProperties);
                         expect(concatShortestPath.shortestPath.length).toEqual(1);
                         expect(concatShortestPath.shortestPath[0].getID()).toEqual("4579317_28929725_1");
-                        expect(concatShortestPath.posProjDist).toEqual(20.63115153709108); // if alwaysUseProjections = true, the first LRP is also projected
-                        expect(concatShortestPath.negProjDist).toEqual(osmDataBase.lines["4579317_28929725_1"].getLength()-40.34184067201833);
+                        expect(concatShortestPath.posProjDist).toEqual(20.74293398419525); // if alwaysUseProjections = true, the first LRP is also projected
+                        expect(concatShortestPath.negProjDist).toEqual(osmDataBase.lines["4579317_28929725_1"].getLength()-40.29965345915303);
                         done();
                     })})})});
 });
@@ -624,9 +624,9 @@ test('osm integration trimAccordingToOffsets no offsets',(done)=>{
                         expect(concatShortestPath.shortestPath.length).toEqual(1);
                         expect(concatShortestPath.shortestPath[0].getID()).toEqual("4579317_28929725_1");
                         expect(concatShortestPath.posProjDist).toEqual(0);
-                        expect(concatShortestPath.negProjDist).toEqual(osmDataBase.lines["4579317_28929725_1"].getLength()-40.34184067201833);
+                        expect(concatShortestPath.negProjDist).toEqual(osmDataBase.lines["4579317_28929725_1"].getLength()-40.29965345915303);
                         expect(offsets.posOffset).toEqual(0);
-                        expect(offsets.negOffset).toEqual(osmDataBase.lines["4579317_28929725_1"].getLength()-40.34184067201833);
+                        expect(offsets.negOffset).toEqual(osmDataBase.lines["4579317_28929725_1"].getLength()-40.29965345915303);
                         done();
                     })})})});
 });
@@ -708,9 +708,9 @@ test('osm integration trimAccordingToOffsets valid offsets',(done)=>{
                         expect(concatShortestPath.shortestPath.length).toEqual(1);
                         expect(concatShortestPath.shortestPath[0].getID()).toEqual("4579317_28929725_1");
                         expect(concatShortestPath.posProjDist).toEqual(0);
-                        expect(concatShortestPath.negProjDist).toEqual(osmDataBase.lines["4579317_28929725_1"].getLength()-40.34184067201833);
+                        expect(concatShortestPath.negProjDist).toEqual(osmDataBase.lines["4579317_28929725_1"].getLength()-40.29965345915303);
                         expect(offsets.posOffset).toEqual(5);
-                        expect(offsets.negOffset).toEqual(osmDataBase.lines["4579317_28929725_1"].getLength()-40.34184067201833+7);
+                        expect(offsets.negOffset).toEqual(osmDataBase.lines["4579317_28929725_1"].getLength()-40.29965345915303+7);
                         done();
                     })})})});
 });

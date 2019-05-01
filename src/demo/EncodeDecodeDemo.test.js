@@ -207,7 +207,7 @@ function wegenregisterToWegenregister(){
             let encodeErrorTimes = [];
             let t1 = performance.now();
             for(let id in wegenregisterMapDataBase.lines){
-                if(wegenregisterMapDataBase.lines.hasOwnProperty(id) && i<100000){
+                if(wegenregisterMapDataBase.lines.hasOwnProperty(id) && i<100){
                     let t3;
                     let t4;
                     try {
