@@ -110,7 +110,7 @@ export default class Line {
             [[this.startNode.getLongitudeDeg(),this.startNode.getLatitudeDeg()],
             [this.endNode.getLongitudeDeg(),this.endNode.getLatitudeDeg()]]
         );
-        return Math.abs(pointToLineDistance(pt,line, {units: 'meters'}));
+        return Math.round(pointToLineDistance(pt,line, {units: 'meters'}));
     }
 
     measureAlongLine(lat,long){

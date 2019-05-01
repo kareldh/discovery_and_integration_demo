@@ -66,6 +66,6 @@ export default class Node{
             long,
             lat
         ]);
-        return Math.abs(distance(from,to,{units: "meters"}));
+        return Math.round(distance(from,to,{units: "meters"}));
     }
 }
