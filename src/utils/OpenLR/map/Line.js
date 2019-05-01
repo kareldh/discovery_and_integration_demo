@@ -141,7 +141,7 @@ export default class Line {
             let calcBear = bearing(startNode, bearPoint);
             // bear is always positive, counterclockwise
             calcBear = (calcBear+360.0)%360.0;
-            this.bearing = calcBear;
+            this.bearing = Math.round(calcBear);
         }
         return this.bearing;
     }
@@ -161,7 +161,7 @@ export default class Line {
             let calcBear = bearing(startNode, bearPoint);
             // bear is always positive, counterclockwise
             calcBear = (calcBear+360.0)%360.0;
-            this.reverseBearing = calcBear;
+            this.reverseBearing = Math.round(calcBear);
         }
         return this.reverseBearing;
     }
