@@ -31,7 +31,7 @@ export default class Dijkstra{
             let currentNode = heapTop[1];
 
             currentNode.getOutgoingLines().forEach(function (line) {
-                let length = minLengths[currentNode.getID()] + Math.round(line.getLength()); //work with integer values
+                let length = minLengths[currentNode.getID()] + line.getLength();
                 if(length<0){
                     throw Error("negative line length found for line: "+line.getID());
                 }
@@ -40,7 +40,7 @@ export default class Dijkstra{
                     && options.lfrcnpDiff !== undefined
                     && line.getFRC() !== undefined
                     && line.getFRC() >= frcEnum.FRC_0 && line.getFRC() <= frcEnum.FRC_7
-                    && Math.abs(line.getFRC()-options.lfrcnp) <= options.lfrcnpDiff);
+                    && line.getFRC() <= options.lfrcnpDiff+options.lfrcnp);
                 if(validLine && (minLengths[line.getEndNode().getID()] === undefined
                     || minLengths[line.getEndNode().getID()] > length)){
                     minLengths[line.getEndNode().getID()] = length;

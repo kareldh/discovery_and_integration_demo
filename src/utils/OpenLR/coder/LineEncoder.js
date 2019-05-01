@@ -144,7 +144,10 @@ export default class LineEncoder {
             //unless a u-turn is possible at that node
             if(lines[0] !== undefined && lines[lines.length-1] !== undefined){
                 //start node expansion
-                while(LineEncoder.nodeIsInValid(lines[0].getStartNode())){
+                let originalStartLineId = lines[0].getID();
+                while(LineEncoder.nodeIsInValid(lines[0].getStartNode())
+                    && !(expanded.front > 0 && lines[0].getID() === originalStartLineId)) //detect an infinite start node expansion
+                {
                     if(lines[0].getStartNode().getIncomingLines().length === 1){
                         this.expand(lines[0].getStartNode().getIncomingLines()[0],lines,pathLength,offsets,true);
                         expanded.front += 1;
@@ -169,8 +172,16 @@ export default class LineEncoder {
                         console.log("something went wrong with determining if expansion is needed");
                     }
                 }
+                if(expanded.front > 0 && lines[0].getID() === originalStartLineId){
+                    // the line lays on a loop without valid nodes, so the line has been expanded with all the lines of the loop
+                    // these added lines should be removed so only the original line remains
+                    LineEncoder.undoExpansion(lines,originalStartLineId,expanded,offsets,true);
+                }
+                let originalEndLineId = lines[lines.length-1].getID();
                 //end node expansion
-                while(LineEncoder.nodeIsInValid(lines[lines.length-1].getEndNode())){
+                while(LineEncoder.nodeIsInValid(lines[lines.length-1].getEndNode())
+                    && !(expanded.back > 0 && lines[lines.length-1].getID() === originalEndLineId)) // detect an infinite end node expansion
+                {
                     if(lines[lines.length-1].getEndNode().getOutgoingLines().length === 1){
                         this.expand(lines[lines.length-1].getEndNode().getOutgoingLines()[0],lines,pathLength,offsets,false);
                         expanded.back += 1;
@@ -194,6 +205,11 @@ export default class LineEncoder {
                     else{
                         console.log("something went wrong with determining if expansion is needed");
                     }
+                }
+                if(expanded.back > 0 && lines[lines.length-1].getID() === originalEndLineId){
+                    // the line lays on a loop without valid nodes, so the line has been expanded with all the lines of the loop
+                    // these added lines should be removed so only the original line remains
+                    LineEncoder.undoExpansion(lines,originalEndLineId,expanded,offsets,false);
                 }
             }
         }
@@ -237,6 +253,47 @@ export default class LineEncoder {
         }
         else{
             console.log("start node expansion aborted because path length exceeding 15000m")
+        }
+    }
+
+    static undoExpansion(lines,originalLineId,expanded,offsets,positive){
+        if(positive){
+            if(lines[0].getID() === originalLineId){
+                // the first line should be the line with the same ID as originalLineId and will be shifted out first
+                offsets.posOffset -= lines[0].getLength();
+                expanded.front--;
+                lines.shift();
+            }
+            else{
+                throw Error("undoExpansion at start node called but was not needed");
+            }
+            while(lines[0].getID() !== originalLineId){
+                offsets.posOffset -= lines[0].getLength();
+                expanded.front--;
+                lines.shift();
+            }
+            if(expanded.front < 0){
+                throw Error("Something went wrong during reversing the start node expansion.")
+            }
+        }
+        else {
+            if(lines[lines.length-1].getID() === originalLineId){
+                // the last line should be the line with the same ID as originalLineId and will be popped of first
+                offsets.negOffset -= lines[lines.length-1].getLength();
+                expanded.back--;
+                lines.pop();
+            }
+            else{
+                throw Error("undoExpansion at end node called but was not needed");
+            }
+            while(lines[lines.length-1].getID() !== originalLineId){
+                offsets.negOffset -= lines[lines.length-1].getLength();
+                expanded.back--;
+                lines.pop();
+            }
+            if(expanded.back < 0){
+                throw Error("Something went wrong during reversing the end node expansion.")
+            }
         }
     }
 
@@ -304,7 +361,8 @@ export default class LineEncoder {
                 checkResult = this.checkShortestPathCoverage(checkResult.lrpIndexInLoc+1,lines,shortestPath.lines,lines.length-1);
             }
             else{
-                throw checkResult;
+                // console.log(checkResult);
+                throw Error("startnode is invalid");
                 //todo: kan dit wel voorkomen? aangezien invalid enkel gaat indien 1 in 1 uit of 2 in 2 naar zelfde -> bij deze nodes kan nooit een afwijking van sp optreden want ze hebben eigenschap dat ze verbinding tussen maar 2 nodes vormen
                 //find a valid node on the shortest path that leads to the invalid node
                 let validNodeResult = this.findValidNodeOnSP(shortestPath.lines,checkResult.lrpIndexInSP);
@@ -455,6 +513,6 @@ export default class LineEncoder {
 
     static addIntermediateLRPs(lrpLines,shortestPaths,lines){
         //todo
-        console.log("todo");
+        console.warn("todo addIntermediateLRPs");
     }
 }

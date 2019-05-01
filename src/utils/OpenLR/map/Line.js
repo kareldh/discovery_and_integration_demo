@@ -58,6 +58,11 @@ export default class Line {
                 this.endNode.getLatitudeDeg()
             ]);
             this.lineLength = Math.round(distance(from,to,{units: "meters"})); //work with integer values
+            // todo: work with cm or mm as integers instead of meters? because now the rounding errors are possibly significant and stack
+            if(this.lineLength ===0){
+                this.lineLength = 1;    //but minimum value should be 1
+            }
+            // this.lineLength = distance(from,to,{units: "meters"});
         }
         return this.lineLength;
     }

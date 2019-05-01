@@ -101,7 +101,6 @@ export default class OSMIntegration{
     }
 
 
-    //todo: put these in their own files/classes
     static getFRC(osmWay){
         let value = OSMIntegration._getTagsValues(osmWay,"highway");
         if(value["highway"] !== undefined && OsmFrcHighwayMapping[value["highway"]] !== undefined){
@@ -119,7 +118,7 @@ export default class OSMIntegration{
             && value["area"] !== undefined
             && value["area"] === "yes")
         {
-            return fowEnum.TRAFFIC_SQUARE;
+            return fowEnum.TRAFFICSQUARE;
         }
         else if(value["junction"] !== undefined && value["junction"] === "roundabout"){
             return fowEnum.ROUNDABOUT;

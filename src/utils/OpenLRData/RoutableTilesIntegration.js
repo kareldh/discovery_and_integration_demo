@@ -5,6 +5,9 @@
 // import MapDataBase from "../OpenLR/map/MapDataBase";
 import Line from "../OpenLR/map/Line";
 import Node from "../OpenLR/map/Node";
+import {fowEnum, frcEnum} from "../OpenLR/map/Enum";
+import {OsmFowHighwayMapping} from "./FOWmappings/OsmFowHighwayMapping";
+import {OsmFrcHighwayMapping} from "./FRCmappings/OsmFrcHighwayMapping";
 
 export default class RoutableTilesIntegration{
     static initMapDataBase(mapDataBase,nodes,ways,relations){
@@ -50,10 +53,30 @@ export default class RoutableTilesIntegration{
     }
 
     static getFRC(osmWay){
-        return undefined; //todo
+        if(osmWay.highway !== undefined && OsmFrcHighwayMapping[osmWay.highway] !== undefined){
+            return OsmFrcHighwayMapping[osmWay.highway];
+        }
+        else{
+            return frcEnum.FRC_7;
+        }
     }
 
     static getFOW(osmWay){
-        return undefined; //todo
+        if(osmWay.highway !== undefined
+            && osmWay.highway === "osm:pedestrian"
+            && osmWay.area !== undefined
+            && osmWay.area === "osm:yes"
+        ){
+            return fowEnum.TRAFFICSQUARE;
+        }
+        else if(osmWay.junction !== undefined && osmWay.junction === "osm:roundabout"){
+            return fowEnum.ROUNDABOUT;
+        }
+        else if(osmWay.highway !== undefined && OsmFowHighwayMapping[osmWay.highway] !== undefined){
+            return OsmFowHighwayMapping[osmWay.highway];
+        }
+        else {
+            return fowEnum.UNDEFINED;
+        }
     }
 }
