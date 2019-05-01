@@ -4,7 +4,7 @@ import along from '@turf/along';
 import {point,lineString} from '@turf/helpers'
 import distance from "@turf/distance/index";
 import bearing from '@turf/bearing'
-import {fowEnum} from "./Enum";
+import {fowEnum, frcEnum} from "./Enum";
 import {configProperties} from "../coder/CoderSettings";
 
 
@@ -14,12 +14,12 @@ export default class Line {
         this.endNode = endNode;
         this.id = id;
         this.fow = fowEnum.UNDEFINED;
-        this.frc = undefined;
-        this.pointAlongLine = undefined;
+        this.frc = frcEnum.FRC_7;
+        // this.pointAlongLine = undefined;
         this.lineLength = undefined;
-        this.prevLines = [];
-        this.nextLines = [];
-        this.shape = undefined;
+        // this.prevLines = [];
+        // this.nextLines = [];
+        // this.shape = undefined;
         this.turnRestriction = undefined;
         this.bearing = undefined;
         this.reverseBearing = undefined;
@@ -43,9 +43,9 @@ export default class Line {
         return this.frc;
     }
 
-    getPointAlongLine(){
-        return this.pointAlongLine;
-    }
+    // getPointAlongLine(){
+    //     return this.pointAlongLine;
+    // }
 
     getLength(){
         if(this.lineLength === undefined && this.startNode !== undefined && this.endNode !== undefined){
@@ -71,21 +71,21 @@ export default class Line {
         return this.id;
     }
 
-    getPrevLines(){
-        return this.prevLines;
-    }
-
-    getNextLines(){
-        return this.nextLines;
-    }
-
-    getShapeCoordinates(){
-        return this.shape;
-    }
-
-    getNames(){
-        //optional, undefined
-    }
+    // getPrevLines(){
+    //     return this.prevLines;
+    // }
+    //
+    // getNextLines(){
+    //     return this.nextLines;
+    // }
+    //
+    // getShapeCoordinates(){
+    //     return this.shape;
+    // }
+    //
+    // getNames(){
+    //     //optional, undefined
+    // }
 
     getTurnRestriction(){
         return this.turnRestriction;
@@ -110,7 +110,7 @@ export default class Line {
             [[this.startNode.getLongitudeDeg(),this.startNode.getLatitudeDeg()],
             [this.endNode.getLongitudeDeg(),this.endNode.getLatitudeDeg()]]
         );
-        return pointToLineDistance(pt,line, {units: 'meters'});
+        return Math.abs(pointToLineDistance(pt,line, {units: 'meters'}));
     }
 
     measureAlongLine(lat,long){

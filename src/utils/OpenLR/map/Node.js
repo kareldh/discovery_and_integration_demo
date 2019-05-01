@@ -15,14 +15,14 @@ export default class Node{
         this.incomingLines = incomingLines;
         this.outgoingLines = outgoingLines;
         //todo: overbodig?
-        this.lines = incomingLines.concat(outgoingLines.filter(function (outLine) {
-            incomingLines.forEach(function (inLine) {
-                if(inLine.id === outLine.id){
-                    return false
-                }
-            });
-            return true;
-        }));
+        // this.lines = incomingLines.concat(outgoingLines.filter(function (outLine) {
+        //     incomingLines.forEach(function (inLine) {
+        //         if(inLine.id === outLine.id){
+        //             return false
+        //         }
+        //     });
+        //     return true;
+        // }));
     }
 
     getLatitudeDeg(){
@@ -33,13 +33,13 @@ export default class Node{
         return this.long;
     }
 
-    getConnectedLines(){
-        return this.lines;
-    }
-
-    getNumberConnectedLines(){
-        return this.lines.length;
-    }
+    // getConnectedLines(){
+    //     return this.lines;
+    // }
+    //
+    // getNumberConnectedLines(){
+    //     return this.lines.length;
+    // }
 
     getOutgoingLines(){
         return this.outgoingLines;
@@ -66,6 +66,6 @@ export default class Node{
             long,
             lat
         ]);
-        return distance(from,to,{units: "meters"});
+        return Math.abs(distance(from,to,{units: "meters"}));
     }
 }
