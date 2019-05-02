@@ -66,6 +66,6 @@ export default class Node{
             long,
             lat
         ]);
-        return Math.round(distance(from,to,{units: "meters"})*100);
+        return Math.round(distance(from,to,{units: "centimeters"}));
     }
 }

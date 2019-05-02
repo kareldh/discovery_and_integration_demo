@@ -207,8 +207,8 @@ export default class OpenLrDemo extends React.Component{
                         </Popup>
                     </Polyline>);
             }
-            let firstOffsetCoord = lines[0].getGeoCoordinateAlongLine(posOffset);
-            let lastOffsetCoord = lines[lines.length-1].getGeoCoordinateAlongLine(Math.round(lines[lines.length-1].getLength()/100)-negOffset);
+            let firstOffsetCoord = lines[0].getGeoCoordinateAlongLine(posOffset*100);
+            let lastOffsetCoord = lines[lines.length-1].getGeoCoordinateAlongLine(lines[lines.length-1].getLength()-(negOffset*100));
             lineStrings.push(<Circle key={"firstOffsetPoint"} center={[firstOffsetCoord.lat,firstOffsetCoord.long]} radius={1} color={"red"}/>);
             lineStrings.push(<Circle key={"lastOffsetPoint"} center={[lastOffsetCoord.lat,lastOffsetCoord.long]} radius={1} color={"magenta"}/>);
             this.setState((state, props)=>{
