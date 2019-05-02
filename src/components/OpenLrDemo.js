@@ -91,9 +91,14 @@ export default class OpenLrDemo extends React.Component{
             }
             let {nodes,lines} = mapNodesLinesToID(n,l);
             let mapDataBase = new MapDataBase(lines,nodes);
-            // let encoded = LineEncoder.encode(mapDataBase,l,0,0);
-            let encLines = l.length >= 2 ? l : [l[0],l[0]];
-            let encoded = {LRPs: LRPNodeHelper.lrpLinesToLRPs(encLines,sp), posOffset:0, negOffset: 0, type: locationTypeEnum.LINE_LOCATION};
+            let encoded;
+            if(this.state.encodingStrat === encodingStratEnum.OpenLrEncode){
+                encoded = LineEncoder.encode(mapDataBase,l,0,0);
+            }
+            else if(this.state.encodingStrat === encodingStratEnum.LinesToLRPs){
+                let encLines = l.length >= 2 ? l : [l[0],l[0]];
+                encoded = {LRPs: LRPNodeHelper.lrpLinesToLRPs(encLines,sp), posOffset:0, negOffset: 0, type: locationTypeEnum.LINE_LOCATION};
+            }
             console.log(encoded);
 
             if(this.state.dataSource===inputDataEnum.OpenStreetMap){
