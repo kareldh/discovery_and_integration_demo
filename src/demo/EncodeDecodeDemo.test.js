@@ -114,29 +114,53 @@ function osmToOsm(){
                             let osmMapDataBase = new MapDataBase();
                             OSMIntegration.initMapDataBase(osmMapDataBase,highwayData.nodes,highwayData.ways,highwayData.relations);
 
+                            let lineIds = [];
+                            let decodeErrorIndexes = [];
                             let locations = [];
                             let encodeErrors = 0;
+                            let encodeErrorTypes = {};
 
                             let decodedLines = [];
                             let decodeErrors = 0;
+                            let decodeErrorTypes = {};
 
                             let erroneousLocations = [];
 
+                            let encodeTimes = [];
+                            let encodeErrorTimes = [];
                             let t1 = performance.now();
                             for(let id in osmMapDataBase.lines){
                                 if(osmMapDataBase.lines.hasOwnProperty(id)){
+                                    let t3;
+                                    let t4;
                                     try {
+                                        t3 = performance.now();
                                         let location = LineEncoder.encode(osmMapDataBase,[osmMapDataBase.lines[id]],0,0);
+                                        t4 = performance.now();
                                         locations.push(location);
+                                        encodeTimes.push(t4-t3);
+                                        lineIds.push(id);
                                     }
                                     catch (err){
-                                        console.warn(err);
+                                        t4 = performance.now();
+                                        if(encodeErrorTypes[err] === undefined){
+                                            encodeErrorTypes[err] = 0;
+                                        }
+                                        encodeErrorTypes[err]++;
                                         encodeErrors++;
+                                        encodeErrorTimes.push(t4-t3);
                                     }
                                 }
                             }
                             let t2 = performance.now();
-                            console.log("encoded locations: ",locations.length,"encode errors:",encodeErrors,"in time:",t2-t1,"ms");
+                            let total = encodeTimes.reduce((previous, current)=> current += previous);
+                            let errorTotal = encodeErrorTimes.length > 0 ? encodeErrorTimes.reduce((previous, current)=> current += previous) : 0;
+                            console.log("encoded locations: ",locations.length,"encode errors:",encodeErrors,
+                                "in time:",t2-t1,"ms",
+                                "mean time:",total/encodeTimes.length,"ms,",
+                                "error mean time",encodeErrorTimes.length > 0 ? errorTotal/encodeErrorTimes.length : 0,"ms,"
+                            );
+                            console.log(encodeErrorTypes);
 
                             let times = [];
                             let errorTimes = [];
@@ -152,10 +176,15 @@ function osmToOsm(){
                                     times.push(t4-t3);
                                 }
                                 catch (err){
+                                    if(decodeErrorTypes[err] === undefined){
+                                        decodeErrorTypes[err] = 0;
+                                    }
+                                    decodeErrorTypes[err]++;
                                     t4 = performance.now();
                                     decodeErrors++;
                                     errorTimes.push(t4-t3);
                                     erroneousLocations.push(locations[i]);
+                                    decodeErrorIndexes.push(i);
                                 }
                             }
                             t2 = performance.now();
@@ -166,6 +195,18 @@ function osmToOsm(){
                                 "mean time:",sum/times.length,"ms,",
                                 "error mean time",errorTimes.length > 0 ? errorSum/errorTimes.length : 0,"ms,"
                             );
+                            console.log(decodeErrorTypes);
+
+                            let a = 0;
+                            for(let i=0;i<decodedLines.length;i++){
+                                if(a >= decodeErrorIndexes.length || i !== decodeErrorIndexes[a]){
+                                    expect(decodedLines[i].lines.length).toEqual(1);
+                                    expect(decodedLines[i].lines[0].getID()).toEqual(lineIds[i]);
+                                }
+                                else{
+                                    a++;
+                                }
+                            }
 
                             resolve({
                                 encodedLocations: locations.length,
@@ -178,7 +219,7 @@ function osmToOsm(){
 }
 
 test('demo osm to osm',(done)=>{
-    expect.assertions(1);
+    expect.hasAssertions();
     osmToOsm().then((res)=>{
         console.log(res);
         expect(res).toBeDefined();
@@ -192,6 +233,8 @@ function wegenregisterToWegenregister(){
             let wegenregisterMapDataBase = new MapDataBase();
             WegenregisterAntwerpenIntegration.initMapDataBase(wegenregisterMapDataBase,features);
 
+            let lineIds = [];
+            let decodeErrorIndexes = [];
             let locations = [];
             let encodeErrors = 0;
             let encodeErrorTypes = {};
@@ -216,6 +259,7 @@ function wegenregisterToWegenregister(){
                         t4 = performance.now();
                         locations.push(location);
                         encodeTimes.push(t4-t3);
+                        lineIds.push(id);
                     }
                     catch (err){
                         t4 = performance.now();
@@ -261,6 +305,7 @@ function wegenregisterToWegenregister(){
                     decodeErrors++;
                     errorTimes.push(t4-t3);
                     erroneousLocations.push(locations[i]);
+                    decodeErrorIndexes.push(i);
                 }
             }
             t2 = performance.now();
@@ -273,6 +318,17 @@ function wegenregisterToWegenregister(){
             );
             console.log(decodeErrorTypes);
 
+            let a = 0;
+            for(let i=0;i<decodedLines.length;i++){
+                if(a >= decodeErrorIndexes.length || i !== decodeErrorIndexes[a]){
+                    expect(decodedLines[i].lines.length).toEqual(1);
+                    expect(decodedLines[i].lines[0].getID()).toEqual(lineIds[i]);
+                }
+                else{
+                    a++;
+                }
+            }
+
             resolve({
                 encodedLocations: locations.length,
                 encodeErrors: encodeErrors,
@@ -284,7 +340,7 @@ function wegenregisterToWegenregister(){
 }
 
 test('demo wegenregister to wegenregister',(done)=>{
-    expect.assertions(1);
+    expect.hasAssertions();
     wegenregisterToWegenregister().then((res)=>{
         console.log(res);
         expect(res).toBeDefined();
@@ -300,6 +356,8 @@ function routableTilesToRoutableTiles(){
                     let mapDatabase = new MapDataBase();
                     RoutableTilesIntegration.initMapDataBase(mapDatabase, nodesAndLines.nodes,nodesAndLines.lines);
 
+                    let lineIds = [];
+                    let decodeErrorIndexes = [];
                     let locations = [];
                     let encodeErrors = 0;
                     let encodeErrorTypes = {};
@@ -310,26 +368,40 @@ function routableTilesToRoutableTiles(){
 
                     let erroneousLocations = [];
 
+                    let encodeTimes = [];
+                    let encodeErrorTimes = [];
                     let t1 = performance.now();
                     for(let id in mapDatabase.lines){
                         if(mapDatabase.lines.hasOwnProperty(id)){
+                            let t3;
+                            let t4;
                             try {
+                                t3 = performance.now();
                                 let location = LineEncoder.encode(mapDatabase,[mapDatabase.lines[id]],0,0);
+                                t4 = performance.now();
                                 locations.push(location);
+                                encodeTimes.push(t4-t3);
+                                lineIds.push(id);
                             }
                             catch (err){
-                                // console.warn(err);
-                                // console.warn(mapDatabase.lines[id]);
+                                t4 = performance.now();
                                 if(encodeErrorTypes[err] === undefined){
                                     encodeErrorTypes[err] = 0;
                                 }
                                 encodeErrorTypes[err]++;
                                 encodeErrors++;
+                                encodeErrorTimes.push(t4-t3);
                             }
                         }
                     }
                     let t2 = performance.now();
-                    console.log("encoded locations: ",locations.length,"encode errors:",encodeErrors,"in time:",t2-t1,"ms");
+                    let total = encodeTimes.reduce((previous, current)=> current += previous);
+                    let errorTotal = encodeErrorTimes.length > 0 ? encodeErrorTimes.reduce((previous, current)=> current += previous) : 0;
+                    console.log("encoded locations: ",locations.length,"encode errors:",encodeErrors,
+                        "in time:",t2-t1,"ms",
+                        "mean time:",total/encodeTimes.length,"ms,",
+                        "error mean time",encodeErrorTimes.length > 0 ? errorTotal/encodeErrorTimes.length : 0,"ms,"
+                    );
                     console.log(encodeErrorTypes);
 
                     let times = [];
@@ -354,6 +426,7 @@ function routableTilesToRoutableTiles(){
                             decodeErrors++;
                             errorTimes.push(t4-t3);
                             erroneousLocations.push(locations[i]);
+                            decodeErrorIndexes.push(i);
                         }
                     }
                     t2 = performance.now();
@@ -366,6 +439,17 @@ function routableTilesToRoutableTiles(){
                     );
                     console.log(decodeErrorTypes);
 
+                    let a = 0;
+                    for(let i=0;i<decodedLines.length;i++){
+                        if(a >= decodeErrorIndexes.length || i !== decodeErrorIndexes[a]){
+                            expect(decodedLines[i].lines.length).toEqual(1);
+                            expect(decodedLines[i].lines[0].getID()).toEqual(lineIds[i]);
+                        }
+                        else{
+                            a++;
+                        }
+                    }
+
                     resolve({
                         encodedLocations: locations.length,
                         encodeErrors: encodeErrors,
@@ -377,7 +461,7 @@ function routableTilesToRoutableTiles(){
 }
 
 test('demo RoutableTiles to RoutableTiles',(done)=>{
-    expect.assertions(1);
+    expect.hasAssertions();
     routableTilesToRoutableTiles().then((res)=>{
         console.log(res);
         expect(res).toBeDefined();
