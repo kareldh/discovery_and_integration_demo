@@ -1,7 +1,7 @@
 export default class LocationReferencePoint{
     constructor(bearing,distanceToNext,frc,fow,lfrcnp,islast,lat,lon,seqNr){
         this.bearing = Math.round(bearing);
-        this.distanceToNext = Math.round(distanceToNext);
+        this.distanceToNext = Math.round(distanceToNext/100);
         this.frc = frc;
         this.fow = fow;
         this.lfrcnp = lfrcnp;

@@ -8,8 +8,8 @@ export default class LineEncoder {
         let lrpLines = [];
         let shortestPaths = [];
         let offsets = {
-            posOffset: posOffset,
-            negOffset: negOffset
+            posOffset: Math.round(posOffset*100),
+            negOffset: Math.round(negOffset*100)
         };
 
         // 1: check validity of the location and offsets to be encoded
@@ -86,8 +86,8 @@ export default class LineEncoder {
         return {
             type:locationTypeEnum.LINE_LOCATION,
             LRPs: LRPs,
-            posOffset: offsets.posOffset,
-            negOffset: offsets.negOffset
+            posOffset: Math.round(offsets.posOffset/100),
+            negOffset: Math.round(offsets.negOffset/100)
         };
     }
 
@@ -240,7 +240,7 @@ export default class LineEncoder {
     }
 
     static expand(lineToAdd,lines,pathLength,offsets,positive){
-        if(pathLength.length + lineToAdd.getLength() < 15000){
+        if(pathLength.length + lineToAdd.getLength() < 1500000){
             pathLength.length += lineToAdd.getLength();
             if(positive){
                 offsets.posOffset += lineToAdd.getLength();
@@ -446,7 +446,7 @@ export default class LineEncoder {
                         }
                         a++;
                     }
-                    if(lengthBetweenLRPs >= 15000){
+                    if(lengthBetweenLRPs >= 1500000){
                         isValid = false;
                         wrongIntermediateOffset = true;
                     }
@@ -456,7 +456,7 @@ export default class LineEncoder {
                     distanceBetweenFirstTwoLength += lrpLines[lrpLines.length-1].getLength();
                 }
             }
-            if(distanceBetweenFirstTwoLength >=  15000 || distanceBetweenLastTwoLength >= 15000){
+            if(distanceBetweenFirstTwoLength >=  1500000 || distanceBetweenLastTwoLength >= 1500000){
                 isValid = false;
                 wrongIntermediateOffset = true;
             }

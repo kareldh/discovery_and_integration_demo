@@ -18,13 +18,16 @@ export default class LineDecoder{
         let concatShortestPath = LineDecoder.determineShortestPaths(candidateLines,LRPs,decoderProperties);
 
         // 7: and trim according to the offsets
-        let offsets = {posOffset: posOffset, negOffset: negOffset};
+        let offsets = {
+            posOffset: Math.round(posOffset*100),
+            negOffset: Math.round(negOffset*100)
+        };
         LineDecoder.trimAccordingToOffsets(concatShortestPath,offsets);
 
         return {
             lines: concatShortestPath.shortestPath,
-            posOffset: offsets.posOffset,
-            negOffset: offsets.negOffset
+            posOffset: Math.round(offsets.posOffset/100),
+            negOffset: Math.round(offsets.negOffset/100)
         }
     }
 
@@ -33,7 +36,7 @@ export default class LineDecoder{
         for(let i=0;i<LRPs.length;i++){
             candidates[i] = [];
             //find nodes whereby the coordinates of the candidate nodes are close to the coordinates of the location reference point
-            let nodes = mapDataBase.findNodesCloseByCoordinate(LRPs[i].lat,LRPs[i].long,decoderProperties.dist);
+            let nodes = mapDataBase.findNodesCloseByCoordinate(LRPs[i].lat,LRPs[i].long,decoderProperties.dist*100);
 
             //if no candidate nodes are found
             //the direct search of lines using a projection point may also be executed even if candidate nodes are found. (set in decoderProperties)
@@ -42,7 +45,7 @@ export default class LineDecoder{
             }
             if(nodes.length === 0 || decoderProperties.alwaysUseProjections){
                 //determine candidate line directly by projecting the LRP on a line not far away form the coordinate
-                let closeByLines = mapDataBase.findLinesCloseByCoordinate(LRPs[i].lat,LRPs[i].long,decoderProperties.dist);
+                let closeByLines = mapDataBase.findLinesCloseByCoordinate(LRPs[i].lat,LRPs[i].long,decoderProperties.dist*100);
                 if(closeByLines.length === 0 && nodes.length === 0){
                     throw Error("No candidate nodes or projected nodes can be found.");
                 }
@@ -161,8 +164,11 @@ export default class LineDecoder{
         // the start node, end node for the last location reference point or projection point
         // shall be as close as possible to the coordinates of the location reference point
         // let distance = Math.abs(calcDistance(matchingNode.lat,matchingNode.long,lrp.lat,lrp.long));
-        distance = Math.abs(distance);
-        let distanceRating = distance/decoderProperties.dist;
+        // distance = Math.abs(distance);
+        if(distance<0){
+            throw Error("Hmm weird");
+        }
+        let distanceRating = distance/(decoderProperties.dist*100);
         rating += distanceRating * decoderProperties.distMultiplier;
         maxRating += decoderProperties.distMultiplier;
         // the functional road class of the candidate line should match the functional road class
@@ -202,7 +208,7 @@ export default class LineDecoder{
                 {
                     lfrcnp: lfrcnp,
                     lfrcnpDiff: decoderProperties.lfrcnpDiff,
-                    maxDist: distanceToNext !== undefined ? decoderProperties.distanceToNextDiff + distanceToNext : undefined
+                    maxDist: distanceToNext !== undefined ? decoderProperties.distanceToNextDiff*100 + distanceToNext : undefined
                 });
         }
     }
@@ -223,7 +229,7 @@ export default class LineDecoder{
 
         while(shortestPath === undefined   //first time shortestPath is always undefined, so this loop runs minimum 1 time
             && tries.count < decoderProperties.maxSPSearchRetries){
-            shortestPath = LineDecoder.findShortestPath(candidateLines[lrpIndex][candidateIndexes[lrpIndex]].line,candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]].line,LRPs[lrpIndex].lfrcnp,decoderProperties,LRPs[lrpIndex].distanceToNext);
+            shortestPath = LineDecoder.findShortestPath(candidateLines[lrpIndex][candidateIndexes[lrpIndex]].line,candidateLines[lrpIndex+1][candidateIndexes[lrpIndex+1]].line,LRPs[lrpIndex].lfrcnp,decoderProperties,LRPs[lrpIndex].distanceToNext*100);
 
             // the total length of the first line can be added to distanceBetweenLRP
             distanceBetweenLRP = candidateLines[lrpIndex][candidateIndexes[lrpIndex]].line.getLength();
@@ -264,7 +270,7 @@ export default class LineDecoder{
             // console.warn(distanceBetweenLRP,distanceBetweenLRPCompensation,LRPs[lrpIndex].distanceToNext,decoderProperties.distanceToNextDiff);
             if(shortestPath === undefined
                 || shortestPath.length === undefined
-                || Math.abs(distanceBetweenLRP+distanceBetweenLRPCompensation-LRPs[lrpIndex].distanceToNext) >= decoderProperties.distanceToNextDiff) // check validity (step 6 of decoding)
+                || Math.abs(distanceBetweenLRP+distanceBetweenLRPCompensation-LRPs[lrpIndex].distanceToNext*100) >= decoderProperties.distanceToNextDiff*100) // check validity (step 6 of decoding)
             {
                 if(candidateIndexes[lrpIndex+1] < candidateLines[lrpIndex+1].length-1){
                     //we can try a different end line (which has our preference because it can't change previous path calculations)

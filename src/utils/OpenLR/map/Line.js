@@ -57,9 +57,9 @@ export default class Line {
                 this.endNode.getLongitudeDeg(),
                 this.endNode.getLatitudeDeg()
             ]);
-            this.lineLength = Math.round(distance(from,to,{units: "meters"})); //work with integer values
+            this.lineLength = Math.round(distance(from,to,{units: "meters"})*100); //work with integer values in centimeter
             // todo: work with cm or mm as integers instead of meters? because now the rounding errors are possibly significant and stack
-            if(this.lineLength ===0){
+            if(this.lineLength === 0){
                 this.lineLength = 1;    //but minimum value should be 1
             }
             // this.lineLength = distance(from,to,{units: "meters"});
@@ -96,7 +96,7 @@ export default class Line {
             [this.startNode.getLongitudeDeg(),this.startNode.getLatitudeDeg()],
             [this.endNode.getLongitudeDeg(),this.endNode.getLatitudeDeg()]
         ]);
-        let distAlong = along(line,distanceAlong,{units: 'meters'});
+        let distAlong = along(line,distanceAlong,{units: 'centimeters'});
         //return distAlong.geometry;
         return {
             lat: distAlong.geometry.coordinates[1],
@@ -110,7 +110,7 @@ export default class Line {
             [[this.startNode.getLongitudeDeg(),this.startNode.getLatitudeDeg()],
             [this.endNode.getLongitudeDeg(),this.endNode.getLatitudeDeg()]]
         );
-        return Math.round(pointToLineDistance(pt,line, {units: 'meters'}));
+        return Math.round(pointToLineDistance(pt,line, {units: 'meters'})*100);
     }
 
     measureAlongLine(lat,long){

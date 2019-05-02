@@ -102,7 +102,7 @@ test('full osm integration test singleLineLane with projections',(done)=>{
                         expect(decoded.lines.length).toEqual(1);
                         expect(decoded.lines[0].getID()).toEqual("4579317_28929725_1");
                         expect(decoded.posOffset).toEqual(20);
-                        expect(decoded.negOffset).toEqual(3);
+                        expect(decoded.negOffset).toEqual(4);
                         done();
                     })})})});
 });
@@ -141,7 +141,7 @@ test('full osm integration test doubleLineLane',(done)=>{
                         expect(decoded.lines.length).toEqual(1);
                         expect(decoded.lines[0].getID()).toEqual("4579317_28929725_1");
                         expect(decoded.posOffset).toEqual(0);
-                        expect(decoded.negOffset).toEqual(osmDataBase.lines["4579317_28929725_1"].getLength()-40);
+                        expect(decoded.negOffset).toEqual(Math.round(osmDataBase.lines["4579317_28929725_1"].getLength()/100)-40);
                         done();
                     })})})});
 });
@@ -501,7 +501,7 @@ test('osm integration determineShortestPaths',(done)=>{
                         expect(concatShortestPath.shortestPath.length).toEqual(1);
                         expect(concatShortestPath.shortestPath[0].getID()).toEqual("4579317_28929725_1");
                         expect(concatShortestPath.posProjDist).toEqual(0);
-                        expect(concatShortestPath.negProjDist).toEqual(osmDataBase.lines["4579317_28929725_1"].getLength()-40);
+                        expect(concatShortestPath.negProjDist).toEqual(osmDataBase.lines["4579317_28929725_1"].getLength()-4030);
                         done();
                     })})})});
 });
@@ -580,8 +580,8 @@ test('osm integration determineShortestPaths 50 dist always project',(done)=>{
                         let concatShortestPath = LineDecoder.determineShortestPaths(candidateLines,LRPs.LRPs,decoderProperties);
                         expect(concatShortestPath.shortestPath.length).toEqual(1);
                         expect(concatShortestPath.shortestPath[0].getID()).toEqual("4579317_28929725_1");
-                        expect(concatShortestPath.posProjDist).toEqual(21); // if alwaysUseProjections = true, the first LRP is also projected
-                        expect(concatShortestPath.negProjDist).toEqual(osmDataBase.lines["4579317_28929725_1"].getLength()-40);
+                        expect(concatShortestPath.posProjDist).toEqual(2074); // if alwaysUseProjections = true, the first LRP is also projected
+                        expect(concatShortestPath.negProjDist).toEqual(osmDataBase.lines["4579317_28929725_1"].getLength()-4030);
                         done();
                     })})})});
 });
@@ -624,9 +624,9 @@ test('osm integration trimAccordingToOffsets no offsets',(done)=>{
                         expect(concatShortestPath.shortestPath.length).toEqual(1);
                         expect(concatShortestPath.shortestPath[0].getID()).toEqual("4579317_28929725_1");
                         expect(concatShortestPath.posProjDist).toEqual(0);
-                        expect(concatShortestPath.negProjDist).toEqual(osmDataBase.lines["4579317_28929725_1"].getLength()-40);
+                        expect(concatShortestPath.negProjDist).toEqual(osmDataBase.lines["4579317_28929725_1"].getLength()-4030);
                         expect(offsets.posOffset).toEqual(0);
-                        expect(offsets.negOffset).toEqual(osmDataBase.lines["4579317_28929725_1"].getLength()-40);
+                        expect(offsets.negOffset).toEqual(osmDataBase.lines["4579317_28929725_1"].getLength()-4030);
                         done();
                     })})})});
 });
@@ -664,7 +664,7 @@ test('osm integration trimAccordingToOffsets with invalid offsets',(done)=>{
                         let candidateNodes = LineDecoder.findCandidatesOrProjections(osmDataBase,LRPs.LRPs,decoderProperties);
                         let candidateLines = LineDecoder.findCandidateLines(LRPs.LRPs,candidateNodes,decoderProperties);
                         let concatShortestPath = LineDecoder.determineShortestPaths(candidateLines,LRPs.LRPs,decoderProperties);
-                        let offsets = {posOffset: 0, negOffset: 120};
+                        let offsets = {posOffset: 0, negOffset: 12000};
                         expect(()=>{LineDecoder.trimAccordingToOffsets(concatShortestPath,offsets)}).toThrow(Error("The remaining shortest path after trimming according to offsets is empty."));
                         done();
                     })})})});
@@ -703,14 +703,14 @@ test('osm integration trimAccordingToOffsets valid offsets',(done)=>{
                         let candidateNodes = LineDecoder.findCandidatesOrProjections(osmDataBase,LRPs.LRPs,decoderProperties);
                         let candidateLines = LineDecoder.findCandidateLines(LRPs.LRPs,candidateNodes,decoderProperties);
                         let concatShortestPath = LineDecoder.determineShortestPaths(candidateLines,LRPs.LRPs,decoderProperties);
-                        let offsets = {posOffset: 5, negOffset: 7};
+                        let offsets = {posOffset: 500, negOffset: 700};
                         LineDecoder.trimAccordingToOffsets(concatShortestPath,offsets);
                         expect(concatShortestPath.shortestPath.length).toEqual(1);
                         expect(concatShortestPath.shortestPath[0].getID()).toEqual("4579317_28929725_1");
                         expect(concatShortestPath.posProjDist).toEqual(0);
-                        expect(concatShortestPath.negProjDist).toEqual(osmDataBase.lines["4579317_28929725_1"].getLength()-40);
-                        expect(offsets.posOffset).toEqual(5);
-                        expect(offsets.negOffset).toEqual(osmDataBase.lines["4579317_28929725_1"].getLength()-40+7);
+                        expect(concatShortestPath.negProjDist).toEqual(osmDataBase.lines["4579317_28929725_1"].getLength()-4030);
+                        expect(offsets.posOffset).toEqual(500);
+                        expect(offsets.negOffset).toEqual(osmDataBase.lines["4579317_28929725_1"].getLength()-4030+700);
                         done();
                     })})})});
 });
@@ -767,7 +767,7 @@ test('osm integration full integration previously crashing because bad length ca
                         expect(decoded.lines[0].getID()).toEqual("51356773_28929726_1");
                         expect(decoded.lines[1].getID()).toEqual("4579317_28929725_1");
                         expect(decoded.posOffset).toEqual(57);
-                        expect(decoded.negOffset).toEqual(112);
+                        expect(decoded.negOffset).toEqual(113);
                         done();
                     })})})});
 

@@ -55,13 +55,13 @@ test('encode 4 lines no offsets no expansions',()=>{
     expect(LRPs.LRPs.length).toEqual(4);
     expect(LRPs.LRPs[0].lat).toEqual(network.lines[9].getStartNode().getLatitudeDeg());
     expect(LRPs.LRPs[0].long).toEqual(network.lines[9].getStartNode().getLongitudeDeg());
-    expect(LRPs.LRPs[0].distanceToNext).toEqual(network.lines[9].getLength()+network.lines[26].getLength());
+    expect(LRPs.LRPs[0].distanceToNext).toEqual(Math.round((network.lines[9].getLength()+network.lines[26].getLength())/100));
     expect(LRPs.LRPs[1].lat).toEqual(network.lines[7].getStartNode().getLatitudeDeg());
     expect(LRPs.LRPs[1].long).toEqual(network.lines[7].getStartNode().getLongitudeDeg());
-    expect(LRPs.LRPs[1].distanceToNext).toEqual(network.lines[7].getLength());
+    expect(LRPs.LRPs[1].distanceToNext).toEqual(Math.round(network.lines[7].getLength()/100));
     expect(LRPs.LRPs[2].lat).toEqual(network.lines[19].getStartNode().getLatitudeDeg());
     expect(LRPs.LRPs[2].long).toEqual(network.lines[19].getStartNode().getLongitudeDeg());
-    expect(LRPs.LRPs[2].distanceToNext).toEqual(network.lines[19].getLength()+network.lines[23].getLength()+network.lines[5].getLength());
+    expect(LRPs.LRPs[2].distanceToNext).toEqual(Math.round((network.lines[19].getLength()+network.lines[23].getLength()+network.lines[5].getLength())/100));
     expect(LRPs.LRPs[3].lat).toEqual(network.lines[5].getEndNode().getLatitudeDeg());
     expect(LRPs.LRPs[3].long).toEqual(network.lines[5].getEndNode().getLongitudeDeg());
     expect(LRPs.LRPs[3].distanceToNext).toEqual(0);
@@ -78,18 +78,18 @@ test('encode 4 lines no offsets with expansion',()=>{
     expect(LRPs.LRPs.length).toEqual(4);
     expect(LRPs.LRPs[0].lat).toEqual(network.lines[9].getStartNode().getLatitudeDeg());
     expect(LRPs.LRPs[0].long).toEqual(network.lines[9].getStartNode().getLongitudeDeg());
-    expect(LRPs.LRPs[0].distanceToNext).toEqual(network.lines[9].getLength()+network.lines[26].getLength());
+    expect(LRPs.LRPs[0].distanceToNext).toEqual(Math.round((network.lines[9].getLength()+network.lines[26].getLength())/100));
     expect(LRPs.LRPs[1].lat).toEqual(network.lines[7].getStartNode().getLatitudeDeg());
     expect(LRPs.LRPs[1].long).toEqual(network.lines[7].getStartNode().getLongitudeDeg());
-    expect(LRPs.LRPs[1].distanceToNext).toEqual(network.lines[7].getLength());
+    expect(LRPs.LRPs[1].distanceToNext).toEqual(Math.round((network.lines[7].getLength())/100));
     expect(LRPs.LRPs[2].lat).toEqual(network.lines[19].getStartNode().getLatitudeDeg());
     expect(LRPs.LRPs[2].long).toEqual(network.lines[19].getStartNode().getLongitudeDeg());
-    expect(LRPs.LRPs[2].distanceToNext).toEqual(network.lines[19].getLength()+network.lines[23].getLength()+network.lines[5].getLength());
+    expect(LRPs.LRPs[2].distanceToNext).toEqual(Math.round((network.lines[19].getLength()+network.lines[23].getLength()+network.lines[5].getLength())/100));
     expect(LRPs.LRPs[3].lat).toEqual(network.lines[5].getEndNode().getLatitudeDeg());
     expect(LRPs.LRPs[3].long).toEqual(network.lines[5].getEndNode().getLongitudeDeg());
     expect(LRPs.LRPs[3].distanceToNext).toEqual(0);
-    expect(LRPs.posOffset).toEqual(network.lines[9].getLength());
-    expect(LRPs.negOffset).toEqual(network.lines[5].getLength());
+    expect(LRPs.posOffset).toEqual(Math.round(network.lines[9].getLength()/100));
+    expect(LRPs.negOffset).toEqual(Math.round(network.lines[5].getLength()/100));
 });
 
 test('encode 4 lines with expansion and valid offsets',()=>{
@@ -101,57 +101,57 @@ test('encode 4 lines with expansion and valid offsets',()=>{
     expect(LRPs.LRPs.length).toEqual(4);
     expect(LRPs.LRPs[0].lat).toEqual(network.lines[9].getStartNode().getLatitudeDeg());
     expect(LRPs.LRPs[0].long).toEqual(network.lines[9].getStartNode().getLongitudeDeg());
-    expect(LRPs.LRPs[0].distanceToNext).toEqual(network.lines[9].getLength()+network.lines[26].getLength());
+    expect(LRPs.LRPs[0].distanceToNext).toEqual(Math.round((network.lines[9].getLength()+network.lines[26].getLength())/100));
     expect(LRPs.LRPs[1].lat).toEqual(network.lines[7].getStartNode().getLatitudeDeg());
     expect(LRPs.LRPs[1].long).toEqual(network.lines[7].getStartNode().getLongitudeDeg());
-    expect(LRPs.LRPs[1].distanceToNext).toEqual(network.lines[7].getLength());
+    expect(LRPs.LRPs[1].distanceToNext).toEqual(Math.round((network.lines[7].getLength())/100));
     expect(LRPs.LRPs[2].lat).toEqual(network.lines[19].getStartNode().getLatitudeDeg());
     expect(LRPs.LRPs[2].long).toEqual(network.lines[19].getStartNode().getLongitudeDeg());
-    expect(LRPs.LRPs[2].distanceToNext).toEqual(network.lines[19].getLength()+network.lines[23].getLength()+network.lines[5].getLength());
+    expect(LRPs.LRPs[2].distanceToNext).toEqual(Math.round((network.lines[19].getLength()+network.lines[23].getLength()+network.lines[5].getLength())/100));
     expect(LRPs.LRPs[3].lat).toEqual(network.lines[5].getEndNode().getLatitudeDeg());
     expect(LRPs.LRPs[3].long).toEqual(network.lines[5].getEndNode().getLongitudeDeg());
     expect(LRPs.LRPs[3].distanceToNext).toEqual(0);
-    expect(LRPs.posOffset).toEqual(network.lines[9].getLength()+30);
-    expect(LRPs.negOffset).toEqual(network.lines[5].getLength()+30);
+    expect(LRPs.posOffset).toEqual(Math.round((network.lines[9].getLength()+3000)/100));
+    expect(LRPs.negOffset).toEqual(Math.round((network.lines[5].getLength()+3000)/100));
 });
 
 test('encode 4 lines with expansion and invalid pos offset',()=>{
     let network = generateRealisticLengthTestNetwork();
     let data = mapNodesLinesToID(network.nodes,network.lines);
     let mapDataBase = new MapDataBase(data.lines,data.nodes);
-    let LRPs = LineEncoder.encode(mapDataBase,[network.lines[26],network.lines[7],network.lines[19],network.lines[23]],network.lines[26].getLength()+30,0);
+    let LRPs = LineEncoder.encode(mapDataBase,[network.lines[26],network.lines[7],network.lines[19],network.lines[23]],Math.round(network.lines[26].getLength()/100)+30,0);
     //the startnodes of line 26 and line 23 are not valid, so they both should be expanded to include node 6 (line 18) and node 9 (line22)
     //but the posOffset > the length of line 26 so it will be omitted and the next line 7's end node is valid, so no front expansion needed
     expect(LRPs.LRPs.length).toEqual(3);
     expect(LRPs.LRPs[0].lat).toEqual(network.lines[7].getStartNode().getLatitudeDeg());
     expect(LRPs.LRPs[0].long).toEqual(network.lines[7].getStartNode().getLongitudeDeg());
-    expect(LRPs.LRPs[0].distanceToNext).toEqual(network.lines[7].getLength());
+    expect(LRPs.LRPs[0].distanceToNext).toEqual(Math.round((network.lines[7].getLength())/100));
     expect(LRPs.LRPs[1].lat).toEqual(network.lines[19].getStartNode().getLatitudeDeg());
     expect(LRPs.LRPs[1].long).toEqual(network.lines[19].getStartNode().getLongitudeDeg());
-    expect(LRPs.LRPs[1].distanceToNext).toEqual(network.lines[19].getLength()+network.lines[23].getLength()+network.lines[5].getLength());
+    expect(LRPs.LRPs[1].distanceToNext).toEqual(Math.round((network.lines[19].getLength()+network.lines[23].getLength()+network.lines[5].getLength())/100));
     expect(LRPs.LRPs[2].lat).toEqual(network.lines[5].getEndNode().getLatitudeDeg());
     expect(LRPs.LRPs[2].long).toEqual(network.lines[5].getEndNode().getLongitudeDeg());
     expect(LRPs.LRPs[2].distanceToNext).toEqual(0);
     expect(LRPs.posOffset).toEqual(30);
-    expect(LRPs.negOffset).toEqual(network.lines[5].getLength());
+    expect(LRPs.negOffset).toEqual(Math.round(network.lines[5].getLength()/100));
 });
 
 test('encode 4 lines with expansion and invalid neg offset',()=>{
     let network = generateRealisticLengthTestNetwork();
     let data = mapNodesLinesToID(network.nodes,network.lines);
     let mapDataBase = new MapDataBase(data.lines,data.nodes);
-    let LRPs = LineEncoder.encode(mapDataBase,[network.lines[26],network.lines[7],network.lines[19],network.lines[23]],0,network.lines[23].getLength()+30);
+    let LRPs = LineEncoder.encode(mapDataBase,[network.lines[26],network.lines[7],network.lines[19],network.lines[23]],0,Math.round(network.lines[23].getLength()/100)+30);
     //the startnodes of line 26 and line 23 are not valid, so they both should be expanded to include node 6 (line 18) and node 9 (line22)
     //but the negOffset > the length of line 23 so it will be omitted and the next line 19's end node is valid, so no end expansion needed
     console.info(LRPs.LRPs);
     expect(LRPs.LRPs.length).toEqual(2);
     expect(LRPs.LRPs[0].lat).toEqual(network.lines[9].getStartNode().getLatitudeDeg());
     expect(LRPs.LRPs[0].long).toEqual(network.lines[9].getStartNode().getLongitudeDeg());
-    expect(LRPs.LRPs[0].distanceToNext).toEqual(network.lines[9].getLength()+network.lines[26].getLength()+network.lines[7].getLength()+network.lines[19].getLength());
+    expect(LRPs.LRPs[0].distanceToNext).toEqual(Math.round((network.lines[9].getLength()+network.lines[26].getLength()+network.lines[7].getLength()+network.lines[19].getLength())/100));
     expect(LRPs.LRPs[1].lat).toEqual(network.lines[19].getEndNode().getLatitudeDeg());
     expect(LRPs.LRPs[1].long).toEqual(network.lines[19].getEndNode().getLongitudeDeg());
     expect(LRPs.LRPs[1].distanceToNext).toEqual(0);
-    expect(LRPs.posOffset).toEqual(network.lines[9].getLength());
+    expect(LRPs.posOffset).toEqual(Math.round(network.lines[9].getLength()/100));
     expect(LRPs.negOffset).toEqual(30);
 });
 
@@ -159,19 +159,19 @@ test('checkValidityAndAdjustOffsets with end adjustments',()=>{
     let startData = generateStraightLaneTestData();
     let locLines = startData.doubleLineLane.locationLines;
     console.log(locLines[1].getLength());
-    let offsets = {posOffset: 5, negOffset: 10};
+    let offsets = {posOffset: 500, negOffset: 1000};
     let expected = locLines[0];
     LineEncoder.checkValidityAndAdjustOffsets(locLines,offsets);
-    expect(offsets).toEqual({posOffset:5,negOffset:6});
+    expect(offsets).toEqual({posOffset:500,negOffset:605});
     expect(locLines).toEqual([expected]);
 });
 
 test('checkValidityAndAdjustOffsets without adjustments',()=>{
     let startData = generateStraightLaneTestData();
     let locLines = startData.doubleLineLane;
-    let offsets = {posOffset: 5, negOffset: 5};
+    let offsets = {posOffset: 500, negOffset: 500};
     LineEncoder.checkValidityAndAdjustOffsets(locLines,offsets);
-    expect(offsets).toEqual({posOffset:5,negOffset:5});
+    expect(offsets).toEqual({posOffset:500,negOffset:500});
     expect(locLines).toEqual(locLines);
 });
 
@@ -179,10 +179,10 @@ test('checkValidityAndAdjustOffsets with start adjustments',()=>{
     let startData = generateStraightLaneTestData();
     let locLines = startData.doubleLineLane.locationLines;
     console.log(locLines[0].getLength());
-    let offsets = {posOffset: 17, negOffset: 2};
+    let offsets = {posOffset: 1700, negOffset: 200};
     let expected = locLines[1];
     LineEncoder.checkValidityAndAdjustOffsets(locLines,offsets);
-    expect(offsets).toEqual({posOffset:1,negOffset:2});
+    expect(offsets).toEqual({posOffset:63,negOffset:200});
     expect(locLines).toEqual([expected]);
 });
 
@@ -196,10 +196,10 @@ test('checkValidityAndAdjustOffsets with unconnected lanes',()=>{
 test('checkValidityAndAdjustOffsets offsets longer then path',()=>{
     let startData = generateStraightLaneTestData();
     let locLines = startData.doubleLineLane.locationLines;
-    let offsets = {posOffset: 30, negOffset: 30};
+    let offsets = {posOffset: 3000, negOffset: 3000};
     let l1 = locLines[0].getLength();
     let l2 = locLines[1].getLength();
-    expect(()=>{LineEncoder.checkValidityAndAdjustOffsets(locLines,offsets)}).toThrow(Error("offsets longer than path: path="+(l1+l2)+" posOffset=30 negOffset=30"));
+    expect(()=>{LineEncoder.checkValidityAndAdjustOffsets(locLines,offsets)}).toThrow(Error("offsets longer than path: path="+(l1+l2)+" posOffset=3000 negOffset=3000"));
 });
 
 test('adjustToValidStartEnd with one invalid start node ',()=>{
@@ -208,11 +208,11 @@ test('adjustToValidStartEnd with one invalid start node ',()=>{
     let mapDataBase = new MapDataBase(lines,nodes);
     let locLines = startData.invalidStartNodeLane.locationLines;
     let locLinesLength = locLines.length;
-    let offsets = {posOffset: 30, negOffset: 30};
+    let offsets = {posOffset: 3000, negOffset: 3000};
     let expanded = LineEncoder.adjustToValidStartEnd(mapDataBase,locLines,offsets);
     expect(expanded).toEqual({front: 1, back: 0});
     expect(locLines.length).toEqual(locLinesLength+1);
-    expect(offsets).toEqual({posOffset: 30+lines[2].getLength(), negOffset: 30});
+    expect(offsets).toEqual({posOffset: 3000+lines[2].getLength(), negOffset: 3000});
 });
 
 test('adjustToValidStartEnd with one invalid end node ',()=>{
@@ -221,11 +221,11 @@ test('adjustToValidStartEnd with one invalid end node ',()=>{
     let mapDataBase = new MapDataBase(lines,nodes);
     let locLines = startData.invalidEndNodeLane.locationLines;
     let locLinesLength = locLines.length;
-    let offsets = {posOffset: 30, negOffset: 30};
+    let offsets = {posOffset: 3000, negOffset: 3000};
     let expanded = LineEncoder.adjustToValidStartEnd(mapDataBase,locLines,offsets);
     expect(expanded).toEqual({front: 0, back: 1});
     expect(locLines.length).toEqual(locLinesLength+1);
-    expect(offsets).toEqual({posOffset: 30, negOffset: 30+lines[3].getLength()});
+    expect(offsets).toEqual({posOffset: 3000, negOffset: 3000+lines[3].getLength()});
 });
 
 test('adjustToValidStartEnd with one invalid end node with 2 outgoing lines',()=>{
@@ -247,11 +247,11 @@ test('adjustToValidStartEnd with one invalid end node with 2 outgoing lines',()=
     let mapDataBase = new MapDataBase(lines,nodes);
     let locLines = [line1];
     let locLinesLength = locLines.length;
-    let offsets = {posOffset: 30, negOffset: 30};
+    let offsets = {posOffset: 3000, negOffset: 3000};
     let expanded = LineEncoder.adjustToValidStartEnd(mapDataBase,locLines,offsets);
     expect(expanded).toEqual({front: 0, back: 1});
     expect(locLines.length).toEqual(locLinesLength+1);
-    expect(offsets).toEqual({posOffset: 30, negOffset: 30+lines[3].getLength()});
+    expect(offsets).toEqual({posOffset: 3000, negOffset: 3000+lines[3].getLength()});
     expect(locLines[locLines.length-1].getEndNode().getID()).toEqual(node5.getID());
 });
 
@@ -274,11 +274,11 @@ test('adjustToValidStartEnd with one invalid end node with 2 outgoing lines othe
     let mapDataBase = new MapDataBase(lines,nodes);
     let locLines = [line1];
     let locLinesLength = locLines.length;
-    let offsets = {posOffset: 30, negOffset: 30};
+    let offsets = {posOffset: 3000, negOffset: 3000};
     let expanded = LineEncoder.adjustToValidStartEnd(mapDataBase,locLines,offsets);
     expect(expanded).toEqual({front: 0, back: 1});
     expect(locLines.length).toEqual(locLinesLength+1);
-    expect(offsets).toEqual({posOffset: 30, negOffset: 30+lines[3].getLength()});
+    expect(offsets).toEqual({posOffset: 3000, negOffset: 3000+lines[3].getLength()});
     expect(locLines[locLines.length-1].getEndNode().getID()).toEqual(node5.getID());
 });
 
@@ -301,11 +301,11 @@ test('adjustToValidStartEnd with one invalid start node with 2 outgoing lines',(
     let mapDataBase = new MapDataBase(lines,nodes);
     let locLines = [line2];
     let locLinesLength = locLines.length;
-    let offsets = {posOffset: 30, negOffset: 30};
+    let offsets = {posOffset: 3000, negOffset: 3000};
     let expanded = LineEncoder.adjustToValidStartEnd(mapDataBase,locLines,offsets);
     expect(expanded).toEqual({front: 1, back: 0});
     expect(locLines.length).toEqual(locLinesLength+1);
-    expect(offsets).toEqual({posOffset: 30+line1.getLength(), negOffset: 30});
+    expect(offsets).toEqual({posOffset: 3000+line1.getLength(), negOffset: 3000});
     expect(locLines[0].getStartNode().getID()).toEqual(node3.getID());
 });
 
@@ -328,11 +328,11 @@ test('adjustToValidStartEnd with one invalid start node with 2 outgoing lines ot
     let mapDataBase = new MapDataBase(lines,nodes);
     let locLines = [line2];
     let locLinesLength = locLines.length;
-    let offsets = {posOffset: 30, negOffset: 30};
+    let offsets = {posOffset: 3000, negOffset: 3000};
     let expanded = LineEncoder.adjustToValidStartEnd(mapDataBase,locLines,offsets);
     expect(expanded).toEqual({front: 1, back: 0});
     expect(locLines.length).toEqual(locLinesLength+1);
-    expect(offsets).toEqual({posOffset: 30+line1.getLength(), negOffset: 30});
+    expect(offsets).toEqual({posOffset: 3000+line1.getLength(), negOffset: 3000});
     expect(locLines[0].getStartNode().getID()).toEqual(node3.getID());
 });
 
@@ -696,7 +696,7 @@ test('concatenateAndValidateShortestPaths wrongPosOffset',()=>{
     // let locLines = [network.lines[26],network.lines[7],network.lines[19],network.lines[23]];
     let lrpLines = [network.lines[26],network.lines[7],network.lines[23]];
     let shortestPaths = [{lines: [network.lines[24]]},{lines:[network.lines[19]]}];
-    let offsets = {posOffset: 10000, netOffset: 0};
+    let offsets = {posOffset: 1000000, netOffset: 0};
     let concatenatedSPResult = LineEncoder.concatenateAndValidateShortestPaths(lrpLines,shortestPaths,offsets);
     expect(concatenatedSPResult.isValid).toEqual(false);
     expect(concatenatedSPResult.wrongPosOffset).toEqual(true);
@@ -715,7 +715,7 @@ test('concatenateAndValidateShortestPaths wrongNegOFfset',()=>{
     // let locLines = [network.lines[26],network.lines[7],network.lines[19],network.lines[23]];
     let lrpLines = [network.lines[26],network.lines[7],network.lines[23]];
     let shortestPaths = [{lines: [network.lines[24]]},{lines:[network.lines[19]]}];
-    let offsets = {posOffset: 0, negOffset: 10000};
+    let offsets = {posOffset: 0, negOffset: 1000000};
     let concatenatedSPResult = LineEncoder.concatenateAndValidateShortestPaths(lrpLines,shortestPaths,offsets);
     expect(concatenatedSPResult.isValid).toEqual(false);
     expect(concatenatedSPResult.wrongPosOffset).toEqual(false);
@@ -741,37 +741,37 @@ test('concatenateAndValidateShortestPaths wrong shortestPaths length',()=>{
 test('removeLRPatFront',()=>{
     let network = generateRealisticLengthTestNetwork();
     let lrpLines = [network.lines[26],network.lines[7],network.lines[19],network.lines[23]];
-    let offsets = {posOffset: 600, negOffset: 0};
-    LineEncoder.removeLRPatFront(lrpLines,offsets,500);
+    let offsets = {posOffset: 60000, negOffset: 0};
+    LineEncoder.removeLRPatFront(lrpLines,offsets,50000);
     expect(lrpLines.length).toEqual(3);
     expect(lrpLines[0].getID()).toEqual(network.lines[7].getID());
-    expect(offsets.posOffset).toEqual(100);
+    expect(offsets.posOffset).toEqual(10000);
     expect(offsets.negOffset).toEqual(0);
 });
 
 test('removeLRPatFront unnecessary',()=>{
     let network = generateRealisticLengthTestNetwork();
     let lrpLines = [network.lines[26],network.lines[7],network.lines[19],network.lines[23]];
-    let offsets = {posOffset: 400, negOffset: 0};
-    expect(()=>{LineEncoder.removeLRPatFront(lrpLines,offsets,500)}).toThrow(Error("unnecessary removing of LRP at front"));
+    let offsets = {posOffset: 40000, negOffset: 0};
+    expect(()=>{LineEncoder.removeLRPatFront(lrpLines,offsets,50000)}).toThrow(Error("unnecessary removing of LRP at front"));
 });
 
 test('removeLRPatEnd',()=>{
     let network = generateRealisticLengthTestNetwork();
     let lrpLines = [network.lines[26],network.lines[7],network.lines[19],network.lines[23]];
-    let offsets = {posOffset: 0, negOffset: 500};
-    LineEncoder.removeLRPatEnd(lrpLines,offsets,200);
+    let offsets = {posOffset: 0, negOffset: 50000};
+    LineEncoder.removeLRPatEnd(lrpLines,offsets,20000);
     expect(lrpLines.length).toEqual(3);
     expect(lrpLines[2].getID()).toEqual(network.lines[19].getID());
     expect(offsets.posOffset).toEqual(0);
-    expect(offsets.negOffset).toEqual(300);
+    expect(offsets.negOffset).toEqual(30000);
 });
 
 test('removeLRPatEnd unnecessary',()=>{
     let network = generateRealisticLengthTestNetwork();
     let lrpLines = [network.lines[26],network.lines[7],network.lines[19],network.lines[23]];
-    let offsets = {posOffset: 0, negOffset: 300};
-    expect(()=>{LineEncoder.removeLRPatEnd(lrpLines,offsets,500)}).toThrow(Error("unnecessary removing of LRP at end"));
+    let offsets = {posOffset: 0, negOffset: 30000};
+    expect(()=>{LineEncoder.removeLRPatEnd(lrpLines,offsets,50000)}).toThrow(Error("unnecessary removing of LRP at end"));
 });
 
 test('encode lane existing of two lines can be binary encoded and decoded',()=>{

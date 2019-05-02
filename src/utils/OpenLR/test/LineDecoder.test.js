@@ -90,8 +90,10 @@ test('rateCandidateLine 4 LRPs no offsets perfect candidates',()=>{
         lrpIndex: 0,
         projected: false,
         rating: undefined
-    },network.nodes[8],LRPs.LRPs[0],decoderProperties);
+    },network.nodes[8].getDistance(LRPs.LRPs[0].lat,LRPs.LRPs[0].long),LRPs.LRPs[0],decoderProperties);
     expect(rating).not.toEqual(0);
+    expect(rating).toBeDefined();
+    expect(rating).not.toBeNaN();
     console.log(rating); //todo, wat moet dit precies uitkomen
 });
 

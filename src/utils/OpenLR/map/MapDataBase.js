@@ -56,7 +56,7 @@ export default class MapDataBase {
 
     findNodesCloseByCoordinate(lat,long,dist){
         let resNodes = [];
-        let possibleNodes = this.nodeSearchTree.findCloseBy(lat,long,dist);
+        let possibleNodes = this.nodeSearchTree.findCloseBy(lat,long,Math.round(dist/100));
         possibleNodes.forEach((node)=>{
             let distance = this.nodes[node[2]].getDistance(lat,long);
             if(distance <= dist){
@@ -68,7 +68,7 @@ export default class MapDataBase {
 
     findLinesCloseByCoordinate(lat,long,dist){
         let resLines = [];
-        let possibleLines = this.lineSearchTree.findCloseBy(lat,long,dist);
+        let possibleLines = this.lineSearchTree.findCloseBy(lat,long,Math.round(dist/100));
         possibleLines.forEach((line)=>{
             let distance = this.lines[line.id].distanceToPoint(lat,long);
             if(distance <= dist){

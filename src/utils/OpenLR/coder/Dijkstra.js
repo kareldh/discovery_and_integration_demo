@@ -6,7 +6,7 @@ export default class Dijkstra{
         if(startNode.getID() === endNode.getID()){
             return {
                 lines: [],
-                length: 0 //integer value in meter!
+                length: 0 //integer value in centimeter!
             }
         }
 
