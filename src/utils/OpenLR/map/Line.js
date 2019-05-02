@@ -96,7 +96,7 @@ export default class Line {
             [this.startNode.getLongitudeDeg(),this.startNode.getLatitudeDeg()],
             [this.endNode.getLongitudeDeg(),this.endNode.getLatitudeDeg()]
         ]);
-        let distAlong = along(line,distanceAlong,{units: 'centimeters'});
+        let distAlong = along(line,distanceAlong,{units: 'meters'});
         //return distAlong.geometry;
         return {
             lat: distAlong.geometry.coordinates[1],
