@@ -19,11 +19,14 @@ import {loadNodesLineStringsWegenregsterAntwerpen} from "../data/LoadTestData";
 import WegenregisterAntwerpenIntegration from "../utils/OpenLRData/WegenregisterAntwerpenIntegration";
 import LRPNodeHelper from "../utils/OpenLR/coder/LRPNodeHelper";
 import {locationTypeEnum} from "../utils/OpenLR/map/Enum";
+import GeoJsonIntegration from "../utils/OpenLRData/GeoJsonIntegration";
+import {map} from "../utils/OpenLRData/testdata/junction_with_lanes_manual";
 
 let inputDataEnum = {
     "RoutableTiles": "RoutableTiles",
     "OpenStreetMap": "OpenStreetMap",
-    "Wegenregister_Antwerpen": "Wegenregister_Antwerpen"
+    "Wegenregister_Antwerpen": "Wegenregister_Antwerpen",
+    "Geojson_kruispunt_tropisch_instituut": "Geojson_kruispunt_tropisch_instituut"
 };
 
 let encodingStratEnum = {
@@ -56,6 +59,7 @@ export default class OpenLrDemo extends React.Component{
         this.osmDataBase = undefined;
         this.routableTilesDataBase = undefined;
         this.wegenretisterDataBase = undefined;
+        this.geojsonKruispuntDataBase = undefined
     }
 
     componentDidMount(){
@@ -109,6 +113,9 @@ export default class OpenLrDemo extends React.Component{
             }
             else if(this.state.dataSource===inputDataEnum.Wegenregister_Antwerpen){
                 this.findMarkersWegenregisterAntwerpen(encoded);
+            }
+            else if(this.state.dataSource===inputDataEnum.Geojson_kruispunt_tropisch_instituut){
+                this.findMarkersGeojsonKruispunt(encoded);
             }
         }
         else{
@@ -185,6 +192,25 @@ export default class OpenLrDemo extends React.Component{
         }
     }
 
+    findMarkersGeojsonKruispunt(encoded){
+        if(this.geojsonKruispuntDataBase === undefined){
+            let t1 = performance.now();
+            this.geojsonKruispuntDataBase = new MapDataBase();
+            GeoJsonIntegration.initMapDataBase(this.geojsonKruispuntDataBase,map.features);
+            let decoded = OpenLRDecoder.decode(encoded,this.geojsonKruispuntDataBase);
+            let t2 = performance.now();
+            console.log("Found in Geojson kruispunt in",t2-t1,"ms",decoded);
+            this.createLineStringsOpenLr(decoded.lines,decoded.posOffset,decoded.negOffset);
+        }
+        else{
+            let t1 = performance.now();
+            let decoded = OpenLRDecoder.decode(encoded,this.geojsonKruispuntDataBase);
+            let t2 = performance.now();
+            console.log("Found in Geojson kruispunt in",t2-t1,"ms",decoded);
+            this.createLineStringsOpenLr(decoded.lines,decoded.posOffset,decoded.negOffset);
+        }
+    }
+
     addMarker(latlng){
         this.coordinates.push(latlng);
         // let marker = this.createMarker(latlng.lat,latlng.lng);
@@ -246,6 +272,7 @@ export default class OpenLrDemo extends React.Component{
                 <option value={inputDataEnum.RoutableTiles}>Routable Tiles data</option>
                 <option value={inputDataEnum.OpenStreetMap}>Open Street Map data</option>
                 <option value={inputDataEnum.Wegenregister_Antwerpen}>Wegenregister Antwerpen data</option>
+                <option value={inputDataEnum.Geojson_kruispunt_tropisch_instituut}>Geojson kruispunt tropisch instituut Antwerpen data</option>
             </select>
             <select name={"Encode strategy"} value={this.state.encodingStrat} onChange={this.handleEncodingStratSelect}>
                 <option value={encodingStratEnum.OpenLrEncode}>OpenLrEncode</option>
