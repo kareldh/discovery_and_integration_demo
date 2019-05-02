@@ -17,11 +17,18 @@ import Node from "../utils/OpenLR/map/Node";
 import RoutableTilesIntegration from "../utils/OpenLRData/RoutableTilesIntegration";
 import {loadNodesLineStringsWegenregsterAntwerpen} from "../data/LoadTestData";
 import WegenregisterAntwerpenIntegration from "../utils/OpenLRData/WegenregisterAntwerpenIntegration";
+import LRPNodeHelper from "../utils/OpenLR/coder/LRPNodeHelper";
+import {locationTypeEnum} from "../utils/OpenLR/map/Enum";
 
 let inputDataEnum = {
-    "RoutableTiles": 0,
-    "OpenStreetMap": 2,
-    "Wegenregister_Antwerpen": 3
+    "RoutableTiles": "RoutableTiles",
+    "OpenStreetMap": "OpenStreetMap",
+    "Wegenregister_Antwerpen": "Wegenregister_Antwerpen"
+};
+
+let encodingStratEnum = {
+    "OpenLrEncode": "OpenLr encode lines in database only existing of these lines, only first and last line wil remain." ,
+    "LinesToLRPs": "Simply make every line an LRP directly, without checking all the encoding steps."
 };
 
 export default class OpenLrDemo extends React.Component{
@@ -32,39 +39,33 @@ export default class OpenLrDemo extends React.Component{
             data: [],
             lat: 51.21205,
             lng: 4.39717,
+            encodingStrat: encodingStratEnum.OpenLrEncode,
+            dataSource: inputDataEnum.RoutableTiles
         };
         this.x = 8392;
         this.y = 5469;
         this.coordinates =[];
-        this.dataSource = inputDataEnum.OpenStreetMap;
         this.addMarker = this.addMarker.bind(this);
         this.createMarker = this.createMarker.bind(this);
         this.reset = this.reset.bind(this);
         this.findMarkersOsm = this.findMarkersOsm.bind(this);
         this.findMarkersRoutableTiles = this.findMarkersRoutableTiles.bind(this);
         this.findMarkers = this.findMarkers.bind(this);
+        this.handleEncodingStratSelect = this.handleEncodingStratSelect.bind(this);
+        this.handleDataSourceSelect = this.handleDataSourceSelect.bind(this);
         this.osmDataBase = undefined;
         this.routableTilesDataBase = undefined;
         this.wegenretisterDataBase = undefined;
     }
 
     componentDidMount(){
-        this.init(inputDataEnum.OpenStreetMap,this.x,this.y);
+        this.init(this.x,this.y);
     }
 
-    init(mode,x,y){
+    init(x,y){
         if(x === undefined || y === undefined){
             x = 8392;
             y = 5469;
-        }
-        if(mode === inputDataEnum.RoutableTiles){
-            this.dataSource = inputDataEnum.RoutableTiles;
-        }
-        else if(mode === inputDataEnum.OpenStreetMap){
-            this.dataSource = inputDataEnum.OpenStreetMap;
-        }
-        else if(mode === inputDataEnum.Wegenregister_Antwerpen){
-            this.dataSource = inputDataEnum.Wegenregister_Antwerpen;
         }
     }
 
@@ -81,23 +82,27 @@ export default class OpenLrDemo extends React.Component{
         if(coordinates.length >= 2){
             let l = [];
             let n = [];
+            let sp = [];
             n.push(new Node(0,coordinates[0].lat,coordinates[0].lng));
             for(let i=1;i<coordinates.length;i++){
                 n.push(new Node(i,coordinates[i].lat,coordinates[i].lng));
                 l.push(new Line(i,n[i-1],n[i]));
+                sp.push({lines: [], length: 0});
             }
             let {nodes,lines} = mapNodesLinesToID(n,l);
             let mapDataBase = new MapDataBase(lines,nodes);
-            let encoded = LineEncoder.encode(mapDataBase,l,0,0);
+            // let encoded = LineEncoder.encode(mapDataBase,l,0,0);
+            let encLines = l.length >= 2 ? l : [l[0],l[0]];
+            let encoded = {LRPs: LRPNodeHelper.lrpLinesToLRPs(encLines,sp), posOffset:0, negOffset: 0, type: locationTypeEnum.LINE_LOCATION};
             console.log(encoded);
 
-            if(this.dataSource===inputDataEnum.OpenStreetMap){
+            if(this.state.dataSource===inputDataEnum.OpenStreetMap){
                 this.findMarkersOsm(encoded);
             }
-            else if(this.dataSource===inputDataEnum.RoutableTiles){
+            else if(this.state.dataSource===inputDataEnum.RoutableTiles){
                 this.findMarkersRoutableTiles(encoded);
             }
-            else if(this.dataSource===inputDataEnum.Wegenregister_Antwerpen){
+            else if(this.state.dataSource===inputDataEnum.Wegenregister_Antwerpen){
                 this.findMarkersWegenregisterAntwerpen(encoded);
             }
         }
@@ -178,14 +183,12 @@ export default class OpenLrDemo extends React.Component{
     addMarker(latlng){
         this.coordinates.push(latlng);
         // let marker = this.createMarker(latlng.lat,latlng.lng);
-        this.setState((state, props)=>{
+        this.setState(()=>{
             let d = this.coordinates.map((c)=>{
                     return this.createMarker(c.lat,c.lng);
                 });
             return {
                 data: d,
-                lat: state.lat,
-                lng: state.lng,
             }
         });
     }
@@ -211,13 +214,7 @@ export default class OpenLrDemo extends React.Component{
             let lastOffsetCoord = lines[lines.length-1].getGeoCoordinateAlongLine(lines[lines.length-1].getLength()-(negOffset*100));
             lineStrings.push(<Circle key={"firstOffsetPoint"} center={[firstOffsetCoord.lat,firstOffsetCoord.long]} radius={1} color={"red"}/>);
             lineStrings.push(<Circle key={"lastOffsetPoint"} center={[lastOffsetCoord.lat,lastOffsetCoord.long]} radius={1} color={"magenta"}/>);
-            this.setState((state, props)=>{
-                return {
-                    data: lineStrings,
-                    lat: state.lat,
-                    lng: state.lng,
-                }
-            });
+            this.setState({data: lineStrings});
         }
     }
 
@@ -240,14 +237,28 @@ export default class OpenLrDemo extends React.Component{
             <div>
                 <TileView zoom={14} lat={lat} lng={lng} data={data} onMouseClick={this.addMarker}/>
             </div>
-            <button onClick={()=>{this.init(inputDataEnum.RoutableTiles,this.x,this.y)}}>Routable Tiles data</button>
-            <button onClick={()=>{this.init(inputDataEnum.OpenStreetMap,this.x,this.y)}}>Open Street Map data</button>
-            <button onClick={()=>{this.init(inputDataEnum.Wegenregister_Antwerpen,this.x,this.y)}}>Wegenregister Antwerpen data</button>
+            <select name={"Datasource"} value={this.state.dataSource} onChange={this.handleDataSourceSelect}>
+                <option value={inputDataEnum.RoutableTiles}>Routable Tiles data</option>
+                <option value={inputDataEnum.OpenStreetMap}>Open Street Map data</option>
+                <option value={inputDataEnum.Wegenregister_Antwerpen}>Wegenregister Antwerpen data</option>
+            </select>
+            <select name={"Encode strategy"} value={this.state.encodingStrat} onChange={this.handleEncodingStratSelect}>
+                <option value={encodingStratEnum.OpenLrEncode}>OpenLrEncode</option>
+                <option value={encodingStratEnum.LinesToLRPs}>Lines to LRPs</option>
+            </select>
             <button onClick={this.findMarkers}>Find lines in data</button>
             <button onClick={this.reset}>Reset</button>
             current tile x value: {this.x}   current tile y value: {this.y}
             <Input placeholder="tile x value" onChange={(e,data)=>{this.x = data.value}}/>
             <Input placeholder="tile y value" onChange={(e,data)=>{this.y = data.value}}/>
         </div>;
+    }
+
+    handleEncodingStratSelect(event){
+        this.setState({encodingStrat: event.target.value});
+    }
+
+    handleDataSourceSelect(event){
+        this.setState({dataSource: event.target.value});
     }
 }
