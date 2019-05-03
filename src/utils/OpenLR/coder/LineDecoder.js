@@ -11,7 +11,6 @@ export default class LineDecoder{
         // 3: For each location reference point find candidate lines
         // 4: Rate candidate lines for each location reference point
         let candidateLines = LineDecoder.findCandidateLines(LRPs,candidateNodes,decoderProperties);
-        console.log(candidateLines);
 
         // 5: Determine shortest-path(s) between two subsequent location reference points
         // 6: Check validity of the calculated shortest-path(s)

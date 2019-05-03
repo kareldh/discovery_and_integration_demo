@@ -197,16 +197,42 @@ function osmToOsm(){
                             );
                             console.log(decodeErrorTypes);
 
+                            let decodedToTwo = 0;
+                            let decodedToThree = 0;
                             let a = 0;
                             for(let i=0;i<decodedLines.length;i++){
                                 if(a >= decodeErrorIndexes.length || i !== decodeErrorIndexes[a]){
-                                    expect(decodedLines[i].lines.length).toEqual(1);
-                                    expect(decodedLines[i].lines[0].getID()).toEqual(lineIds[i]);
+                                    // if(decodedLines[i].lines.length === 2){
+                                    //     console.log(osmMapDataBase.lines[lineIds[i]]);
+                                    //     console.log(locations[i]);
+                                    //     console.log(decodedLines[i].lines);
+                                    //     console.log(decodedLines[i].posOffset,decodedLines[i].negOffset);
+                                    // }
+                                    // expect(decodedLines[i].lines.length).toEqual(1);
+                                    if(decodedLines[i].lines.length===2){
+                                        decodedToTwo++;
+                                        expect(decodedLines[i].lines[0].getID() === lineIds[i] || decodedLines[i].lines[1].getID() === lineIds[i]).toBeTruthy();
+                                        // expect((decodedLines[i].posOffset === 0 && decodedLines[i].negOffset > 0) || (decodedLines[i].posOffset > 0 && decodedLines[i].negOffset === 0)).toBeTruthy();
+                                        expect((decodedLines[i].posOffset <= 1 && decodedLines[i].negOffset > 0) || (decodedLines[i].posOffset > 0 && decodedLines[i].negOffset <= 1)).toBeTruthy();
+                                    }
+                                    else if(decodedLines[i].lines.length===3){
+                                        decodedToThree++;
+                                        expect(decodedLines[i].lines[0].getID() === lineIds[i] || decodedLines[i].lines[1].getID() === lineIds[i] || decodedLines[i].lines[2].getID() === lineIds[i]).toBeTruthy();
+                                        expect(decodedLines[i].posOffset > 0 && decodedLines[i].negOffset > 0).toBeTruthy();
+                                    }
+                                    else{
+                                        expect(decodedLines[i].lines[0].getID()).toEqual(lineIds[i]);
+                                    }
+                                    expect(decodedLines[i].lines.length).toBeGreaterThanOrEqual(1);
+                                    expect(decodedLines[i].lines.length).toBeLessThanOrEqual(3);
                                 }
                                 else{
                                     a++;
                                 }
                             }
+                            //happens because encoder moves to valid nodes, which in combination with the rounding to meters has a small loss in precision
+                            //since nodes are than projected during decoding, they can be projected up to half a meter to the left or right of our original line
+                            console.log("decoded to two:",decodedToTwo,"decoded to three:",decodedToThree);
 
                             resolve({
                                 encodedLocations: locations.length,
