@@ -276,7 +276,7 @@ export default class OpenLrDemo extends React.Component{
                 <option value={encodingStratEnum.OpenLrEncode}>OpenLrEncode</option>
                 <option value={encodingStratEnum.LinesToLRPs}>Lines to LRPs</option>
             </select>
-            <select name={"Internal algorithmic precision"} value={this.state.internalPrecision} onChange={this.handleEncodingStratSelect}>
+            <select name={"Internal algorithmic precision"} value={this.state.internalPrecision} onChange={this.handleInternalPrecisionSelect}>
                 <option value={internalPrecisionEnum.CENTIMETER}>Centimeter</option>
                 <option value={internalPrecisionEnum.METER}>Meter</option>
             </select>
