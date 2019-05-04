@@ -1,5 +1,6 @@
 import RbushNodeSearchTree from '../SearchTree/RbushNodeSearchTree';
 import RbushLineSearchTree from "../SearchTree/RbushLineSearchTree";
+import {configProperties} from "../coder/CoderSettings";
 
 export default class MapDataBase {
     constructor(
@@ -21,6 +22,7 @@ export default class MapDataBase {
         this.nodes = nodes;
         this.nodeSearchTree = new RbushNodeSearchTree(nodes);
         this.lineSearchTree = new RbushLineSearchTree(lines);
+        this.internalPrecision = configProperties.internalPrecision;
     }
 
     setData(
@@ -56,7 +58,8 @@ export default class MapDataBase {
 
     findNodesCloseByCoordinate(lat,long,dist){
         let resNodes = [];
-        let possibleNodes = this.nodeSearchTree.findCloseBy(lat,long,Math.round(dist/100));
+        let range = Math.round(dist/this.internalPrecision);
+        let possibleNodes = this.nodeSearchTree.findCloseBy(lat,long,range);
         possibleNodes.forEach((node)=>{
             let distance = this.nodes[node[2]].getDistance(lat,long);
             if(distance <= dist){
@@ -68,7 +71,8 @@ export default class MapDataBase {
 
     findLinesCloseByCoordinate(lat,long,dist){
         let resLines = [];
-        let possibleLines = this.lineSearchTree.findCloseBy(lat,long,Math.round(dist/100));
+        let range = Math.round(dist/this.internalPrecision);
+        let possibleLines = this.lineSearchTree.findCloseBy(lat,long,range);
         possibleLines.forEach((line)=>{
             let distance = this.lines[line.id].distanceToPoint(lat,long);
             if(distance <= dist){

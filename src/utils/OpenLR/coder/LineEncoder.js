@@ -1,6 +1,7 @@
 import Dijkstra from "./Dijkstra";
 import {locationTypeEnum} from "../map/Enum";
 import LRPNodeHelper from "./LRPNodeHelper";
+import {configProperties} from "./CoderSettings";
 
 export default class LineEncoder {
     static encode(mapDataBase,linesToEncode,posOffset,negOffset){
@@ -8,8 +9,8 @@ export default class LineEncoder {
         let lrpLines = [];
         let shortestPaths = [];
         let offsets = {
-            posOffset: Math.round(posOffset*100),
-            negOffset: Math.round(negOffset*100)
+            posOffset: Math.round(posOffset*configProperties.internalPrecision),
+            negOffset: Math.round(negOffset*configProperties.internalPrecision)
         };
 
         // 1: check validity of the location and offsets to be encoded
@@ -86,8 +87,8 @@ export default class LineEncoder {
         return {
             type:locationTypeEnum.LINE_LOCATION,
             LRPs: LRPs,
-            posOffset: Math.round(offsets.posOffset/100),
-            negOffset: Math.round(offsets.negOffset/100)
+            posOffset: Math.round(offsets.posOffset/configProperties.internalPrecision),
+            negOffset: Math.round(offsets.negOffset/configProperties.internalPrecision)
         };
     }
 
@@ -240,7 +241,7 @@ export default class LineEncoder {
     }
 
     static expand(lineToAdd,lines,pathLength,offsets,positive){
-        if(pathLength.length + lineToAdd.getLength() < 1500000){
+        if(pathLength.length + lineToAdd.getLength() < 15000*configProperties.internalPrecision){
             pathLength.length += lineToAdd.getLength();
             if(positive){
                 offsets.posOffset += lineToAdd.getLength();
@@ -446,7 +447,7 @@ export default class LineEncoder {
                         }
                         a++;
                     }
-                    if(lengthBetweenLRPs >= 1500000){
+                    if(lengthBetweenLRPs >= 15000*configProperties.internalPrecision){
                         isValid = false;
                         wrongIntermediateOffset = true;
                     }
@@ -456,7 +457,7 @@ export default class LineEncoder {
                     distanceBetweenFirstTwoLength += lrpLines[lrpLines.length-1].getLength();
                 }
             }
-            if(distanceBetweenFirstTwoLength >=  1500000 || distanceBetweenLastTwoLength >= 1500000){
+            if(distanceBetweenFirstTwoLength >=  15000*configProperties.internalPrecision || distanceBetweenLastTwoLength >= 15000*configProperties.internalPrecision){
                 isValid = false;
                 wrongIntermediateOffset = true;
             }

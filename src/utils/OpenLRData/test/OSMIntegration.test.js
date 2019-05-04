@@ -7,6 +7,8 @@ import LineEncoder from "../../OpenLR/coder/LineEncoder";
 import LineDecoder from "../../OpenLR/coder/LineDecoder";
 import OSMIntegration from "../../OpenLRData/OSMIntegration"
 import {filterHighwayData, getMappedElements, parseToJson} from "../../../data/api";
+import {configProperties} from "../../OpenLR/coder/CoderSettings";
+import {internalPrecisionEnum} from "../../OpenLR/map/Enum";
 
 test('initMapDataBase initialization',(done)=>{
     expect.assertions(5);
@@ -67,6 +69,59 @@ test('full osm integration test singleLineLane',(done)=>{
                         done();
                     })})})});
 });
+
+describe("tests using configProperties in meter",()=>{
+    beforeEach(()=>{
+        configProperties.internalPrecision = internalPrecisionEnum.METER;
+        configProperties.bearDist = 20;
+    });
+
+    test('full osm integration test singleLineLane configProperties internalPrecision is meter',(done)=>{
+        expect.assertions(5);
+        let decoderProperties = {
+            dist: 35,    //maximum distance of a candidate node to a LRP
+            bearDiff: 60, //maximum difference between the bearing of a candidate node and that of a LRP
+            frcDiff: 3, //maximum difference between the FRC of a candidate node and that of a LRP
+            lfrcnpDiff: 2, //maximum difference between the lowest FRC until next point of a candidate node and that of a LRP
+            distanceToNextDiff: 100, //maximum difference between the found distance between 2 LRPs and the given distanceToNext of the first LRP
+            alwaysUseProjections: false,
+            distMultiplier: 40,
+            frcMultiplier: 10,
+            fowMultiplier: 20,
+            bearMultiplier: 30,
+            maxSPSearchRetries: 50
+        };
+
+        let startData = generateStraightLaneTestData();
+        let {nodes,lines} = mapNodesLinesToID(startData.nodes,startData.lines);
+        let mapDataBase = new MapDataBase(lines,nodes);
+        let locLines = startData.singleLineLane.locationLines;
+        let LRPs = LineEncoder.encode(mapDataBase,locLines,0,0);
+
+        let osmDataBase = new MapDataBase();
+
+        loadOsmTestData()
+            .then((data)=>{parseToJson(data)
+                .then((json)=>{getMappedElements(json)
+                    .then((elements)=>{filterHighwayData(elements)
+                        .then((highwayData)=>{
+                            OSMIntegration.initMapDataBase(osmDataBase,highwayData.nodes,highwayData.ways,highwayData.relations);
+                            let decoded = LineDecoder.decode(osmDataBase,LRPs.LRPs,LRPs.posOffset,LRPs.negOffset,decoderProperties);
+                            expect(decoded.lines.length).toEqual(1);
+                            expect(decoded.lines[0].getID()).toEqual("4579317_28929725_1");
+                            expect(decoded.lines[0].getLength()).toEqual(142); // in meter!
+                            expect(decoded.posOffset).toEqual(0);
+                            expect(decoded.negOffset).toEqual(0);
+                            done();
+                        })})})});
+    });
+
+    afterEach(()=>{
+        configProperties.internalPrecision = internalPrecisionEnum.CENTIMETER;
+        configProperties.bearDist = 2000;
+    });
+});
+
 
 test('full osm integration test singleLineLane with projections',(done)=>{
     expect.assertions(4);
@@ -144,6 +199,64 @@ test('full osm integration test doubleLineLane',(done)=>{
                         expect(decoded.negOffset).toEqual(Math.round(osmDataBase.lines["4579317_28929725_1"].getLength()/100)-40);
                         done();
                     })})})});
+});
+
+test('full osm integration integration previously crashing because bad length calculation',(done)=>{
+    expect.assertions(4);
+    let decoderProperties = {
+        dist: 35,    //maximum distance of a candidate node to a LRP
+        bearDiff: 60, //maximum difference between the bearing of a candidate node and that of a LRP
+        frcDiff: 3, //maximum difference between the FRC of a candidate node and that of a LRP
+        lfrcnpDiff: 2, //maximum difference between the lowest FRC until next point of a candidate node and that of a LRP
+        distanceToNextDiff: 100, //maximum difference between the found distance between 2 LRPs and the given distanceToNext of the first LRP
+        alwaysUseProjections: true,
+        distMultiplier: 40,
+        frcMultiplier: 10,
+        fowMultiplier: 20,
+        bearMultiplier: 30,
+        maxSPSearchRetries: 50
+    };
+
+    let LRP_0 = {
+        bearing: 36.15816556660661,
+        distanceToNext: 33,
+        fow: 0,
+        frc: 7,
+        isLast: false,
+        lat: 51.21201178548282,
+        lfrcnp: 7,
+        long: 4.397157132625581,
+        seqNr: 1
+    };
+    let LRP_1 = {
+        bearing: 287.9390391708996,
+        distanceToNext: 0,
+        fow: 0,
+        frc: 7,
+        isLast: true,
+        lat: 51.211979860833395,
+        lfrcnp: 7,
+        long: 4.397580921649934,
+        seqNr: 2
+    };
+    let LRPs = [LRP_0,LRP_1];
+
+    let osmDataBase = new MapDataBase();
+
+    loadOsmTestData()
+        .then((data)=>{parseToJson(data)
+            .then((json)=>{getMappedElements(json)
+                .then((elements)=>{filterHighwayData(elements)
+                    .then((highwayData)=>{
+                        OSMIntegration.initMapDataBase(osmDataBase,highwayData.nodes,highwayData.ways,highwayData.relations);
+                        let decoded = LineDecoder.decode(osmDataBase,LRPs,0,0,decoderProperties);
+                        expect(decoded.lines[0].getID()).toEqual("51356773_28929726_1");
+                        expect(decoded.lines[1].getID()).toEqual("4579317_28929725_1");
+                        expect(decoded.posOffset).toEqual(57);
+                        expect(decoded.negOffset).toEqual(113);
+                        done();
+                    })})})});
+
 });
 
 test('osm integration findCandidatesOrProjections 35 dist',(done)=>{
@@ -713,62 +826,4 @@ test('osm integration trimAccordingToOffsets valid offsets',(done)=>{
                         expect(offsets.negOffset).toEqual(osmDataBase.lines["4579317_28929725_1"].getLength()-4030+700);
                         done();
                     })})})});
-});
-
-test('osm integration full integration previously crashing because bad length calculation',(done)=>{
-    expect.assertions(4);
-    let decoderProperties = {
-        dist: 35,    //maximum distance of a candidate node to a LRP
-        bearDiff: 60, //maximum difference between the bearing of a candidate node and that of a LRP
-        frcDiff: 3, //maximum difference between the FRC of a candidate node and that of a LRP
-        lfrcnpDiff: 2, //maximum difference between the lowest FRC until next point of a candidate node and that of a LRP
-        distanceToNextDiff: 100, //maximum difference between the found distance between 2 LRPs and the given distanceToNext of the first LRP
-        alwaysUseProjections: true,
-        distMultiplier: 40,
-        frcMultiplier: 10,
-        fowMultiplier: 20,
-        bearMultiplier: 30,
-        maxSPSearchRetries: 50
-    };
-
-    let LRP_0 = {
-        bearing: 36.15816556660661,
-        distanceToNext: 33,
-        fow: 0,
-        frc: 7,
-        isLast: false,
-        lat: 51.21201178548282,
-        lfrcnp: 7,
-        long: 4.397157132625581,
-        seqNr: 1
-    };
-    let LRP_1 = {
-        bearing: 287.9390391708996,
-        distanceToNext: 0,
-        fow: 0,
-        frc: 7,
-        isLast: true,
-        lat: 51.211979860833395,
-        lfrcnp: 7,
-        long: 4.397580921649934,
-        seqNr: 2
-    };
-    let LRPs = [LRP_0,LRP_1];
-
-    let osmDataBase = new MapDataBase();
-
-    loadOsmTestData()
-        .then((data)=>{parseToJson(data)
-            .then((json)=>{getMappedElements(json)
-                .then((elements)=>{filterHighwayData(elements)
-                    .then((highwayData)=>{
-                        OSMIntegration.initMapDataBase(osmDataBase,highwayData.nodes,highwayData.ways,highwayData.relations);
-                        let decoded = LineDecoder.decode(osmDataBase,LRPs,0,0,decoderProperties);
-                        expect(decoded.lines[0].getID()).toEqual("51356773_28929726_1");
-                        expect(decoded.lines[1].getID()).toEqual("4579317_28929725_1");
-                        expect(decoded.posOffset).toEqual(57);
-                        expect(decoded.negOffset).toEqual(113);
-                        done();
-                    })})})});
-
 });

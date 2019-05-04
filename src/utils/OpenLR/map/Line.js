@@ -4,12 +4,12 @@ import along from '@turf/along';
 import {point,lineString} from '@turf/helpers'
 import distance from "@turf/distance/index";
 import bearing from '@turf/bearing'
-import {fowEnum, frcEnum} from "./Enum";
+import {fowEnum, frcEnum, internalPrecisionEnum} from "./Enum";
 import {configProperties} from "../coder/CoderSettings";
 
 
 export default class Line {
-    constructor(id,startNode,endNode){
+    constructor(id,startNode,endNode,options){
         this.startNode = startNode;
         this.endNode = endNode;
         this.id = id;
@@ -25,6 +25,7 @@ export default class Line {
         this.reverseBearing = undefined;
         startNode.outgoingLines.push(this);
         endNode.incomingLines.push(this);
+        this.internalPrecision = configProperties.internalPrecision;
     }
 
     getStartNode(){
@@ -57,7 +58,12 @@ export default class Line {
                 this.endNode.getLongitudeDeg(),
                 this.endNode.getLatitudeDeg()
             ]);
-            this.lineLength = Math.round(distance(from,to,{units: "centimeters"})); //work with integer values in centimeter
+            if(this.internalPrecision === internalPrecisionEnum.CENTIMETER){
+                this.lineLength = Math.round(distance(from,to,{units: "centimeters"})); //work with integer values in centimeter
+            }
+            else{
+                this.lineLength = Math.round(distance(from,to,{units: "meters"})); //work with integer values in meter
+            }
             if(this.lineLength === 0){
                 this.lineLength = 1;    //but minimum value should be 1
             }
@@ -95,7 +101,14 @@ export default class Line {
             [this.startNode.getLongitudeDeg(),this.startNode.getLatitudeDeg()],
             [this.endNode.getLongitudeDeg(),this.endNode.getLatitudeDeg()]
         ]);
-        let distAlong = along(line,distanceAlong,{units: 'centimeters'});
+        let distAlong;
+        if(this.internalPrecision === internalPrecisionEnum.CENTIMETER){
+            distAlong = along(line,distanceAlong,{units: 'centimeters'});
+        }
+        else{
+            distAlong = along(line,distanceAlong,{units: 'meters'});
+        }
+
         //return distAlong.geometry;
         return {
             lat: distAlong.geometry.coordinates[1],
@@ -109,7 +122,12 @@ export default class Line {
             [[this.startNode.getLongitudeDeg(),this.startNode.getLatitudeDeg()],
             [this.endNode.getLongitudeDeg(),this.endNode.getLatitudeDeg()]]
         );
-        return Math.round(pointToLineDistance(pt,line, {units: 'centimeters'}));
+        if(this.internalPrecision === internalPrecisionEnum.CENTIMETER){
+            return Math.round(pointToLineDistance(pt,line, {units: 'centimeters'}));
+        }
+        else{
+            return Math.round(pointToLineDistance(pt,line, {units: 'meters'}));
+        }
     }
 
     measureAlongLine(lat,long){

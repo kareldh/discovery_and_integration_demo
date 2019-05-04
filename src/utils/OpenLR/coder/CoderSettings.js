@@ -1,3 +1,5 @@
+import {internalPrecisionEnum} from "../map/Enum";
+
 let decoderProperties = {
     dist: 35,    //maximum distance (in meter) of a candidate node to a LRP
     bearDiff: 60, //maximum difference (in degrees) between the bearing of a candidate node and that of a LRP
@@ -13,7 +15,8 @@ let decoderProperties = {
 };
 
 let configProperties = {
-    bearDist: 2000
+    bearDist: 2000,
+    internalPrecision: internalPrecisionEnum.CENTIMETER
 };
 
 export {decoderProperties,configProperties};

@@ -20,7 +20,8 @@ import WegenregisterAntwerpenIntegration from "../utils/OpenLRData/Wegenregister
 import GeoJsonIntegration from "../utils/OpenLRData/GeoJsonIntegration";
 import {map} from "../utils/OpenLRData/testdata/junction_with_lanes_manual";
 import {LinesDirectlyToLRPs} from "../utils/OpenLR/experimental/LinesDirectlyToLRPs";
-import {decoderProperties} from "../utils/OpenLR/coder/CoderSettings";
+import {configProperties, decoderProperties} from "../utils/OpenLR/coder/CoderSettings";
+import {internalPrecisionEnum} from "../utils/OpenLR/map/Enum";
 
 let inputDataEnum = {
     "RoutableTiles": "RoutableTiles",
@@ -59,7 +60,7 @@ export default class OpenLrDemo extends React.Component{
         this.osmDataBase = undefined;
         this.routableTilesDataBase = undefined;
         this.wegenretisterDataBase = undefined;
-        this.geojsonKruispuntDataBase = undefined
+        this.geojsonKruispuntDataBase = undefined;
     }
 
     componentDidMount(){
@@ -275,6 +276,10 @@ export default class OpenLrDemo extends React.Component{
                 <option value={encodingStratEnum.OpenLrEncode}>OpenLrEncode</option>
                 <option value={encodingStratEnum.LinesToLRPs}>Lines to LRPs</option>
             </select>
+            <select name={"Internal algorithmic precision"} value={this.state.internalPrecision} onChange={this.handleEncodingStratSelect}>
+                <option value={internalPrecisionEnum.CENTIMETER}>Centimeter</option>
+                <option value={internalPrecisionEnum.METER}>Meter</option>
+            </select>
             <button onClick={this.findMarkers}>Find lines in data</button>
             <button onClick={this.reset}>Reset</button>
             current tile x value: {this.x}   current tile y value: {this.y}
@@ -289,5 +294,13 @@ export default class OpenLrDemo extends React.Component{
 
     handleDataSourceSelect(event){
         this.setState({dataSource: event.target.value});
+    }
+
+    handleInternalPrecisionSelect(event){
+        this.osmDataBase = undefined;
+        this.routableTilesDataBase = undefined;
+        this.wegenretisterDataBase = undefined;
+        this.geojsonKruispuntDataBase = undefined;
+        configProperties.internalPrecision = event.target.value;
     }
 }

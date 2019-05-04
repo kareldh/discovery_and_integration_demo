@@ -1,5 +1,7 @@
 import distance from '@turf/distance';
 import {point} from '@turf/helpers'
+import {configProperties} from "../coder/CoderSettings";
+import {internalPrecisionEnum} from "./Enum";
 
 export default class Node{
     constructor(id=0,lat=0,long=0,incomingLines=[],outgoingLines=[]){
@@ -9,6 +11,7 @@ export default class Node{
         this.incomingLines = incomingLines;
         this.outgoingLines = outgoingLines;
         this.setLines(incomingLines,outgoingLines);
+        this.internalPrecision = configProperties.internalPrecision;
     }
 
     setLines(incomingLines,outgoingLines){
@@ -66,6 +69,11 @@ export default class Node{
             long,
             lat
         ]);
-        return Math.round(distance(from,to,{units: "centimeters"}));
+        if(this.internalPrecision === internalPrecisionEnum.CENTIMETER){
+            return Math.round(distance(from,to,{units: "centimeters"}));
+        }
+        else{
+            return Math.round(distance(from,to,{units: "meters"}));
+        }
     }
 }

@@ -32,3 +32,8 @@ export let locationTypeEnum = Object.freeze({
     "RECTANGLE": 8,
     "GRID": 9
 });
+
+export let internalPrecisionEnum = Object.freeze(({
+    "METER": 1,
+    "CENTIMETER": 100
+}));
