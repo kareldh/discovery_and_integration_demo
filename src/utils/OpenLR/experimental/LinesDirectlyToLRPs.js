@@ -16,9 +16,9 @@ export function LinesDirectlyToLRPs(lines){
         throw Error("The array of lines is empty");
     }
     let shortestPaths = [];
-    lines.forEach(()=>{
-        shortestPaths.push({lines: [], length: 0});
-    });
     let encLines = lines.length >= 2 ? lines : [lines[0],lines[0]];
+    for(let i=0;i<encLines.length-1;i++){
+        shortestPaths.push({lines: [], length: 0});
+    }
     return {LRPs: LRPNodeHelper.lrpLinesToLRPs(encLines,shortestPaths), posOffset:0, negOffset: 0, type: locationTypeEnum.LINE_LOCATION};
 }

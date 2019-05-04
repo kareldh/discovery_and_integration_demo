@@ -286,6 +286,7 @@ export default class LineDecoder{
                     shortestPath = undefined;
                 }
                 else{
+                    console.log(LRPs[lrpIndex],LRPs[lrpIndex+1]);
                     throw Error("No shortest path could be found between the given LRPs with indexes " +lrpIndex +" and " + (lrpIndex+1) +
                         " You either tried to decode a loop that isn't present in the current map " +
                         "or you tried decoding a line between two points that are to close together and decoded as a single node");

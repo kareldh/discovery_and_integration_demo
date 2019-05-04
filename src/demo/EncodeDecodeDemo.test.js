@@ -21,7 +21,7 @@ let decoderPropertiesAlwaysProj = {
     bearDiff: 60, //maximum difference (in degrees) between the bearing of a candidate node and that of a LRP
     frcDiff: 3, //maximum difference between the FRC of a candidate node and that of a LRP
     lfrcnpDiff: 3, //maximum difference between the lowest FRC until next point of a candidate node and that of a LRP
-    distanceToNextDiff: 100, //maximum difference (in meter) between the found distance between 2 LRPs and the given distanceToNext of the first LRP
+    distanceToNextDiff: 10, //maximum difference (in meter) between the found distance between 2 LRPs and the given distanceToNext of the first LRP
     alwaysUseProjections: true,
     distMultiplier: 40,
     frcMultiplier: 10,
@@ -35,7 +35,7 @@ let decoderProperties = {
     bearDiff: 60, //maximum difference (in degrees) between the bearing of a candidate node and that of a LRP
     frcDiff: 3, //maximum difference between the FRC of a candidate node and that of a LRP
     lfrcnpDiff: 3, //maximum difference between the lowest FRC until next point of a candidate node and that of a LRP
-    distanceToNextDiff: 100, //maximum difference (in meter) between the found distance between 2 LRPs and the given distanceToNext of the first LRP
+    distanceToNextDiff: 10, //maximum difference (in meter) between the found distance between 2 LRPs and the given distanceToNext of the first LRP
     alwaysUseProjections: false,
     distMultiplier: 40,
     frcMultiplier: 10,
@@ -1088,12 +1088,12 @@ function wegenregisterToWegenregisterNoEncoding(){
                         }
                     }
                     expect(decodedLines[i-a].lines.length).toBeGreaterThanOrEqual(1);
-                    // expect(decodedLines[i].lines.length).toBeLessThanOrEqual(10);
-                    if(decodedLines[i-a].lines.length > 10){
-                        console.log(wegenregisterMapDataBase.lines[lineIds[i-a]]);
-                        console.log(decodedLines[i-a]);
-                        console.log(locations[i]);
-                    }
+                    expect(decodedLines[i-a].lines.length).toBeLessThanOrEqual(10);
+                    // if(decodedLines[i-a].lines.length > 10){
+                    //     console.log(wegenregisterMapDataBase.lines[lineIds[i-a]]);
+                    //     console.log(decodedLines[i-a]);
+                    //     console.log(locations[i]);
+                    // }
                     if(decodedLines[i-a].lines.length > 3){
                         decodedToMoreThanThree++;
                     }
