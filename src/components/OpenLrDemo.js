@@ -17,11 +17,10 @@ import Node from "../utils/OpenLR/map/Node";
 import RoutableTilesIntegration from "../utils/OpenLRData/RoutableTilesIntegration";
 import {loadNodesLineStringsWegenregsterAntwerpen} from "../data/LoadTestData";
 import WegenregisterAntwerpenIntegration from "../utils/OpenLRData/WegenregisterAntwerpenIntegration";
-import LRPNodeHelper from "../utils/OpenLR/coder/LRPNodeHelper";
-import {locationTypeEnum} from "../utils/OpenLR/map/Enum";
 import GeoJsonIntegration from "../utils/OpenLRData/GeoJsonIntegration";
 import {map} from "../utils/OpenLRData/testdata/junction_with_lanes_manual";
 import {LinesDirectlyToLRPs} from "../utils/OpenLR/experimental/LinesDirectlyToLRPs";
+import {decoderProperties} from "../utils/OpenLR/coder/CoderSettings";
 
 let inputDataEnum = {
     "RoutableTiles": "RoutableTiles",
@@ -131,7 +130,7 @@ export default class OpenLrDemo extends React.Component{
                                 let t1 = performance.now();
                                 this.osmDataBase = new MapDataBase();
                                 OSMIntegration.initMapDataBase(this.osmDataBase,highwayData.nodes,highwayData.ways,highwayData.relations);
-                                let decoded = OpenLRDecoder.decode(encoded,this.osmDataBase);
+                                let decoded = OpenLRDecoder.decode(encoded,this.osmDataBase,decoderProperties);
                                 let t2 = performance.now();
                                 console.log("Found in Open Street Maps in",t2-t1,"ms",decoded);
                                 this.createLineStringsOpenLr(decoded.lines,decoded.posOffset,decoded.negOffset);
@@ -139,7 +138,7 @@ export default class OpenLrDemo extends React.Component{
         }
         else{
             let t1 = performance.now();
-            let decoded = OpenLRDecoder.decode(encoded,this.osmDataBase);
+            let decoded = OpenLRDecoder.decode(encoded,this.osmDataBase,decoderProperties);
             let t2 = performance.now();
             console.log("Found in Open Street Maps in",t2-t1,"ms",decoded);
             this.createLineStringsOpenLr(decoded.lines,decoded.posOffset,decoded.negOffset);
@@ -154,7 +153,7 @@ export default class OpenLrDemo extends React.Component{
                         let t1 = performance.now();
                         this.routableTilesDataBase = new MapDataBase();
                         RoutableTilesIntegration.initMapDataBase(this.routableTilesDataBase,nodesAndLines.nodes,nodesAndLines.lines);
-                        let decoded = OpenLRDecoder.decode(encoded,this.routableTilesDataBase);
+                        let decoded = OpenLRDecoder.decode(encoded,this.routableTilesDataBase,decoderProperties);
                         let t2 = performance.now();
                         console.log("Found in RoutableTiles in",t2-t1,"ms",decoded);
                         this.createLineStringsOpenLr(decoded.lines,decoded.posOffset,decoded.negOffset);
@@ -162,7 +161,7 @@ export default class OpenLrDemo extends React.Component{
         }
         else{
             let t1 = performance.now();
-            let decoded = OpenLRDecoder.decode(encoded,this.routableTilesDataBase);
+            let decoded = OpenLRDecoder.decode(encoded,this.routableTilesDataBase,decoderProperties);
             let t2 = performance.now();
             console.log("Found in RoutableTiles in",t2-t1,"ms",decoded);
             this.createLineStringsOpenLr(decoded.lines,decoded.posOffset,decoded.negOffset);
@@ -175,7 +174,7 @@ export default class OpenLrDemo extends React.Component{
                 this.wegenretisterDataBase = new MapDataBase();
                 let t1 = performance.now();
                 WegenregisterAntwerpenIntegration.initMapDataBase(this.wegenretisterDataBase,features);
-                let decoded = OpenLRDecoder.decode(encoded,this.wegenretisterDataBase);
+                let decoded = OpenLRDecoder.decode(encoded,this.wegenretisterDataBase,decoderProperties);
                 let t2 = performance.now();
                 console.log("Found in Wegenregister Antwerpen in",t2-t1,"ms",decoded);
                 this.createLineStringsOpenLr(decoded.lines,decoded.posOffset,decoded.negOffset);
@@ -183,7 +182,7 @@ export default class OpenLrDemo extends React.Component{
         }
         else{
             let t1 = performance.now();
-            let decoded = OpenLRDecoder.decode(encoded,this.wegenretisterDataBase);
+            let decoded = OpenLRDecoder.decode(encoded,this.wegenretisterDataBase,decoderProperties);
             let t2 = performance.now();
             console.log("Found in Wegenregister Antwerpen in",t2-t1,"ms",decoded);
             this.createLineStringsOpenLr(decoded.lines,decoded.posOffset,decoded.negOffset);
@@ -195,14 +194,14 @@ export default class OpenLrDemo extends React.Component{
             let t1 = performance.now();
             this.geojsonKruispuntDataBase = new MapDataBase();
             GeoJsonIntegration.initMapDataBase(this.geojsonKruispuntDataBase,map.features);
-            let decoded = OpenLRDecoder.decode(encoded,this.geojsonKruispuntDataBase);
+            let decoded = OpenLRDecoder.decode(encoded,this.geojsonKruispuntDataBase,decoderProperties);
             let t2 = performance.now();
             console.log("Found in Geojson kruispunt in",t2-t1,"ms",decoded);
             this.createLineStringsOpenLr(decoded.lines,decoded.posOffset,decoded.negOffset);
         }
         else{
             let t1 = performance.now();
-            let decoded = OpenLRDecoder.decode(encoded,this.geojsonKruispuntDataBase);
+            let decoded = OpenLRDecoder.decode(encoded,this.geojsonKruispuntDataBase,decoderProperties);
             let t2 = performance.now();
             console.log("Found in Geojson kruispunt in",t2-t1,"ms",decoded);
             this.createLineStringsOpenLr(decoded.lines,decoded.posOffset,decoded.negOffset);
