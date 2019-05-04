@@ -21,6 +21,7 @@ import LRPNodeHelper from "../utils/OpenLR/coder/LRPNodeHelper";
 import {locationTypeEnum} from "../utils/OpenLR/map/Enum";
 import GeoJsonIntegration from "../utils/OpenLRData/GeoJsonIntegration";
 import {map} from "../utils/OpenLRData/testdata/junction_with_lanes_manual";
+import {LinesDirectlyToLRPs} from "../utils/OpenLR/experimental/LinesDirectlyToLRPs";
 
 let inputDataEnum = {
     "RoutableTiles": "RoutableTiles",
@@ -86,12 +87,10 @@ export default class OpenLrDemo extends React.Component{
         if(coordinates.length >= 2){
             let l = [];
             let n = [];
-            let sp = [];
             n.push(new Node(0,coordinates[0].lat,coordinates[0].lng));
             for(let i=1;i<coordinates.length;i++){
                 n.push(new Node(i,coordinates[i].lat,coordinates[i].lng));
                 l.push(new Line(i,n[i-1],n[i]));
-                sp.push({lines: [], length: 0});
             }
             let {nodes,lines} = mapNodesLinesToID(n,l);
             let mapDataBase = new MapDataBase(lines,nodes);
@@ -100,8 +99,7 @@ export default class OpenLrDemo extends React.Component{
                 encoded = LineEncoder.encode(mapDataBase,l,0,0);
             }
             else if(this.state.encodingStrat === encodingStratEnum.LinesToLRPs){
-                let encLines = l.length >= 2 ? l : [l[0],l[0]];
-                encoded = {LRPs: LRPNodeHelper.lrpLinesToLRPs(encLines,sp), posOffset:0, negOffset: 0, type: locationTypeEnum.LINE_LOCATION};
+                encoded = LinesDirectlyToLRPs(l);
             }
             console.log(encoded);
 
