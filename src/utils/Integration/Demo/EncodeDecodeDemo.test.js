@@ -1450,7 +1450,7 @@ function routableTilesToRoutableTilesNoProj(){
                 });
             })});
 }
-function routableTilesToRoutableTilesNoEndocding(){
+function routableTilesToRoutableTilesNoEncoding(){
     return new Promise(resolve=>{
         fetchRoutableTile(14,8392,5469)
             .then((data)=>{getRoutableTilesNodesAndLines(data.triples)
@@ -1623,7 +1623,7 @@ test('demo RoutableTiles to RoutableTiles no proj',(done)=>{
 });
 test('demo RoutableTiles to RoutableTiles no encoding',(done)=>{
     expect.hasAssertions();
-    routableTilesToRoutableTilesNoEndocding().then((res)=>{
+    routableTilesToRoutableTilesNoEncoding().then((res)=>{
         console.log(res);
         expect(res).toBeDefined();
         done();

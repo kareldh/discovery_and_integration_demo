@@ -125,6 +125,5 @@ export default class Catalog{
 
     getDataSetsInRange(latLower,latUpper,longLower,longUpper){
         return this.searchTree.findInRange(latLower,longLower,latUpper,longUpper);
-        //todo: rbush where one can use the range of the wgs84 tiles of osm to search for databases
     }
 }

@@ -59,7 +59,7 @@ function getBearing3(startLat,startLong,endLat,endLong){
         Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1);
     console.warn(lat1,lon1,lat2,lon2);
     console.warn(a,b);
-    return bearing = (degrees(Math.atan2(a, b))+360.0)%360.0;
+    return (degrees(Math.atan2(a, b))+360.0)%360.0;
 }
 
 test('bearing calculation',()=>{

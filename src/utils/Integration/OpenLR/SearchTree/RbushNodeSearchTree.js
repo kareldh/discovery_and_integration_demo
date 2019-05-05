@@ -3,6 +3,11 @@ import rbush from 'rbush'
 export default class RbushNodeSearchTree{
     constructor(nodes){
         this.tree = rbush(9, ['[0]', '[1]', '[0]', '[1]']);
+        this.addNodes(nodes);
+    }
+
+    // one node === Node object
+    addNodes(nodes){
         let data = [];
 
         //todo: this could already be made in the openlr integration classes
@@ -17,9 +22,12 @@ export default class RbushNodeSearchTree{
         this.tree.load(data);
     }
 
-    addLines(lines){
-        //todo
+    // one node === [long, lat, id]
+    addData(data){
+        this.tree.load(data);
     }
+
+    //todo: remove nodes
 
     //dist given in meters
     //uses an approximate square bounding box around the given point, so it is possible that nodes are returned that

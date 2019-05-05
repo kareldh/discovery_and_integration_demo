@@ -1,8 +1,5 @@
-//todo: ook mogelijkheid om aan database een nieuwe tile toe te voegen
-//todo: moet ook oude tile kunnen wegnemen?
 //currently uses the nodes and ways it is given, doesn't care if those are coming from a single or multiple tiles
 
-// import MapDataBase from "../OpenLR/map/MapDataBase";
 import Line from "../OpenLR/map/Line";
 import Node from "../OpenLR/map/Node";
 import {fowEnum, frcEnum} from "../OpenLR/map/Enum";
@@ -11,6 +8,11 @@ import {OsmFrcHighwayMapping} from "./FRCmappings/OsmFrcHighwayMapping";
 
 export default class RoutableTilesIntegration{
     static initMapDataBase(mapDataBase,nodes,ways,relations){
+        let nodesLines = RoutableTilesIntegration.getNodesLines(nodes,ways,relations);
+        mapDataBase.setData(nodesLines.lines,nodesLines.nodes); //todo: set bounding box
+    }
+
+    static getNodesLines(nodes,ways,relations){
         let openLRLines = {};
         let openLRNodes = {};
         let osmNodes = {};
@@ -48,8 +50,10 @@ export default class RoutableTilesIntegration{
                 }
             }
         }
-        mapDataBase.setData(openLRLines,openLRNodes);
-        // return new MapDataBase(openLRLines,openLRNodes);
+        return {
+            nodes: openLRNodes,
+            lines: openLRLines
+        }
     }
 
     static getFRC(osmWay){

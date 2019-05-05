@@ -3,6 +3,11 @@ import rbush from 'rbush'
 export default class RbushLineSearchTree{
     constructor(lines){
         this.tree = rbush();
+        this.addLines(lines);
+    }
+
+    //one line === Line object
+    addLines(lines){
         let data = [];
 
         //todo: this could already be made in the openlr integration classes
@@ -43,9 +48,12 @@ export default class RbushLineSearchTree{
         this.tree.load(data);
     }
 
-    addLines(lines){
-        //todo
+    //one line === { minX: minLong, minY: minLat, maxX: maxLong, maxY: maxLat, id: id }
+    addData(data){
+        this.tree.load(data);
     }
+
+    //todo: remove lines
 
     //dist given in meters
     //uses an approximate square bounding box around the given point, so it is possible that lines are returned that

@@ -3,6 +3,11 @@ import Node from "../OpenLR/map/Node";
 
 export default class GeoJsonIntegration{
     static initMapDataBase(mapDataBase,features){
+        let nodesLines = GeoJsonIntegration.getNodesLines(features);
+        mapDataBase.setData(nodesLines.lines,nodesLines.nodes); //todo: set bounding box
+    }
+
+    static getNodesLines(features){
         let openLRLines = {};
         let openLRNodes = {};
 
@@ -34,9 +39,11 @@ export default class GeoJsonIntegration{
                 }
             }
         }
-        mapDataBase.setData(openLRLines,openLRNodes);
+        return {
+            nodes: openLRNodes,
+            lines: openLRLines
+        }
     }
-
 
     static getFRC(properties){
         return undefined

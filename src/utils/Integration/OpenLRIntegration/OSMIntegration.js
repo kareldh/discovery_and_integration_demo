@@ -1,4 +1,3 @@
-// import MapDataBase from "../OpenLR/map/MapDataBase";
 import Line from "../OpenLR/map/Line";
 import Node from "../OpenLR/map/Node";
 import {fowEnum, frcEnum} from "../OpenLR/map/Enum";
@@ -7,6 +6,11 @@ import {OsmFrcHighwayMapping} from "./FRCmappings/OsmFrcHighwayMapping";
 
 export default class OSMIntegration{
     static initMapDataBase(mapDataBase,nodes,ways,relations){
+        let nodesLines = OSMIntegration.getNodesLines(nodes,ways,relations);
+        mapDataBase.setData(nodesLines.lines,nodesLines.nodes); //todo: set bounding box
+    }
+
+    static getNodesLines(nodes,ways,relations){
         let openLRLines = {};
         let openLRNodes = {};
         let osmNodes = {};
@@ -59,12 +63,19 @@ export default class OSMIntegration{
                 }
             }
         }
-        // return new MapDataBase(openLRLines,openLRNodes);
-        mapDataBase.setData(openLRLines,openLRNodes);
+        return {
+            nodes: openLRNodes,
+            lines: openLRLines
+        }
     }
 
     /*depricated, old code, only used to test that one way doesn't affect lanes that aren't one way only*/
     static initMapDataBaseDeprecatedNoOneWay(mapDataBase, nodes, ways, relations){
+        let nodesLines = OSMIntegration.getNodesLinesDeprecatedNoOneWay(nodes,ways,relations);
+        mapDataBase.setData(nodesLines.lines,nodesLines.nodes);
+    }
+
+    static getNodesLinesDeprecatedNoOneWay(nodes,ways,realtions){
         let openLRLines = {};
         let openLRNodes = {};
         let osmNodes = {};
@@ -96,10 +107,11 @@ export default class OSMIntegration{
                 }
             }
         }
-        // return new MapDataBase(openLRLines,openLRNodes);
-        mapDataBase.setData(openLRLines,openLRNodes);
+        return {
+            nodes: openLRNodes,
+            lines: openLRLines
+        }
     }
-
 
     static getFRC(osmWay){
         let value = OSMIntegration._getTagsValues(osmWay,"highway");

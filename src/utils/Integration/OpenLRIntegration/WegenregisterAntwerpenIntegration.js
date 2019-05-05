@@ -10,6 +10,11 @@ This class contains a demo implementation for use of openlr in the wegenregister
  */
 export default class WegenregisterAntwerpenIntegration{
     static initMapDataBase(mapDataBase,features){
+        let nodesLines = WegenregisterAntwerpenIntegration.getNodesLines(features);
+        mapDataBase.setData(nodesLines.lines,nodesLines.nodes); //todo: set bounding box
+    }
+
+    static getNodesLines(features){
         let openLRLines = {};
         let openLRNodes = {};
 
@@ -51,10 +56,18 @@ export default class WegenregisterAntwerpenIntegration{
                 }
             }
         }
-        mapDataBase.setData(openLRLines,openLRNodes);
+        return {
+            nodes: openLRNodes,
+            lines: openLRLines
+        }
     }
 
     static initMapDataBaseDeprecatedNoRoadDirections(mapDataBase,features){
+        let nodesLines = WegenregisterAntwerpenIntegration.getNodesLinesDeprecatedNoRoadDirections(features);
+        mapDataBase.setData(nodesLines.lines,nodesLines.nodes);
+    }
+
+    static getNodesLinesDeprecatedNoRoadDirections(features){
         let openLRLines = {};
         let openLRNodes = {};
 
@@ -92,7 +105,10 @@ export default class WegenregisterAntwerpenIntegration{
                 }
             }
         }
-        mapDataBase.setData(openLRLines,openLRNodes);
+        return {
+            nodes: openLRNodes,
+            lines: openLRLines
+        }
     }
 
     static getFRC(properties){
