@@ -1,11 +1,9 @@
 import {configProperties} from "./CoderSettings";
-import {internalPrecisionEnum} from "../map/Enum";
 
 export default class LocationReferencePoint{
     constructor(bearing,distanceToNext,frc,fow,lfrcnp,islast,lat,lon,seqNr){
         this.bearing = Math.round(bearing);
-        this.distanceToNext = configProperties.internalPrecision === internalPrecisionEnum.CENTIMETER
-            ? Math.round(distanceToNext/100) : distanceToNext;
+        this.distanceToNext = Math.round(distanceToNext/configProperties.internalPrecision);
         this.frc = frc;
         this.fow = fow;
         this.lfrcnp = lfrcnp;
