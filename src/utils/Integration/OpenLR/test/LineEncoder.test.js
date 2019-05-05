@@ -453,7 +453,7 @@ test('checkShortestPathCoverage fully covered 0 path length',()=>{
     let locationLines = [network.lines[5],network.lines[3],network.lines[4]];
     let checkResult = LineEncoder.checkShortestPathCoverage(1,locationLines,[],2);
     expect(checkResult.fullyCovered).toEqual(true);
-    expect(checkResult.lrpIndexInLoc).toEqual(1);
+    expect(checkResult.lrpIndexInLoc).toEqual(2);
     expect(checkResult.lrpIndexInSP).toEqual(0);
 });
 
