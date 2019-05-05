@@ -417,4 +417,4 @@ export let map = {
       }
     }
   ]
-}
+};

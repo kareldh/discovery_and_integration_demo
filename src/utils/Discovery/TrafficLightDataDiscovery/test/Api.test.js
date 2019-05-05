@@ -1,5 +1,5 @@
 import {fetchCatalog} from "../Api";
-import {CATALOG_URL} from "../config";
+import {CATALOG_URL} from "../Config";
 
 test('fetch catalog doesn\'t timeout',(done)=>{
     expect.assertions(1);

@@ -1,11 +1,12 @@
 import MapDataBase from "../../OpenLR/map/MapDataBase";
 import RoutableTilesIntegration from "../RoutableTilesIntegration";
-import {fetchRoutableTile, getRoutableTilesNodesAndLines} from "../../../data/api";
+import {getRoutableTilesNodesAndLines} from "../../Data/ParseData";
 import LineEncoder from "../../OpenLR/coder/LineEncoder";
 import Line from "../../OpenLR/map/Line";
 import Node from "../../OpenLR/map/Node";
 import {LinesDirectlyToLRPs} from "../../OpenLR/experimental/LinesDirectlyToLRPs";
 import OpenLRDecoder from "../../OpenLR/Decoder";
+import {fetchRoutableTile} from "../../Data/LoadData";
 
 test("initMapDatabase",(done)=>{
     expect.assertions(3);

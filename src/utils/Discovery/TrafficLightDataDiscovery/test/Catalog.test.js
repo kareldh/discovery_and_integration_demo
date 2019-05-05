@@ -1,6 +1,6 @@
 import {fetchCatalog, fetchNextPage} from "../Api";
 import Catalog from "../Catalog";
-import {CATALOG_URL} from "../config";
+import {CATALOG_URL} from "../Config";
 
 test('addCatalogPage',(done)=>{
     expect.assertions(6);

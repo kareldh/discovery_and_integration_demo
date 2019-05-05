@@ -1,10 +1,6 @@
 import Node from "../map/Node";
 import Line from "../map/Line";
-import pointToLineDistance from '@turf/point-to-line-distance';
-import nearestPointOnLine from '@turf/nearest-point-on-line';
-import along from '@turf/along';
-import {point,lineString} from '@turf/helpers'
-import distance from "@turf/distance/index";
+import {point} from '@turf/helpers'
 import bearing from '@turf/bearing'
 
 test('creating line adds it to node incoming or outgoing lines',()=>{
@@ -40,9 +36,9 @@ function getBearing2(startLat,startLong,endLat,endLong){
     endLat = radians(endLat);
     endLong = radians(endLong);
 
-    var dLong = endLong - startLong;
+    let dLong = endLong - startLong;
 
-    var dPhi = Math.log(Math.tan(endLat/2.0+Math.PI/4.0)/Math.tan(startLat/2.0+Math.PI/4.0));
+    let dPhi = Math.log(Math.tan(endLat/2.0+Math.PI/4.0)/Math.tan(startLat/2.0+Math.PI/4.0));
     if (Math.abs(dLong) > Math.PI){
         if (dLong > 0.0)
             dLong = -(2.0 * Math.PI - dLong);
@@ -54,18 +50,16 @@ function getBearing2(startLat,startLong,endLat,endLong){
 }
 
 function getBearing3(startLat,startLong,endLat,endLong){
-    var lat1 = radians(startLat);
-    var lon1 = radians(startLong);
-    var lat2 = radians(endLat);
-    var lon2 = radians(endLong);
-    var a = Math.sin(lon2 - lon1) * Math.cos(lat2);
-    var b = Math.cos(lat1) * Math.sin(lat2) -
+    let lat1 = radians(startLat);
+    let lon1 = radians(startLong);
+    let lat2 = radians(endLat);
+    let lon2 = radians(endLong);
+    let a = Math.sin(lon2 - lon1) * Math.cos(lat2);
+    let b = Math.cos(lat1) * Math.sin(lat2) -
         Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1);
     console.warn(lat1,lon1,lat2,lon2);
     console.warn(a,b);
-    var bearing = (degrees(Math.atan2(a, b))+360.0)%360.0;
-
-    return bearing;
+    return bearing = (degrees(Math.atan2(a, b))+360.0)%360.0;
 }
 
 test('bearing calculation',()=>{

@@ -5,8 +5,8 @@ import {
 import MapDataBase from "../../OpenLR/map/MapDataBase";
 import LineEncoder from "../../OpenLR/coder/LineEncoder";
 import LineDecoder from "../../OpenLR/coder/LineDecoder";
-import OSMIntegration from "../../OpenLRData/OSMIntegration"
-import {filterHighwayData, getMappedElements, parseToJson} from "../../../data/api";
+import OSMIntegration from "../OSMIntegration"
+import {filterHighwayData, getMappedElements, parseToJson} from "../../Data/ParseData";
 import {configProperties} from "../../OpenLR/coder/CoderSettings";
 import {internalPrecisionEnum} from "../../OpenLR/map/Enum";
 

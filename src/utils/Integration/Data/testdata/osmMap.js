@@ -32429,4 +32429,4 @@ export let map = `<?xml version="1.0" encoding="UTF-8"?>
   <tag k="building" v="yes"/>
   <tag k="type" v="multipolygon"/>
  </relation>
-</osm>`
+</osm>`;

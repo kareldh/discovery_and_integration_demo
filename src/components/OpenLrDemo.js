@@ -1,27 +1,27 @@
 import React from 'react';
 import TileView from "./TileView";
 import {
-    fetchRoutableTile, filterHighwayData,
+    filterHighwayData,
     getMappedElements, getRoutableTilesNodesAndLines,
     parseToJson
-} from "../data/api";
+} from "../utils/Integration/Data/ParseData";
 import {Marker, Polyline, Popup, Circle} from "react-leaflet";
 import {Input} from "semantic-ui-react";
-import {loadOsmTestData, mapNodesLinesToID} from "../utils/OpenLR/test/Helperfunctions";
-import OSMIntegration from "../utils/OpenLRData/OSMIntegration";
-import OpenLRDecoder from "../utils/OpenLR/Decoder";
-import LineEncoder from "../utils/OpenLR/coder/LineEncoder";
-import MapDataBase from "../utils/OpenLR/map/MapDataBase";
-import Line from "../utils/OpenLR/map/Line";
-import Node from "../utils/OpenLR/map/Node";
-import RoutableTilesIntegration from "../utils/OpenLRData/RoutableTilesIntegration";
-import {loadNodesLineStringsWegenregsterAntwerpen} from "../data/LoadTestData";
-import WegenregisterAntwerpenIntegration from "../utils/OpenLRData/WegenregisterAntwerpenIntegration";
-import GeoJsonIntegration from "../utils/OpenLRData/GeoJsonIntegration";
-import {map} from "../utils/OpenLRData/testdata/junction_with_lanes_manual";
-import {LinesDirectlyToLRPs} from "../utils/OpenLR/experimental/LinesDirectlyToLRPs";
-import {configProperties, decoderProperties} from "../utils/OpenLR/coder/CoderSettings";
-import {internalPrecisionEnum} from "../utils/OpenLR/map/Enum";
+import {loadOsmTestData, mapNodesLinesToID} from "../utils/Integration/OpenLR/test/Helperfunctions";
+import OSMIntegration from "../utils/Integration/OpenLRIntegration/OSMIntegration";
+import OpenLRDecoder from "../utils/Integration/OpenLR/Decoder";
+import LineEncoder from "../utils/Integration/OpenLR/coder/LineEncoder";
+import MapDataBase from "../utils/Integration/OpenLR/map/MapDataBase";
+import Line from "../utils/Integration/OpenLR/map/Line";
+import Node from "../utils/Integration/OpenLR/map/Node";
+import RoutableTilesIntegration from "../utils/Integration/OpenLRIntegration/RoutableTilesIntegration";
+import {loadNodesLineStringsWegenregsterAntwerpen,fetchRoutableTile} from "../utils/Integration/Data/LoadData";
+import WegenregisterAntwerpenIntegration from "../utils/Integration/OpenLRIntegration/WegenregisterAntwerpenIntegration";
+import GeoJsonIntegration from "../utils/Integration/OpenLRIntegration/GeoJsonIntegration";
+import {map} from "../utils/Integration/Data/testdata/junction_with_lanes_manual";
+import {LinesDirectlyToLRPs} from "../utils/Integration/OpenLR/experimental/LinesDirectlyToLRPs";
+import {configProperties, decoderProperties} from "../utils/Integration/OpenLR/coder/CoderSettings";
+import {internalPrecisionEnum} from "../utils/Integration/OpenLR/map/Enum";
 
 let inputDataEnum = {
     "RoutableTiles": "RoutableTiles",

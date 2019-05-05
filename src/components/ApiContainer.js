@@ -1,14 +1,14 @@
 import React from 'react';
 import TileView from "./TileView";
 import {
-    fetchOsmData,
-    fetchRoutableTile, filterHighwayData,
+    filterHighwayData,
     getIntersectionNodes, getMappedElements,
     getNodesWithTrafficSignals,
     parseToJson
-} from "../data/api";
+} from "../utils/Integration/Data/ParseData";
 import {Marker, Polyline, Popup} from "react-leaflet";
 import {Input} from "semantic-ui-react";
+import {fetchOsmData, fetchRoutableTile} from "../utils/Integration/Data/LoadData";
 
 export default class ApiContainer extends React.Component{
     constructor(props){

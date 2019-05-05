@@ -1,4 +1,4 @@
-import {loadNodesLineStringsWegenregsterAntwerpen} from "../LoadTestData";
+import {loadNodesLineStringsWegenregsterAntwerpen} from "../LoadData";
 
 test('loadNodesLineStringsWegenregsterAntwerpen',(done)=>{
     expect.assertions(1);

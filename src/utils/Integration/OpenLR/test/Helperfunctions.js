@@ -2,7 +2,7 @@ import Node from "../map/Node";
 import Location from "../coder/Location";
 import Line from "../map/Line";
 import {locationTypeEnum} from "../map/Enum";
-import {map} from "../../OpenLRData/testdata/osmMap";
+import {map} from "../../Data/testdata/osmMap";
 
 export function generateStraightLaneTestData(){
     let lines = [];

@@ -1,10 +1,10 @@
 import MapDataBase from "../map/MapDataBase";
 import SlowMapDataBase from "../map/SlowMapDataBase";
 import {mapNodesLinesToID, generateStraightLaneTestData, loadOsmTestData} from "./Helperfunctions";
-import {loadNodesLineStringsWegenregsterAntwerpen} from "../../../data/LoadTestData";
-import WegenregisterAntwerpenIntegration from "../../OpenLRData/WegenregisterAntwerpenIntegration";
-import {filterHighwayData, getMappedElements, parseToJson} from "../../../data/api";
-import OSMIntegration from "../../OpenLRData/OSMIntegration";
+import {loadNodesLineStringsWegenregsterAntwerpen} from "../../Data/LoadData";
+import WegenregisterAntwerpenIntegration from "../../OpenLRIntegration/WegenregisterAntwerpenIntegration";
+import {filterHighwayData, getMappedElements, parseToJson} from "../../Data/ParseData";
+import OSMIntegration from "../../OpenLRIntegration/OSMIntegration";
 
 test('initialize mapdatabase',()=>{
     let startData = generateStraightLaneTestData();

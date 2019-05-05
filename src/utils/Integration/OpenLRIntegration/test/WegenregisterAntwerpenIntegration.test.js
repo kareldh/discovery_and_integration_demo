@@ -1,4 +1,4 @@
-import {loadNodesLineStringsWegenregsterAntwerpen} from "../../../data/LoadTestData";
+import {loadNodesLineStringsWegenregsterAntwerpen} from "../../Data/LoadData";
 import WegenregisterAntwerpenIntegration from "../WegenregisterAntwerpenIntegration";
 import MapDataBase from "../../OpenLR/map/MapDataBase";
 import {LinesDirectlyToLRPs} from "../../OpenLR/experimental/LinesDirectlyToLRPs";

@@ -315,7 +315,7 @@ export default class LineEncoder {
             return {
                 fullyCovered: true,
                 lrpIndexInSP: spIndex,
-                lrpIndexInLoc: lIndex++
+                lrpIndexInLoc: lIndex+1
             }
         }
         else {

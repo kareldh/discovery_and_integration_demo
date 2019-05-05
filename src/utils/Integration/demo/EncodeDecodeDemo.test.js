@@ -2,19 +2,19 @@
 // in a specific bounding box: <bounds minlat="51.2093400" minlon="4.3917700" maxlat="51.2140400" maxlon="4.4034600"/>
 // on the wegenregister Antwerpen
 
-import MapDataBase from "../utils/OpenLR/map/MapDataBase";
-import {loadNodesLineStringsWegenregsterAntwerpen} from "../data/LoadTestData";
-import WegenregisterAntwerpenIntegration from "../utils/OpenLRData/WegenregisterAntwerpenIntegration";
-import {loadOsmTestData} from "../utils/OpenLR/test/Helperfunctions";
+import MapDataBase from "../OpenLR/map/MapDataBase";
+import {loadNodesLineStringsWegenregsterAntwerpen,fetchRoutableTile} from "../Data/LoadData";
+import WegenregisterAntwerpenIntegration from "../OpenLRIntegration/WegenregisterAntwerpenIntegration";
+import {loadOsmTestData} from "../OpenLR/test/Helperfunctions";
 import {
-    fetchRoutableTile, filterHighwayData, getMappedElements, getRoutableTilesNodesAndLines,
+    filterHighwayData, getMappedElements, getRoutableTilesNodesAndLines,
     parseToJson
-} from "../data/api";
-import OSMIntegration from "../utils/OpenLRData/OSMIntegration";
-import LineEncoder from "../utils/OpenLR/coder/LineEncoder";
-import OpenLRDecoder from "../utils/OpenLR/Decoder";
-import RoutableTilesIntegration from "../utils/OpenLRData/RoutableTilesIntegration";
-import {LinesDirectlyToLRPs} from "../utils/OpenLR/experimental/LinesDirectlyToLRPs";
+} from "../Data/ParseData";
+import OSMIntegration from "../OpenLRIntegration/OSMIntegration";
+import LineEncoder from "../OpenLR/coder/LineEncoder";
+import OpenLRDecoder from "../OpenLR/Decoder";
+import RoutableTilesIntegration from "../OpenLRIntegration/RoutableTilesIntegration";
+import {LinesDirectlyToLRPs} from "../OpenLR/experimental/LinesDirectlyToLRPs";
 
 let decoderPropertiesAlwaysProj = {
     dist: 35,    //maximum distance (in meter) of a candidate node to a LRP

@@ -1,8 +1,7 @@
-import {loadNodesLineStringsWegenregsterAntwerpen} from "../../../data/LoadTestData";
+import {loadNodesLineStringsWegenregsterAntwerpen} from "../../Data/LoadData";
 import MapDataBase from "../map/MapDataBase";
-import WegenregisterAntwerpenIntegration from "../../OpenLRData/WegenregisterAntwerpenIntegration";
+import WegenregisterAntwerpenIntegration from "../../OpenLRIntegration/WegenregisterAntwerpenIntegration";
 import LRPNodeHelper from "../coder/LRPNodeHelper";
-import {decoderProperties} from "../coder/CoderSettings";
 
 test('lrpLinesToLRPs single line in wegenregister Antwerpen',(done)=>{
     expect.assertions(12);

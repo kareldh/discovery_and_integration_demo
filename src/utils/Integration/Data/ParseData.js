@@ -1,16 +1,4 @@
-import ldfetch from 'ldfetch';
-import axios from 'axios';
 import parser from 'fast-xml-parser';
-import {DATASET_URL} from "./const";
-
-export function fetchRoutableTile(z,x,y){
-    return new Promise((resolve) => {
-        let fetch = new ldfetch({headers: {accept: 'application/ld+json'}});
-        fetch.get(DATASET_URL+z+"/"+x+"/"+y).then(
-            response => {resolve(response)}
-        )
-    });
-}
 
 
 /*
@@ -206,14 +194,6 @@ function getLatLng(triples,intersections){
             }
         }
     });
-}
-
-export function fetchOsmData(){
-    return new Promise((resolve,reject)=>{
-        axios.get("https://api.openstreetmap.org/api/0.6/map?bbox=4.3915,51.2065,4.4076,51.2169")
-            .then((data)=>resolve(data.data))
-            .catch((error)=>{reject(error)})
-    })
 }
 
 export function parseToJson(xml){
