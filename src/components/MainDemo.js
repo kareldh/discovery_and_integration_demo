@@ -63,10 +63,13 @@ export class MainDemo extends React.Component{
 
     initCatalog(){
         return new Promise(resolve=>{
+            let t1 = performance.now();
             fetchCatalog("https://cors-anywhere.herokuapp.com/"+CATALOG_URL).then((c)=>{
                 let sets = getDataSetsFromTriples(c.triples);
                 let res = this.catalog.addCatalogPage(sets);
                 fetchNextPage(res,this.catalog,[],{uriPrefix: "https://cors-anywhere.herokuapp.com/"}).then(()=>{
+                    let t2 = performance.now();
+                    console.log("Catalog initialized in",t2-t1,"ms");
                     resolve();
                 });
             });
@@ -121,9 +124,11 @@ export class MainDemo extends React.Component{
         });
 
         this.catalogInitialized.then(()=>{
+            let t1 = performance.now();
             let boundingBox = tile2boundingBox(tileXY.x,tileXY.y,14);
             let datasets = this.catalog.getDataSetsInRange(boundingBox.latLower,boundingBox.latUpper,boundingBox.longLower,boundingBox.longUpper);
-            console.log(datasets);
+            let t2 = performance.now();
+            console.log(datasets.length,"datasets found in",t2-t1,"ms");
             let featureCollection = {
                 "type": "FeatureCollection",
                 "features": []
