@@ -1,4 +1,5 @@
 import ldfetch from 'ldfetch';
+import {getDataSetsFromTriples} from "./Data";
 
 export function fetchCatalog(catalogUrl){
     return new Promise((resolve) => {
@@ -13,13 +14,13 @@ export function fetchCatalog(catalogUrl){
 export function fetchNextPage(res,catalog,tags=[],options){
     return new Promise(resolve=>{
         fetchCatalog(((options && options.uriPrefix)?options.uriPrefix:"")+res.nextPage).then((c)=>{
-            let r = catalog.addCatalogPage(c,tags);
+            let sets = getDataSetsFromTriples(c.triples,tags);
+            let r = catalog.addCatalogPage(sets);
             resolve(r);
         });
     }).then((r2)=>{
         return (r2.currentPage !== r2.lastPage) ? fetchNextPage(r2,catalog,tags,options) : r2;
     });
 }
-
 
 

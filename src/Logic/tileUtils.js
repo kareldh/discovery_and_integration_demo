@@ -1,9 +1,7 @@
-import {fetchRoutableTile} from "../utils/Integration/Data/LoadData";
-
 export function getTileXYForLocation(latitude, longitude, zoom){
     let x = _long2tile(longitude,zoom);
     let y = _lat2tile(latitude,zoom);
-    return fetchRoutableTile(zoom,x,y);
+    return {x: x, y: y};
 }
 
 export function tile2boundingBox(x,y,zoom){

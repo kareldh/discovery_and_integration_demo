@@ -3,19 +3,17 @@ import RbushPolygonSearchTree from './searchTree/RbushPolygonSearchTree'
 export default class Catalog{
     constructor(){
         this.searchTree = undefined;
-        this.currentPage = undefined;
-        this.nextPage = undefined;
-        this.lastPage = undefined;
     }
 
-    addCatalogPage(catalogRDF,tags=[]){
+    addCatalogPage(sets){
+        // BEFORE
         // 1: check if the data set in the catalog has a spatial tag (filled with a polygon)
         // 2: check if the data set in the catalog has one of the tags from the tags list
         // 3: if both 1 and 2 are satisfied, get the geo+json data, a unique id (URL to the opendata.vlaanderen page for this dataset) and the distribution url of the data set
+        // NOW
         // 3: create a new geo json feature with the geo+json data as geometry and the identifier and distribution url as properties
         // 4: push this feature to the feature collection which will be used in the lookup structure
-        let sets = this._getDataSets(catalogRDF,tags);
-        let features = this._createFeaturesForGeoSpatialDataSets(sets);
+        let features = Catalog._createFeaturesForGeoSpatialDataSets(sets);
         let featureCollection = {
             type: 'FeatureCollection',
             features: features
@@ -28,81 +26,13 @@ export default class Catalog{
         }
 
         return {
-            currentPage: this.currentPage,
-            nextPage: this.nextPage,
-            lastPage: this.lastPage
+            currentPage: sets.currentPage,
+            nextPage: sets.nextPage,
+            lastPage: sets.lastPage
         }
     }
 
-    _getDataSets(catalog,keywords=[]){
-        let dataSets = {};
-        let distributions = {};
-        let locationIDtoDataSet = {};
-        catalog.triples.forEach((triple)=>{
-            if(triple.predicate.value === "http://www.w3.org/ns/dcat#distribution"){
-                if(dataSets[triple.subject.value] === undefined){
-                    dataSets[triple.subject.value] = {};
-                }
-                dataSets[triple.subject.value].distribution = triple.object.value;
-                if(distributions[triple.object.value] === undefined){
-                    distributions[triple.object.value] = {};
-                }
-            }
-
-            if(triple.predicate.value === "http://purl.org/dc/terms/spatial"){
-                if(dataSets[triple.subject.value] === undefined){
-                    dataSets[triple.subject.value] = {};
-                }
-                locationIDtoDataSet[triple.object.value] = triple.subject.value;
-            }
-
-            if(
-                triple.predicate.value === "http://www.w3.org/ns/locn#geometry"
-                && triple.object.value[0] === "{"
-            ){
-                if(locationIDtoDataSet[triple.subject.value] === undefined){
-                    throw Error(triple.subject.value + " not previously encountered!");
-                }
-                dataSets[locationIDtoDataSet[triple.subject.value]].geojson = JSON.parse(triple.object.value);
-            }
-
-            if(triple.predicate.value === "http://www.w3.org/ns/dcat#keyword"){
-                if(dataSets[triple.subject.value] === undefined){
-                    dataSets[triple.subject.value] = {};
-                }
-                if(dataSets[triple.subject.value].keywords === undefined){
-                    dataSets[triple.subject.value].keywords = [];
-                }
-                if(keywords.includes(triple.object.value)){
-                    dataSets[triple.subject.value].hasValidKeyword = true;
-                }
-                dataSets[triple.subject.value].keywords.push(triple.object.value);
-            }
-
-            if(distributions[triple.subject.value] !== undefined){
-                distributions[triple.subject.value][triple.predicate.value] = triple.object.value ;
-            }
-
-            if(triple.object.value === "http://www.w3.org/ns/hydra/core#PagedCollection"){
-                this.currentPage = triple.subject.value;
-            }
-
-            if(this.currentPage !== undefined && triple.subject.value === this.currentPage){
-                if(triple.predicate.value === "http://www.w3.org/ns/hydra/core#lastPage"){
-                    this.lastPage = triple.object.value;
-                }
-                if(triple.predicate.value === "http://www.w3.org/ns/hydra/core#nextPage"){
-                    this.nextPage = triple.object.value;
-                }
-            }
-        });
-        return {
-            dataSets: dataSets,
-            distributions: distributions
-        };
-    }
-
-    _createFeaturesForGeoSpatialDataSets(data){
+    static _createFeaturesForGeoSpatialDataSets(data){
         let featureCollection = [];
         for(let set in data.dataSets){
             if(data.dataSets.hasOwnProperty(set) && data.dataSets[set].geojson !== undefined){

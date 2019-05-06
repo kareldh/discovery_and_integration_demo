@@ -131,7 +131,7 @@ function osmToWegenregister(){
                                 }
                                 t2 = performance.now();
                                 let sum = times.reduce((previous, current)=> current += previous);
-                                let errorSum = errorTimes.reduce((previous, current)=> current += previous);
+                                let errorSum = errorTimes.length > 0 ? errorTimes.reduce((previous, current)=> current += previous) : 0;
                                 console.log("decoded lines: ",decodedLines.length,"decode errors:",decodeErrors,
                                     "in time:",t2-t1,"ms,",
                                     "mean time:",sum/times.length,"ms,",
@@ -735,7 +735,7 @@ function wegenregisterToWegenregister(){
                 }
             }
             t2 = performance.now();
-            let sum = times.reduce((previous, current)=> current += previous);
+            let sum = times.length > 0 ? times.reduce((previous, current)=> current += previous) : 0;
             let errorSum = errorTimes.length > 0 ? errorTimes.reduce((previous, current)=> current += previous) : 0;
             console.log("decoded lines: ",decodedLines.length,"decode errors:",decodeErrors,
                 "in time:",t2-t1,"ms,",
@@ -983,7 +983,7 @@ function wegenregisterToWegenregisterNoEncoding(){
             let encodeErrorTimes = [];
             let t1 = performance.now();
             for(let id in wegenregisterMapDataBase.lines){
-                if(wegenregisterMapDataBase.lines.hasOwnProperty(id) && i<10000){
+                if(wegenregisterMapDataBase.lines.hasOwnProperty(id) && i<1000){
                     let t3;
                     let t4;
                     try {
@@ -1126,7 +1126,7 @@ test('demo wegenregister to wegenregister',(done)=>{
         expect(res).toBeDefined();
         done();
     });
-});
+},10000);
 test('demo wegenregister to wegenregister no proj',(done)=>{
     expect.hasAssertions();
     wegenregisterToWegenregisterNoProj().then((res)=>{
@@ -1134,7 +1134,7 @@ test('demo wegenregister to wegenregister no proj',(done)=>{
         expect(res).toBeDefined();
         done();
     });
-});
+},10000);
 test('demo wegenregister to wegenregister no encoding',(done)=>{
     expect.hasAssertions();
     wegenregisterToWegenregisterNoEncoding().then((res)=>{
@@ -1142,7 +1142,7 @@ test('demo wegenregister to wegenregister no encoding',(done)=>{
         expect(res).toBeDefined();
         done();
     });
-});
+},10000);
 
 function routableTilesToRoutableTiles(){
     return new Promise(resolve=>{
@@ -1833,7 +1833,7 @@ describe("tests using configProperties in meter",()=>{
             expect(res).toBeDefined();
             done();
         });
-    });
+    },10000);
     test('demo wegenregister to wegenregister no proj',(done)=>{
         expect.hasAssertions();
         wegenregisterToWegenregisterNoProj().then((res)=>{
@@ -1841,7 +1841,7 @@ describe("tests using configProperties in meter",()=>{
             expect(res).toBeDefined();
             done();
         });
-    });
+    },10000);
     test('demo wegenregister to wegenregister no encoding',(done)=>{
         expect.hasAssertions();
         wegenregisterToWegenregisterNoEncoding().then((res)=>{
@@ -1849,7 +1849,7 @@ describe("tests using configProperties in meter",()=>{
             expect(res).toBeDefined();
             done();
         });
-    });
+    },10000);
 
     test('demo RoutableTiles to RoutableTiles 4 meter prec',(done)=>{
         expect.hasAssertions();
@@ -1858,7 +1858,7 @@ describe("tests using configProperties in meter",()=>{
             expect(res).toBeDefined();
             done();
         });
-    });
+    },10000);
     test('demo RoutableTiles to RoutableTiles no proj',(done)=>{
         expect.hasAssertions();
         routableTilesToRoutableTilesNoProj().then((res)=>{
@@ -1866,7 +1866,7 @@ describe("tests using configProperties in meter",()=>{
             expect(res).toBeDefined();
             done();
         });
-    });
+    },10000);
     test('demo RoutableTiles to RoutableTiles no encoding',(done)=>{
         expect.hasAssertions();
         routableTilesToRoutableTilesNoEncoding().then((res)=>{
@@ -1874,7 +1874,7 @@ describe("tests using configProperties in meter",()=>{
             expect(res).toBeDefined();
             done();
         });
-    });
+    },10000);
 
     afterEach(()=>{
         configProperties.internalPrecision = internalPrecisionEnum.CENTIMETER;

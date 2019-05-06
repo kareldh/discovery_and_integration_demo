@@ -14,11 +14,3 @@ export function getOpenTrafficLightsData(URL){
 export function downloadOpenTrafficLightsTestData(){
     return new Promise((resolve)=>resolve(data));
 }
-
-export function download(_uri){
-    return new Promise((resolve,reject) => {
-        axios.get(_uri)
-            .then(response => resolve(response.data))
-            .catch(error => reject(error));
-    });
-}

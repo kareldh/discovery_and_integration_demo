@@ -126,14 +126,14 @@ export default class MapDataBase {
     }){
         //todo: speed this up
         //maybe change lines and nodes to not contain references, but only ids
-        let nodesAdded = [];
-        let linesAdded = [];
+        let nodesAdded = {};
+        let linesAdded = {};
         for(let key in nodes){
             if(nodes.hasOwnProperty(key)){
                 if(this.nodes[key]===undefined){
                     //this node was not yet present
                     this.nodes[key] = nodes[key];
-                    nodesAdded.push(nodes[key]);
+                    nodesAdded[key]=nodes[key];
                 }
             }
         }
@@ -144,7 +144,7 @@ export default class MapDataBase {
                     lines[key].startNode = this.nodes[lines[key].getStartNode().getID()];
                     lines[key].endNode = this.nodes[lines[key].getEndNode().getID()];
                     this.lines[lines[key].getID()] = lines[key];
-                    linesAdded.push(lines[key]);
+                    linesAdded[key]=lines[key];
                 }
             }
         }
