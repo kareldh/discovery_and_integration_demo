@@ -3,6 +3,7 @@ import RbushPolygonSearchTree from './searchTree/RbushPolygonSearchTree'
 export default class Catalog{
     constructor(){
         this.searchTree = undefined;
+        this.amountOfDatasets = 0;
     }
 
     addCatalogPage(sets){
@@ -24,6 +25,7 @@ export default class Catalog{
         else{
             this.searchTree.addPolygons(featureCollection);
         }
+        this.amountOfDatasets += features.length;
 
         return {
             currentPage: sets.currentPage,
@@ -35,7 +37,7 @@ export default class Catalog{
     static _createFeaturesForGeoSpatialDataSets(data){
         let featureCollection = [];
         for(let set in data.dataSets){
-            if(data.dataSets.hasOwnProperty(set) && data.dataSets[set].geojson !== undefined){
+            if(data.dataSets.hasOwnProperty(set) && data.dataSets[set].geojson !== undefined && data.dataSets[set].hasValidKeyword){
                 featureCollection.push({
                     type: 'Feature',
                     properties: {
@@ -55,5 +57,9 @@ export default class Catalog{
 
     getDataSetsInRange(latLower,latUpper,longLower,longUpper){
         return this.searchTree.findInRange(latLower,longLower,latUpper,longUpper);
+    }
+
+    getDatasetCount(){
+        return this.amountOfDatasets;
     }
 }

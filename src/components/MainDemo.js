@@ -65,7 +65,7 @@ export class MainDemo extends React.Component{
         return new Promise(resolve=>{
             let t1 = performance.now();
             fetchCatalog("https://cors-anywhere.herokuapp.com/"+CATALOG_URL).then((c)=>{
-                let sets = getDataSetsFromTriples(c.triples);
+                let sets = getDataSetsFromTriples(c.triples,["Boring"]);
                 let res = this.catalog.addCatalogPage(sets);
                 fetchNextPage(res,this.catalog,[],{uriPrefix: "https://cors-anywhere.herokuapp.com/"}).then(()=>{
                     let t2 = performance.now();
@@ -75,10 +75,14 @@ export class MainDemo extends React.Component{
             });
         });
         // return new Promise(resolve=>{
+        //     let t1 = performance.now();
         //     download("https://raw.githubusercontent.com/kareldh/TrafficLightsCatalog/master/verkeerslicht_catalog.ttl").then((c)=>{
         //         parseAndStoreQuads(c).then(store=>{
         //             getDataSetsFromStore(store,["verkeerslicht"]).then(sets=>{
-        //                 resolve(this.catalog.addCatalogPage(sets));
+        //                 let t2 = performance.now();
+        //                 let r = this.catalog.addCatalogPage(sets);
+        //                 console.log("Catalog initialized in",t2-t1,"ms");
+        //                 resolve(r);
         //             });
         //         })
         //     })
@@ -126,9 +130,10 @@ export class MainDemo extends React.Component{
         this.catalogInitialized.then(()=>{
             let t1 = performance.now();
             let boundingBox = tile2boundingBox(tileXY.x,tileXY.y,14);
+            console.log(boundingBox);
             let datasets = this.catalog.getDataSetsInRange(boundingBox.latLower,boundingBox.latUpper,boundingBox.longLower,boundingBox.longUpper);
             let t2 = performance.now();
-            console.log(datasets.length,"datasets found in",t2-t1,"ms");
+            console.log("",datasets.length,"datasets found in",t2-t1,"ms","in catalog of",this.catalog.getDatasetCount(),"datasets");
             let featureCollection = {
                 "type": "FeatureCollection",
                 "features": []
@@ -177,7 +182,8 @@ export class MainDemo extends React.Component{
         let url = datasetFeature.properties.distribution["http://www.w3.org/ns/dcat#downloadURL"];
         console.log(url);
         let data = [];
-        downloadOpenTrafficLightsTestData().then(doc=>{
+        // downloadOpenTrafficLightsTestData().then(doc=>{
+        download(url).then(doc=>{
             this._getTrafficLightData(doc).then(parsed=>{
                 if(this.state.lineVisualisation === lineVisualisationEnum.MappedLineStrings){
                     let LRPs = this._toLRPs(parsed);
