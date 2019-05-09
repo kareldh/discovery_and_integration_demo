@@ -104,9 +104,11 @@ export async function getDataSetsFromStore(_store,keywords=[]){
             dataSets[key].distribution = distributions[key];
             dataSets[key].geojson = geometries[locationIDtoDataSet[key]];
             dataSets[key].keywords = tags[key];
-            for(let i=0;i<tags[key];i++){
-                if(keywords.includes(tags[i])){
-                    dataSets.hasValidKeyword = true;
+            if(keywords !== undefined){
+                for(let i=0;i<tags[key].length;i++){
+                    if(keywords.includes(tags[key][i])){
+                        dataSets[key].hasValidKeyword = true;
+                    }
                 }
             }
         }

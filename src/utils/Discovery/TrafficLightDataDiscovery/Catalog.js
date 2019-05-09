@@ -1,4 +1,5 @@
-import RbushPolygonSearchTree from './searchTree/RbushPolygonSearchTree'
+// import RbushPolygonSearchTree from './searchTree/RbushPolygonSearchTree'
+import GeoJSONRBushPolygonSearchTree from "./searchTree/GeoJSONRBushPolygonSearchTree";
 
 export default class Catalog{
     constructor(){
@@ -20,7 +21,7 @@ export default class Catalog{
             features: features
         };
         if(this.searchTree === undefined){
-            this.searchTree = new RbushPolygonSearchTree(featureCollection);
+            this.searchTree = new GeoJSONRBushPolygonSearchTree(featureCollection);
         }
         else{
             this.searchTree.addPolygons(featureCollection);

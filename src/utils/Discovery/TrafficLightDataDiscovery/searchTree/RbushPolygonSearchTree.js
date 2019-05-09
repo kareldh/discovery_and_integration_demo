@@ -1,5 +1,10 @@
 import rbush from 'rbush'
 
+/**
+ * Implementation of RBush for use with geospatial data
+ * Wrapping at +180 and -180 longitude or +90 and -90 latitude currently not yet tested.
+ * Looks to be faster than the GeoJSON-RBush package but further comparision needed
+ */
 export default class RbushLineSearchTree{
     constructor(featureCollection){
         this.tree = rbush();
