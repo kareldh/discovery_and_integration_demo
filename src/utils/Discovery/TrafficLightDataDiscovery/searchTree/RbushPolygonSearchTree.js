@@ -3,7 +3,8 @@ import rbush from 'rbush'
 /**
  * Implementation of RBush for use with geospatial data
  * Wrapping at +180 and -180 longitude or +90 and -90 latitude currently not yet tested.
- * Looks to be faster than the GeoJSON-RBush package but further comparision needed
+ * Use GeoJSON-RBush package for a proven version of this functionality
+ * This implementation might have faster searches, but initialisation is slower
  */
 export default class RbushLineSearchTree{
     constructor(featureCollection){
@@ -40,7 +41,7 @@ export default class RbushLineSearchTree{
                     minY: minLat,
                     maxX: maxLong,
                     maxY: maxLat,
-                    feature: feature
+                    ...feature
                 });
             }
         });

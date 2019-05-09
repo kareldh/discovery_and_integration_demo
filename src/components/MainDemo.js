@@ -62,31 +62,31 @@ export class MainDemo extends React.Component{
     }
 
     initCatalog(){
-        return new Promise(resolve=>{
-            let t1 = performance.now();
-            fetchCatalog("https://cors-anywhere.herokuapp.com/"+CATALOG_URL).then((c)=>{
-                let sets = getDataSetsFromTriples(c.triples,["Boring"]);
-                let res = this.catalog.addCatalogPage(sets);
-                fetchNextPage(res,this.catalog,[],{uriPrefix: "https://cors-anywhere.herokuapp.com/"}).then(()=>{
-                    let t2 = performance.now();
-                    console.log("Catalog initialized in",t2-t1,"ms");
-                    resolve();
-                });
-            });
-        });
         // return new Promise(resolve=>{
         //     let t1 = performance.now();
-        //     download("https://raw.githubusercontent.com/kareldh/TrafficLightsCatalog/master/verkeerslicht_catalog.ttl").then((c)=>{
-        //         parseAndStoreQuads(c).then(store=>{
-        //             getDataSetsFromStore(store,["verkeerslicht"]).then(sets=>{
-        //                 let t2 = performance.now();
-        //                 let r = this.catalog.addCatalogPage(sets);
-        //                 console.log("Catalog initialized in",t2-t1,"ms");
-        //                 resolve(r);
-        //             });
-        //         })
-        //     })
+        //     fetchCatalog("https://cors-anywhere.herokuapp.com/"+CATALOG_URL).then((c)=>{
+        //         let sets = getDataSetsFromTriples(c.triples,["Boring"]);
+        //         let res = this.catalog.addCatalogPage(sets);
+        //         fetchNextPage(res,this.catalog,[],{uriPrefix: "https://cors-anywhere.herokuapp.com/"}).then(()=>{
+        //             let t2 = performance.now();
+        //             console.log("Catalog initialized in",t2-t1,"ms");
+        //             resolve();
+        //         });
+        //     });
         // });
+        return new Promise(resolve=>{
+            let t1 = performance.now();
+            download("https://raw.githubusercontent.com/kareldh/TrafficLightsCatalog/master/verkeerslicht_catalog.ttl").then((c)=>{
+                parseAndStoreQuads(c).then(store=>{
+                    getDataSetsFromStore(store,["verkeerslicht"]).then(sets=>{
+                        let t2 = performance.now();
+                        let r = this.catalog.addCatalogPage(sets);
+                        console.log("Catalog initialized in",t2-t1,"ms");
+                        resolve(r);
+                    });
+                })
+            })
+        });
     }
 
     addRoutableTileToMapDataBase(zoom,x,y){
@@ -139,7 +139,7 @@ export class MainDemo extends React.Component{
                 "features": []
             };
             datasets.forEach((dataset)=>{
-                featureCollection.features.push(dataset.feature);
+                featureCollection.features.push({"type": dataset.type, "properties": dataset.properies, "geometry": dataset.geometry});
             });
             this.addGeoJson(featureCollection);
         })
