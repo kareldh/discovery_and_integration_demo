@@ -1,4 +1,4 @@
-import RbushNodeSearchTree from '../SearchTree/RbushNodeSearchTree';
+import GeoJSONRbushNodeSearchTree from '../SearchTree/GeoJSONRbushNodeSearchTree';
 import GeoJSONRbushLineSearchTree from "../SearchTree/GeoJSONRbushLineSearchTree";
 import {configProperties} from "../coder/CoderSettings";
 
@@ -20,7 +20,7 @@ export default class MapDataBase {
         this.mapBoundingBox = boundingBox;
         this.lines = lines;
         this.nodes = nodes;
-        this.nodeSearchTree = new RbushNodeSearchTree(nodes);
+        this.nodeSearchTree = new GeoJSONRbushNodeSearchTree(nodes);
         this.lineSearchTree = new GeoJSONRbushLineSearchTree(lines);
         this.internalPrecision = configProperties.internalPrecision;
     }
@@ -40,7 +40,7 @@ export default class MapDataBase {
         this.mapBoundingBox = boundingBox;
         this.lines = lines;
         this.nodes = nodes;
-        this.nodeSearchTree = new RbushNodeSearchTree(nodes);
+        this.nodeSearchTree = new GeoJSONRbushNodeSearchTree(nodes);
         this.lineSearchTree = new GeoJSONRbushLineSearchTree(lines);
     }
 
@@ -61,9 +61,9 @@ export default class MapDataBase {
         let range = Math.round(dist/this.internalPrecision);
         let possibleNodes = this.nodeSearchTree.findCloseBy(lat,long,range);
         possibleNodes.forEach((node)=>{
-            let distance = this.nodes[node[2]].getDistance(lat,long);
+            let distance = this.nodes[node.properties.id].getDistance(lat,long);
             if(distance <= dist){
-                resNodes.push({node: this.nodes[node[2]], dist: distance})
+                resNodes.push({node: this.nodes[node.properties.id], dist: distance})
             }
         });
         return resNodes;

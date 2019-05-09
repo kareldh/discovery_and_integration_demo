@@ -1,5 +1,9 @@
 import rbush from 'rbush'
 
+
+/*
+Deprecated, use GeoJSONRbusNodeSearchTree instead
+ */
 export default class RbushNodeSearchTree{
     constructor(nodes){
         this.tree = rbush(9, ['[0]', '[1]', '[0]', '[1]']);
@@ -141,7 +145,10 @@ export default class RbushNodeSearchTree{
                 }));
             }
         }
-        return foundNodes;
+        // if the same return values as GeoJSONRbushNodeSearchTree are needed, use:
+        return foundNodes.map((node)=>{return {"properties": {id: node[2]}, "geometry":{"type": "Point", coordinates: [node[0],node[1]]}}});
+        // but that will add an extra iteration over the return values
+        // return foundNodes;
     }
 
     toRadians(degrees){
