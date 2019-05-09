@@ -43,7 +43,7 @@ test('findNodesCloseByCoordinate use with a lot of nodes (from wegenregister Ant
         });
         done();
     });
-});
+},60000);
 
 test('findLinesCloseByCoordinate use with a lot of lines (from wegenregister Antwerpen)',(done)=>{
     expect.assertions(41);
@@ -68,7 +68,7 @@ test('findLinesCloseByCoordinate use with a lot of lines (from wegenregister Ant
         });
         done();
     });
-});
+},60000);
 
 test('findNodesCloseByCoordinate OSM data',(done)=>{
     expect.assertions(7);

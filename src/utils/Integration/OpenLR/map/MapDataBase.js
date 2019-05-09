@@ -1,7 +1,6 @@
 import RbushNodeSearchTree from '../SearchTree/RbushNodeSearchTree';
-import RbushLineSearchTree from "../SearchTree/RbushLineSearchTree";
+import GeoJSONRbushLineSearchTree from "../SearchTree/GeoJSONRbushLineSearchTree";
 import {configProperties} from "../coder/CoderSettings";
-import Line from "./Line";
 
 export default class MapDataBase {
     constructor(
@@ -22,7 +21,7 @@ export default class MapDataBase {
         this.lines = lines;
         this.nodes = nodes;
         this.nodeSearchTree = new RbushNodeSearchTree(nodes);
-        this.lineSearchTree = new RbushLineSearchTree(lines);
+        this.lineSearchTree = new GeoJSONRbushLineSearchTree(lines);
         this.internalPrecision = configProperties.internalPrecision;
     }
 
@@ -42,7 +41,7 @@ export default class MapDataBase {
         this.lines = lines;
         this.nodes = nodes;
         this.nodeSearchTree = new RbushNodeSearchTree(nodes);
-        this.lineSearchTree = new RbushLineSearchTree(lines);
+        this.lineSearchTree = new GeoJSONRbushLineSearchTree(lines);
     }
 
     hasTurnRestrictions(){
@@ -75,9 +74,9 @@ export default class MapDataBase {
         let range = Math.round(dist/this.internalPrecision);
         let possibleLines = this.lineSearchTree.findCloseBy(lat,long,range);
         possibleLines.forEach((line)=>{
-            let distance = this.lines[line.id].distanceToPoint(lat,long);
+            let distance = this.lines[line.properties.id].distanceToPoint(lat,long);
             if(distance <= dist){
-                resLines.push({line: this.lines[line.id], dist: distance})
+                resLines.push({line: this.lines[line.properties.id], dist: distance})
             }
         });
         return resLines;

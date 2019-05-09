@@ -1,11 +1,11 @@
-import {parseAndStoreQuads} from "../Parser";
-import {getDataSetsFromStore} from "../Data";
-import {catalog} from "../testdata/verkeerslichtCatalog";
-import Catalog from "../Catalog";
-import RbushPolygonSearchTree from './RbushPolygonSearchTree'
-import GeoJSONRBushPolygonSearchTree from "./GeoJSONRBushPolygonSearchTree";
+import {parseAndStoreQuads} from "../../Parser";
+import {getDataSetsFromStore} from "../../Data";
+import {catalog} from "../../testdata/verkeerslichtCatalog";
+import Catalog from "../../Catalog";
+import RbushPolygonSearchTree from '../RbushPolygonSearchTree'
+import GeoJSONRBushPolygonSearchTree from "../GeoJSONRBushPolygonSearchTree";
 
-test('getDataSetsByDistance',(done)=>{
+test('searchTree comparision',(done)=>{
     expect.assertions(13);
     parseAndStoreQuads(catalog).then(_store=>{
         getDataSetsFromStore(_store,["verkeerslicht"]).then((r)=>{

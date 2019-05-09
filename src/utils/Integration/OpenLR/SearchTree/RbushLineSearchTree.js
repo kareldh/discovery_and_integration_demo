@@ -41,7 +41,9 @@ export default class RbushLineSearchTree{
                     minY: minLat,
                     maxX: maxLong,
                     maxY: maxLat,
-                    id: id
+                    properties: {
+                        id: id
+                    }
                 });
             }
         }

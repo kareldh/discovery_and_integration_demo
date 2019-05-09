@@ -159,7 +159,7 @@ test('demo osm to wegenregister',(done)=>{
         expect(res).toBeDefined();
         done();
     });
-});
+},60000);
 
 function osmToOsm(){
     return new Promise(resolve=>{
@@ -634,7 +634,7 @@ test('demo osm to osm',(done)=>{
         expect(res).toBeDefined();
         done();
     });
-});
+},60000);
 test('demo osm to osm no proj',(done)=>{
     expect.hasAssertions();
     osmToOsmNoProj().then((res)=>{
@@ -642,7 +642,7 @@ test('demo osm to osm no proj',(done)=>{
         expect(res).toBeDefined();
         done();
     });
-});
+},60000);
 test('demo osm to osm no encoding',(done)=>{
     expect.hasAssertions();
     osmToOsmNoEncoding().then((res)=>{
@@ -650,7 +650,7 @@ test('demo osm to osm no encoding',(done)=>{
         expect(res).toBeDefined();
         done();
     });
-});
+},60000);
 
 function wegenregisterToWegenregister(){
     return new Promise(resolve=>{
@@ -1126,7 +1126,7 @@ test('demo wegenregister to wegenregister',(done)=>{
         expect(res).toBeDefined();
         done();
     });
-},10000);
+},60000);
 test('demo wegenregister to wegenregister no proj',(done)=>{
     expect.hasAssertions();
     wegenregisterToWegenregisterNoProj().then((res)=>{
@@ -1134,7 +1134,7 @@ test('demo wegenregister to wegenregister no proj',(done)=>{
         expect(res).toBeDefined();
         done();
     });
-},10000);
+},60000);
 test('demo wegenregister to wegenregister no encoding',(done)=>{
     expect.hasAssertions();
     wegenregisterToWegenregisterNoEncoding().then((res)=>{
@@ -1142,7 +1142,7 @@ test('demo wegenregister to wegenregister no encoding',(done)=>{
         expect(res).toBeDefined();
         done();
     });
-},10000);
+},60000);
 
 function routableTilesToRoutableTiles(){
     return new Promise(resolve=>{
@@ -1768,7 +1768,7 @@ test('demo RoutableTiles to RoutableTiles',(done)=>{
         expect(res).toBeDefined();
         done();
     });
-});
+},60000);
 test('demo RoutableTiles to RoutableTiles no proj',(done)=>{
     expect.hasAssertions();
     routableTilesToRoutableTilesNoProj().then((res)=>{
@@ -1776,7 +1776,7 @@ test('demo RoutableTiles to RoutableTiles no proj',(done)=>{
         expect(res).toBeDefined();
         done();
     });
-});
+},60000);
 test('demo RoutableTiles to RoutableTiles no encoding',(done)=>{
     expect.hasAssertions();
     routableTilesToRoutableTilesNoEncoding().then((res)=>{
@@ -1784,7 +1784,7 @@ test('demo RoutableTiles to RoutableTiles no encoding',(done)=>{
         expect(res).toBeDefined();
         done();
     });
-});
+},60000);
 
 describe("tests using configProperties in meter",()=>{
     beforeEach(()=>{
@@ -1799,7 +1799,7 @@ describe("tests using configProperties in meter",()=>{
             expect(res).toBeDefined();
             done();
         });
-    });
+    },60000);
 
     test('demo osm to osm',(done)=>{
         expect.hasAssertions();
@@ -1808,7 +1808,7 @@ describe("tests using configProperties in meter",()=>{
             expect(res).toBeDefined();
             done();
         });
-    });
+    },60000);
     test('demo osm to osm no proj',(done)=>{
         expect.hasAssertions();
         osmToOsmNoProj().then((res)=>{
@@ -1816,7 +1816,7 @@ describe("tests using configProperties in meter",()=>{
             expect(res).toBeDefined();
             done();
         });
-    });
+    },60000);
     test('demo osm to osm no encoding',(done)=>{
         expect.hasAssertions();
         osmToOsmNoEncoding().then((res)=>{
@@ -1824,7 +1824,7 @@ describe("tests using configProperties in meter",()=>{
             expect(res).toBeDefined();
             done();
         });
-    });
+    },60000);
 
     test('demo wegenregister to wegenregister',(done)=>{
         expect.hasAssertions();
@@ -1833,7 +1833,7 @@ describe("tests using configProperties in meter",()=>{
             expect(res).toBeDefined();
             done();
         });
-    },10000);
+    },60000);
     test('demo wegenregister to wegenregister no proj',(done)=>{
         expect.hasAssertions();
         wegenregisterToWegenregisterNoProj().then((res)=>{
@@ -1841,7 +1841,7 @@ describe("tests using configProperties in meter",()=>{
             expect(res).toBeDefined();
             done();
         });
-    },10000);
+    },60000);
     test('demo wegenregister to wegenregister no encoding',(done)=>{
         expect.hasAssertions();
         wegenregisterToWegenregisterNoEncoding().then((res)=>{
@@ -1849,7 +1849,7 @@ describe("tests using configProperties in meter",()=>{
             expect(res).toBeDefined();
             done();
         });
-    },10000);
+    },60000);
 
     test('demo RoutableTiles to RoutableTiles 4 meter prec',(done)=>{
         expect.hasAssertions();
@@ -1858,7 +1858,7 @@ describe("tests using configProperties in meter",()=>{
             expect(res).toBeDefined();
             done();
         });
-    },10000);
+    },60000);
     test('demo RoutableTiles to RoutableTiles no proj',(done)=>{
         expect.hasAssertions();
         routableTilesToRoutableTilesNoProj().then((res)=>{
@@ -1866,7 +1866,7 @@ describe("tests using configProperties in meter",()=>{
             expect(res).toBeDefined();
             done();
         });
-    },10000);
+    },60000);
     test('demo RoutableTiles to RoutableTiles no encoding',(done)=>{
         expect.hasAssertions();
         routableTilesToRoutableTilesNoEncoding().then((res)=>{
@@ -1874,7 +1874,7 @@ describe("tests using configProperties in meter",()=>{
             expect(res).toBeDefined();
             done();
         });
-    },10000);
+    },60000);
 
     afterEach(()=>{
         configProperties.internalPrecision = internalPrecisionEnum.CENTIMETER;

@@ -30,4 +30,4 @@ test('lrpLinesToLRPs single line in wegenregister Antwerpen',(done)=>{
         expect(LRP[1].isLast).toEqual(true);
         done();
     });
-});
+},10000);
