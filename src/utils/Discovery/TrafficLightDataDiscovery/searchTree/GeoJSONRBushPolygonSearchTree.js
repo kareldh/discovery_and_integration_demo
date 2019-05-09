@@ -4,7 +4,6 @@ import {polygon} from '@turf/helpers';
 export default class GeoJSONRBushPolygonSearchTree{
     constructor(featureCollection){
         this.tree = geojsonrbush();
-        console.log(featureCollection);
         this.addPolygons(featureCollection);
     }
 
