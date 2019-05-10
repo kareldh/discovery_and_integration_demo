@@ -141,7 +141,17 @@ export default class MapDataBase {
                 if(this.lines[key]===undefined){
                     //this line was not yet present
                     lines[key].startNode = this.nodes[lines[key].getStartNode().getID()];
+                    if(nodesAdded[lines[key].getStartNode().getID()] === undefined){
+                        // if this node wasn't just added, this node was already present, so the line should still
+                        // be added to it's outgoing lines
+                        this.nodes[lines[key].getStartNode().getID()].outgoingLines.push(lines[key]);
+                    }
                     lines[key].endNode = this.nodes[lines[key].getEndNode().getID()];
+                    if(nodesAdded[lines[key].getEndNode().getID()] === undefined){
+                        // if this node wasn't just added, this node was already present, so the line should still
+                        // be added to it's incoming lines
+                        this.nodes[lines[key].getEndNode().getID()].incomingLines.push(lines[key]);
+                    }
                     this.lines[lines[key].getID()] = lines[key];
                     linesAdded[key]=lines[key];
                 }
