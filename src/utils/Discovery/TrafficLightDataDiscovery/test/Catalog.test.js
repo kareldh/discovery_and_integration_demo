@@ -20,7 +20,7 @@ describe("use opendata.vlaanderen catalog",()=>{
             expect(res.lastPage).toBeDefined();
             done();
         });
-    });
+    },60000);
 
     test('getDataSetsByDistance',(done)=>{
         expect.assertions(6);
@@ -41,7 +41,7 @@ describe("use opendata.vlaanderen catalog",()=>{
             expect(result.length).not.toEqual(0);
             done();
         });
-    });
+    },60000);
 
     test('add multiple pages', (done)=>{
         expect.assertions(7);

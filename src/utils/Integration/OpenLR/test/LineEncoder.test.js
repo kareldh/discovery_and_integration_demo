@@ -18,7 +18,7 @@ test('encode doesn\'t crash with lane existing of single line',()=>{
     let locLines = startData.singleLineLane.locationLines;
     let encoded = LineEncoder.encode(mapDataBase,locLines,0,0);
     expect(encoded.LRPs.length).toEqual(2);
-});
+},10000);
 
 test('encode doesn\'t crash with lane existing of two lines',()=>{
     let startData = generateStraightLaneTestData();
@@ -741,9 +741,13 @@ test('concatenateAndValidateShortestPaths wrong shortestPaths length',()=>{
 test('removeLRPatFront',()=>{
     let network = generateRealisticLengthTestNetwork();
     let lrpLines = [network.lines[26],network.lines[7],network.lines[19],network.lines[23]];
+    let shortestPaths = [{},{},{}];
+    let lines = [network.lines[26],network.lines[7],network.lines[19],network.lines[23]];
     let offsets = {posOffset: 60000, negOffset: 0};
-    LineEncoder.removeLRPatFront(lrpLines,offsets,50000);
+    LineEncoder.removeLRPatFront(lrpLines,shortestPaths,lines,offsets,50000);
     expect(lrpLines.length).toEqual(3);
+    expect(shortestPaths.length).toEqual(2);
+    expect(lines.length).toEqual(3);
     expect(lrpLines[0].getID()).toEqual(network.lines[7].getID());
     expect(offsets.posOffset).toEqual(10000);
     expect(offsets.negOffset).toEqual(0);
@@ -752,16 +756,22 @@ test('removeLRPatFront',()=>{
 test('removeLRPatFront unnecessary',()=>{
     let network = generateRealisticLengthTestNetwork();
     let lrpLines = [network.lines[26],network.lines[7],network.lines[19],network.lines[23]];
+    let shortestPaths = [{},{},{}];
+    let lines = [network.lines[26],network.lines[7],network.lines[19],network.lines[23]];
     let offsets = {posOffset: 40000, negOffset: 0};
-    expect(()=>{LineEncoder.removeLRPatFront(lrpLines,offsets,50000)}).toThrow(Error("unnecessary removing of LRP at front"));
+    expect(()=>{LineEncoder.removeLRPatFront(lrpLines,shortestPaths,lines,offsets,50000)}).toThrow(Error("unnecessary removing of LRP at front"));
 });
 
 test('removeLRPatEnd',()=>{
     let network = generateRealisticLengthTestNetwork();
     let lrpLines = [network.lines[26],network.lines[7],network.lines[19],network.lines[23]];
+    let shortestPaths = [{},{},{}];
+    let lines = [network.lines[26],network.lines[7],network.lines[19],network.lines[23]];
     let offsets = {posOffset: 0, negOffset: 50000};
-    LineEncoder.removeLRPatEnd(lrpLines,offsets,20000);
+    LineEncoder.removeLRPatEnd(lrpLines,shortestPaths,lines,offsets,20000);
     expect(lrpLines.length).toEqual(3);
+    expect(shortestPaths.length).toEqual(2);
+    expect(lines.length).toEqual(3);
     expect(lrpLines[2].getID()).toEqual(network.lines[19].getID());
     expect(offsets.posOffset).toEqual(0);
     expect(offsets.negOffset).toEqual(30000);
@@ -770,8 +780,10 @@ test('removeLRPatEnd',()=>{
 test('removeLRPatEnd unnecessary',()=>{
     let network = generateRealisticLengthTestNetwork();
     let lrpLines = [network.lines[26],network.lines[7],network.lines[19],network.lines[23]];
+    let shortestPaths = [{},{},{}];
+    let lines = [network.lines[26],network.lines[7],network.lines[19],network.lines[23]];
     let offsets = {posOffset: 0, negOffset: 30000};
-    expect(()=>{LineEncoder.removeLRPatEnd(lrpLines,offsets,50000)}).toThrow(Error("unnecessary removing of LRP at end"));
+    expect(()=>{LineEncoder.removeLRPatEnd(lrpLines,shortestPaths,lines,offsets,50000)}).toThrow(Error("unnecessary removing of LRP at end"));
 });
 
 test('encode lane existing of two lines can be binary encoded and decoded',()=>{

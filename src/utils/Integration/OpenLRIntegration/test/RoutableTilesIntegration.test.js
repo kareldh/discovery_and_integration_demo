@@ -96,3 +96,53 @@ test("encode way made of direct LRPs made via LinesDirectlyToLRP",(done)=>{
                 done();
             })});
 });
+
+test("encode way at the edge of a tile, so that it's closest junction (=valid node) has one of it's roads missing and isn't valid anymore",(done)=>{
+    expect.assertions(4);
+    fetchRoutableTile(14,8392,5469)
+        .then((data)=>{getRoutableTilesNodesAndLines(data.triples)
+            .then((nodesAndLines)=> {
+                let mapDatabase = new MapDataBase();
+                RoutableTilesIntegration.initMapDataBase(mapDatabase, nodesAndLines.nodes,nodesAndLines.lines);
+                let encoded = LineEncoder.encode(mapDatabase,[mapDatabase.lines["http://www.openstreetmap.org/way/25380916_http://www.openstreetmap.org/node/276645317"]],0,0);
+                expect(encoded).toBeDefined();
+                expect(encoded.LRPs.length).toEqual(2);
+                expect(encoded.posOffset).not.toEqual(0);
+                expect(encoded.negOffset).not.toEqual(0);
+                done();
+            })});
+});
+
+test("encode way at the edge of a tile, so that it's closest junction (=valid node) has one of it's roads only present in the adjecent tile",(done)=>{
+    expect.assertions(9);
+    let mapDataBase = new MapDataBase();
+    let promises = [
+        fetchRoutableTile(14,8392,5469)
+            .then((data)=>{getRoutableTilesNodesAndLines(data.triples)
+                .then((nodesAndLines)=> {
+                    let r = RoutableTilesIntegration.getNodesLines(nodesAndLines.nodes,nodesAndLines.lines);
+                    mapDataBase.addData(r.lines,r.nodes);
+                })}),
+        fetchRoutableTile(14,8391,5469)
+            .then((data)=>{getRoutableTilesNodesAndLines(data.triples)
+                .then((nodesAndLines)=> {
+                    let r = RoutableTilesIntegration.getNodesLines(nodesAndLines.nodes,nodesAndLines.lines);
+                    mapDataBase.addData(r.lines,r.nodes);
+                })}),
+    ];
+    Promise.all(promises).then(()=>{
+        expect(mapDataBase).toBeDefined();
+        // console.log(mapDataBase.lines["http://www.openstreetmap.org/way/25380916_http://www.openstreetmap.org/node/276645317"]);
+        // console.log(mapDataBase.nodes["http://www.openstreetmap.org/node/5982844531"]);
+        expect(mapDataBase.nodes["http://www.openstreetmap.org/node/5982844531"].getIncomingLines().length).toEqual(3);
+        expect(mapDataBase.nodes["http://www.openstreetmap.org/node/5982844531"].getOutgoingLines().length).toEqual(3);
+        let encoded = LineEncoder.encode(mapDataBase,[mapDataBase.lines["http://www.openstreetmap.org/way/25380916_http://www.openstreetmap.org/node/276645317"]],0,0);
+        expect(encoded).toBeDefined();
+        expect(encoded.LRPs.length).toEqual(2);
+        expect(encoded.LRPs[1].lat).toEqual(Number(Math.round(mapDataBase.nodes["http://www.openstreetmap.org/node/5982844531"].getLatitudeDeg()+'e5')+'e-5'));
+        expect(encoded.LRPs[1].long).toEqual(Number(Math.round(mapDataBase.nodes["http://www.openstreetmap.org/node/5982844531"].getLongitudeDeg()+'e5')+'e-5'));
+        expect(encoded.posOffset).not.toEqual(0);
+        expect(encoded.negOffset).toEqual(0);
+        done();
+    });
+});

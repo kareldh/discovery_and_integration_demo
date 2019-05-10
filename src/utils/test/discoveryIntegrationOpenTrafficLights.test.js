@@ -29,7 +29,7 @@ test('getLaneDefs linestringToLatLng',(done)=>{
             done();
         })
     });
-});
+},10000);
 
 test('getLaneDefs linesDirectlyToLRPs',async (done)=>{
     expect.assertions(2);
