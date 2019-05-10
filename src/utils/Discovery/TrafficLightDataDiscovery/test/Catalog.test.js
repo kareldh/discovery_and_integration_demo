@@ -6,24 +6,24 @@ import {parseAndStoreQuads} from "../Parser";
 import {catalog} from "../testdata/verkeerslichtCatalog";
 
 describe("use opendata.vlaanderen catalog",()=>{
-    test('addCatalogPage',(done)=>{
-        expect.assertions(6);
-        fetchCatalog(CATALOG_URL).then((c)=>{
-            expect(c).toBeDefined();
-            let catalog = new Catalog();
-            let sets = getDataSetsFromTriples(c.triples);
-            let res = catalog.addCatalogPage(sets);
-            expect(catalog).toBeDefined();
-            expect(catalog.searchTree).toBeDefined();
-            expect(res.currentPage).toEqual("https://opendata.vlaanderen.be/catalog.rdf?page=1");
-            expect(res.nextPage).toEqual("https://opendata.vlaanderen.be/catalog.rdf?page=2");
-            expect(res.lastPage).toBeDefined();
-            done();
-        });
-    },60000);
+    // test('addCatalogPage',(done)=>{
+    //     expect.assertions(6);
+    //     fetchCatalog(CATALOG_URL).then((c)=>{
+    //         expect(c).toBeDefined();
+    //         let catalog = new Catalog();
+    //         let sets = getDataSetsFromTriples(c.triples);
+    //         let res = catalog.addCatalogPage(sets);
+    //         expect(catalog).toBeDefined();
+    //         expect(catalog.searchTree).toBeDefined();
+    //         expect(res.currentPage).toEqual("https://opendata.vlaanderen.be/catalog.rdf?page=1");
+    //         expect(res.nextPage).toEqual("https://opendata.vlaanderen.be/catalog.rdf?page=2");
+    //         expect(res.lastPage).toBeDefined();
+    //         done();
+    //     });
+    // },60000);
 
     test('getDataSetsByDistance',(done)=>{
-        expect.assertions(6);
+        expect.assertions(9);
         fetchCatalog(CATALOG_URL).then((c)=>{
             expect(c).toBeDefined();
             let catalog = new Catalog();
@@ -39,31 +39,34 @@ describe("use opendata.vlaanderen catalog",()=>{
             expect(result).toBeDefined();
             expect(result.length).toBeDefined();
             expect(result.length).not.toEqual(0);
+            expect(result[0].type).toBeDefined();
+            expect(result[0].geometry).toBeDefined();
+            expect(result[0].properties).toBeDefined();
             done();
         });
     },60000);
 
-    test('add multiple pages', (done)=>{
-        expect.assertions(7);
-        fetchCatalog(CATALOG_URL).then(async (c)=>{
-            expect(c).toBeDefined();
-            let catalog = new Catalog();
-            let sets = getDataSetsFromTriples(c.triples);
-            let res = catalog.addCatalogPage(sets);
-            expect(catalog).toBeDefined();
-            expect(catalog.searchTree).toBeDefined();
-            expect(res.currentPage).toEqual("https://opendata.vlaanderen.be/catalog.rdf?page=1");
-            expect(res.nextPage).toEqual("https://opendata.vlaanderen.be/catalog.rdf?page=2");
-            expect(res.lastPage).toBeDefined();
-
-            let last = await fetchNextPage(res,catalog,[]);
-            expect(last.currentPage).toEqual(res.lastPage);
-            done();
-        });
-    },200000);
-
+    // test('add multiple pages', (done)=>{
+    //     expect.assertions(7);
+    //     fetchCatalog(CATALOG_URL).then(async (c)=>{
+    //         expect(c).toBeDefined();
+    //         let catalog = new Catalog();
+    //         let sets = getDataSetsFromTriples(c.triples);
+    //         let res = catalog.addCatalogPage(sets);
+    //         expect(catalog).toBeDefined();
+    //         expect(catalog.searchTree).toBeDefined();
+    //         expect(res.currentPage).toEqual("https://opendata.vlaanderen.be/catalog.rdf?page=1");
+    //         expect(res.nextPage).toEqual("https://opendata.vlaanderen.be/catalog.rdf?page=2");
+    //         expect(res.lastPage).toBeDefined();
+    //
+    //         let last = await fetchNextPage(res,catalog,[]);
+    //         expect(last.currentPage).toEqual(res.lastPage);
+    //         done();
+    //     });
+    // },200000);
+    //
     test('getDataSetsByDistance after fetching all the pages',(done)=>{
-        expect.assertions(10);
+        expect.assertions(13);
         fetchCatalog(CATALOG_URL).then(async (c)=>{
             expect(c).toBeDefined();
             let catalog = new Catalog();
@@ -86,7 +89,9 @@ describe("use opendata.vlaanderen catalog",()=>{
             expect(result).toBeDefined();
             expect(result.length).toBeDefined();
             expect(result.length).not.toEqual(0);
-            console.log(result.length);
+            expect(result[0].type).toBeDefined();
+            expect(result[0].geometry).toBeDefined();
+            expect(result[0].properties).toBeDefined();
             done();
         });
     },200000);

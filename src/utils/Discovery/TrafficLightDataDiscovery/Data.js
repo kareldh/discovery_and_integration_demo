@@ -49,7 +49,7 @@ export function getDataSetsFromTriples(triples, keywords=[]){
             if(dataSets[triple.subject.value].keywords === undefined){
                 dataSets[triple.subject.value].keywords = [];
             }
-            if(keywords.includes(triple.object.value)){
+            if(keywords.length === 0 || keywords.includes(triple.object.value)){
                 dataSets[triple.subject.value].hasValidKeyword = true;
             }
             dataSets[triple.subject.value].keywords.push(triple.object.value);
@@ -106,7 +106,7 @@ export async function getDataSetsFromStore(_store,keywords=[]){
             dataSets[key].keywords = tags[key];
             if(keywords !== undefined){
                 for(let i=0;i<tags[key].length;i++){
-                    if(keywords.includes(tags[key][i])){
+                    if(keywords.length === 0 || keywords.includes(tags[key][i])){
                         dataSets[key].hasValidKeyword = true;
                     }
                 }

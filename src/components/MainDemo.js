@@ -139,7 +139,7 @@ export class MainDemo extends React.Component{
                 "features": []
             };
             datasets.forEach((dataset)=>{
-                featureCollection.features.push({"type": dataset.type, "properties": dataset.properies, "geometry": dataset.geometry});
+                featureCollection.features.push({"type": dataset.type, "properties": dataset.properties, "geometry": dataset.geometry});
             });
             this.addGeoJson(featureCollection);
         })
@@ -179,7 +179,8 @@ export class MainDemo extends React.Component{
     handleGeoJsonClick(event){
         event.originalEvent.view.L.DomEvent.stopPropagation(event);
         let datasetFeature = event.sourceTarget.feature;
-        let url = datasetFeature.properties.distribution["http://www.w3.org/ns/dcat#downloadURL"];
+        console.log(datasetFeature);
+        let url = datasetFeature.properties.distribution["http://www.w3.org/ns/dcat#accessURL"];
         console.log(url);
         let data = [];
         // downloadOpenTrafficLightsTestData().then(doc=>{
@@ -213,7 +214,8 @@ export class MainDemo extends React.Component{
                     this.setState({data: data});
                 }
             });
-        });
+        })
+            .catch((e)=>{console.log("Could not download distribution:",e)});
     }
 
     _getTrafficLightData(doc){
