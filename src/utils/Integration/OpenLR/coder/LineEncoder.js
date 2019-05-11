@@ -20,6 +20,13 @@ export default class LineEncoder {
         let expanded = this.adjustToValidStartEnd(mapDataBase,lines,offsets); //lines[expanded.front] to lines[lines.length-1-expanded.back] can NOT be used, the full path should be used in SP calculation!!!
         lrpLines.push(lines[0]);
 
+        // calculate length of the Lines in lines. This can serve as a maxDist value for the Dijkstra algorithm
+        // since a node further away than this dist will never be part of any the shortest path
+        let maxDist = 0;
+        for(let i=0;i<lines.length;i++){
+            maxDist += lines[i].getLength();
+        }
+
         // 3: determine coverage of the location by a shortest-path
         let shortestPath;
         // 4: check whether the calculated shortest-path covers the location completely
@@ -37,13 +44,13 @@ export default class LineEncoder {
             }
         }
         else{
-            shortestPath = Dijkstra.shortestPath(lines[0].getEndNode(),lines[lines.length-1].getStartNode());
+            shortestPath = Dijkstra.shortestPath(lines[0].getEndNode(),lines[lines.length-1].getStartNode(),{maxDist: maxDist});
             checkResult = this.checkShortestPathCoverage(1,lines,shortestPath.lines,lines.length-1);
         }
         shortestPaths.push(shortestPath);
 
         //location not completely covered, intermediate LRPs needed
-        LineEncoder.addLRPsUntilFullyCovered(checkResult,lines,lrpLines,shortestPaths,shortestPath,expanded);
+        LineEncoder.addLRPsUntilFullyCovered(checkResult,lines,lrpLines,shortestPaths,shortestPath);
         // 7: concatenate the calculated shortest-paths for a complete coverage of the location and
         // form an ordered list of location reference points (from the start to the end of the location)
         let concatenatedSPResult = this.concatenateAndValidateShortestPaths(lrpLines,shortestPaths,offsets);
@@ -349,6 +356,11 @@ export default class LineEncoder {
         let checkResult = prevCheckResult;
         let shortestPath = prevShortestPath;
         while(! checkResult.fullyCovered){
+            //calculate the length of the location that should be covered, this can be used to speed up the Dijkstra algorithm
+            let maxDist = 0;
+            for(let i=checkResult.lrpIndexInLoc+1;i<lines.length-1;i++){
+                maxDist += lines[i].getLength();
+            }
             // 5: Determine the position of a new intermediate location reference point so that the part of
             // the location between the start of the shortest-path calculation and the new intermediate
             // is covered completely by a shortest-path.
@@ -358,7 +370,7 @@ export default class LineEncoder {
                 lrpLines.push(lines[checkResult.lrpIndexInLoc]);
                 // 6: go to step 3 and restart shortest path calculation between the new intermediate location
                 // reference point and the end of the location
-                shortestPath = Dijkstra.shortestPath(lines[checkResult.lrpIndexInLoc].getEndNode(),lines[lines.length-1].getStartNode());
+                shortestPath = Dijkstra.shortestPath(lines[checkResult.lrpIndexInLoc].getEndNode(),lines[lines.length-1].getStartNode(),{maxDist: maxDist});
                 shortestPaths.push(shortestPath);
                 checkResult = this.checkShortestPathCoverage(checkResult.lrpIndexInLoc+1,lines,shortestPath.lines,lines.length-1);
             }
@@ -392,7 +404,7 @@ export default class LineEncoder {
                 // because even the last node was invalid (because the network is an infinite loop of invalid nodes), the last node will always function as an LRP.
 
 
-                checkResult = LineEncoder.findInvalidNodeOnLinesAfterACertainLength(lines,checkResult.lrpIndexInLoc,shortestPath.length,lrpLines,shortestPaths);
+                checkResult = LineEncoder.findInvalidNodeOnLinesAfterACertainLength(lines,checkResult.lrpIndexInLoc,shortestPath.length,lrpLines,shortestPaths,maxDist);
             }
         }
 
@@ -401,7 +413,7 @@ export default class LineEncoder {
         lrpLines.push(lines[lines.length-1]);
     }
 
-    static findInvalidNodeOnLinesAfterACertainLength(lines,lrpIndexInLoc,shortestPathLength,lrpLines,shortestPaths){
+    static findInvalidNodeOnLinesAfterACertainLength(lines,lrpIndexInLoc,shortestPathLength,lrpLines,shortestPaths,maxDist){
         //todo: not al different cases are tested in unit tests
         let nextValidNode = LineEncoder.findNextValidNode(lines,lrpIndexInLoc);
         let nextValidIndex = nextValidNode.nextValidStartNodeIndexInLoc === undefined ? lines.length-1 : nextValidNode.nextValidStartNodeIndexInLoc;
@@ -413,7 +425,7 @@ export default class LineEncoder {
                 //the shortest path to this valid location doesn't follow the wrong shortest path to the end LRP
                 shortestPaths.push(nextValidNode.spToValidNode);
                 lrpLines.push(lines[nextValidIndex]);
-                let shortestPath = Dijkstra.shortestPath(lines[nextValidIndex].getEndNode(),lines[lines.length-1].getStartNode());
+                let shortestPath = Dijkstra.shortestPath(lines[nextValidIndex].getEndNode(),lines[lines.length-1].getStartNode(),{maxDist: maxDist});
                 shortestPaths.push(shortestPath);
                 return this.checkShortestPathCoverage(nextValidIndex,lines,shortestPath.lines,lines.length-1);
             }
@@ -468,7 +480,7 @@ export default class LineEncoder {
                 }
                 else{
                     // we should add the next valid LRP and check if the location is covered
-                    let shortestPath = Dijkstra.shortestPath(lines[nextValidIndex].getEndNode(),lines[lines.length-1].getStartNode());
+                    let shortestPath = Dijkstra.shortestPath(lines[nextValidIndex].getEndNode(),lines[lines.length-1].getStartNode(),{maxDist: maxDist});
                     shortestPaths.push(shortestPath);
                     return this.checkShortestPathCoverage(nextValidIndex,lines,shortestPath.lines,lines.length-1);
                 }

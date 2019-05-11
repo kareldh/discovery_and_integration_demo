@@ -35,30 +35,39 @@ export default class Dijkstra{
                 if(length<0){
                     throw Error("negative line length found for line: "+line.getID());
                 }
-                let validLine = (options === undefined || line.getFRC() === undefined)? 1 : 0 ||
-                    (options.lfrcnp !== undefined
-                    && options.lfrcnpDiff !== undefined
-                    && line.getFRC() !== undefined
-                    && line.getFRC() >= frcEnum.FRC_0 && line.getFRC() <= frcEnum.FRC_7
+                let validLine = (options === undefined || options.lfrcnp === undefined || options.lfrcnpDiff === undefined || line.getFRC() === undefined)? 1
+                    : 0 || (line.getFRC() >= frcEnum.FRC_0 && line.getFRC() <= frcEnum.FRC_7
                     && line.getFRC() <= options.lfrcnpDiff+options.lfrcnp);
                 if(validLine && (minLengths[line.getEndNode().getID()] === undefined
                     || minLengths[line.getEndNode().getID()] > length)){
                     minLengths[line.getEndNode().getID()] = length;
                     followedLine[line.getEndNode().getID()] = line;
-                    if(options !== undefined && options.maxDist !== undefined){
-                        // if a max distance is given, the shortest path can not be longer than this max distance
-                        // (which means that nodes that have a eagle's eye distance longer than this max distance)
-                        // which means that nodes that have a distance that already is longer than this max distance
-                        // will never be part of the shortest path we want to calculate, and the shortest path found
-                        // in this way would always be discarded since the total distance would always be longer than
-                        // the max distance (which is the distanceToNextLrp + decoderProperties.dist)
-                        // so we can speed up this SP calculation by not taking these nodes into account
-                        if(length <= options.maxDist){
+                    if(minLengths[endNode.getID()] === undefined || length < minLengths[endNode.getID()]){
+                        // this Dijkstra algorithm is only interested in the shortest path between the startNode and the endNode,
+                        // not in the shortest paths between the startNode and any other node, so if a length is already longer
+                        // than the current shortest path to the endNode, we won't push it to the stack
+
+                        if(options !== undefined && options.maxDist !== undefined){
+                            // if a max distance is given, the shortest path can not be longer than this max distance
+                            // (which means that nodes that have a eagle's eye distance longer than this max distance)
+                            // which means that nodes that have a distance that already is longer than this max distance
+                            // will never be part of the shortest path we want to calculate
+                            //
+                            // , and the shortest path foound in this way would always be discarded
+                            // since the total distance would always be longer than
+                            // the max distance (which is the distanceToNextLrp + decoderProperties.dist)
+                            // OR
+                            // , (when using in Encoder) we know the shortest path we want in advance and calculate it's
+                            // length (the length between the very first and very last LRP) and use that as the maximum
+                            //
+                            // so we can speed up this SP calculation by not taking these nodes into account
+                            if(length <= options.maxDist){
+                                heap.push([length,line.getEndNode()]);
+                            }
+                        }
+                        else{
                             heap.push([length,line.getEndNode()]);
                         }
-                    }
-                    else{
-                        heap.push([length,line.getEndNode()]);
                     }
                 }
             });
