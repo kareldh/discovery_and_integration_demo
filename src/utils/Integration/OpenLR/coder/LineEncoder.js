@@ -517,37 +517,6 @@ export default class LineEncoder {
         }
     }
 
-    static findValidNodeOnSP(shortestPath,endIndex){
-        //the node on the endIndex was invalid, otherwise this function shouldn't have been called
-        //the next unchecked node is the one before endIndex
-        let possibleIndex = endIndex-1;
-        let possibleNode = shortestPath[possibleIndex];
-
-
-        while(possibleIndex >= 0 && this.nodeIsInValid(possibleNode)){
-            possibleIndex--;
-            possibleNode = shortestPath[possibleIndex];
-        }
-
-        if(possibleIndex <= 0){
-            // there is no valid node except for the start node of the shortest path
-            // which should have been a valid node from the beginning
-            // (unless no valid nodes were present in the network which means that the LRP lays in a network that only
-            // exists of one infinite loop of lines
-            // if no valid node is found, an invalid node may be used
-            return {
-                validNode: shortestPath[endIndex],
-                lrpIndexInLoc: endIndex
-            }
-        }
-        else{
-            return {
-                validNode: possibleNode,
-                lrpIndexInLoc: possibleIndex
-            }
-        }
-    }
-
     static concatenateAndValidateShortestPaths(lrpLines,shortestPaths,offsets){
         if(lrpLines === undefined || shortestPaths === undefined || offsets === undefined){
             throw Error("Parameters can not be undefined");
