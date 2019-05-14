@@ -14,8 +14,6 @@ export default class MapDataBase {
         },
         turnRestrictions = false
     ) {
-        this.numberOfNodes = lines.length;
-        this.numberOfLines = nodes.length;
         this.turnResctrictions = turnRestrictions;
         this.mapBoundingBox = boundingBox;
         this.lines = lines;
@@ -34,8 +32,6 @@ export default class MapDataBase {
         },turnRestrictions = false
     )
     {
-        this.numberOfNodes = lines.length;
-        this.numberOfLines = nodes.length;
         this.turnResctrictions = turnRestrictions;
         this.mapBoundingBox = boundingBox;
         this.lines = lines;
