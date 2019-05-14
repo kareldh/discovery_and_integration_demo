@@ -17,15 +17,6 @@ export default class Node{
     setLines(incomingLines,outgoingLines){
         this.incomingLines = incomingLines;
         this.outgoingLines = outgoingLines;
-        //todo: overbodig?
-        // this.lines = incomingLines.concat(outgoingLines.filter(function (outLine) {
-        //     incomingLines.forEach(function (inLine) {
-        //         if(inLine.id === outLine.id){
-        //             return false
-        //         }
-        //     });
-        //     return true;
-        // }));
     }
 
     getLatitudeDeg(){
@@ -35,14 +26,6 @@ export default class Node{
     getLongitudeDeg(){
         return this.long;
     }
-
-    // getConnectedLines(){
-    //     return this.lines;
-    // }
-    //
-    // getNumberConnectedLines(){
-    //     return this.lines.length;
-    // }
 
     getOutgoingLines(){
         return this.outgoingLines;
@@ -54,10 +37,6 @@ export default class Node{
 
     getID(){
         return this.id;
-    }
-
-    getGeoCoordinates(){
-        return { lat: this.lat, lon: this.long };
     }
 
     getDistance(lat,long){
