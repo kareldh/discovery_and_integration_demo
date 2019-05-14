@@ -62,6 +62,8 @@ export default class WegenregisterAntwerpenIntegration{
         }
     }
 
+    /***
+     * //Depricated Code, only for testing purposes
     static initMapDataBaseDeprecatedNoRoadDirections(mapDataBase,features){
         let nodesLines = WegenregisterAntwerpenIntegration.getNodesLinesDeprecatedNoRoadDirections(features);
         mapDataBase.setData(nodesLines.lines,nodesLines.nodes);
@@ -70,11 +72,9 @@ export default class WegenregisterAntwerpenIntegration{
     static getNodesLinesDeprecatedNoRoadDirections(features){
         let openLRLines = {};
         let openLRNodes = {};
-
         for(let i=0;i<features.length;i++){
 
             if(features[i].geometry.type === "LineString"){
-
                 if(features[i].geometry.coordinates.length >= 2){
                     let lat = features[i].geometry.coordinates[0][1];
                     let long = features[i].geometry.coordinates[0][0];
@@ -89,7 +89,6 @@ export default class WegenregisterAntwerpenIntegration{
                         }
                         let prevLat = features[i].geometry.coordinates[j-1][1];
                         let prevLong = features[i].geometry.coordinates[j-1][0];
-
 
                         openLRLines[prevLat+"_"+prevLong+"_"+lat+"_"+long]
                             = new Line(prevLat+"_"+prevLong+"_"+lat+"_"+long,openLRNodes[prevLat+"_"+prevLong],openLRNodes[lat+"_"+long]);
@@ -110,6 +109,56 @@ export default class WegenregisterAntwerpenIntegration{
             lines: openLRLines
         }
     }
+
+    static initMapDataBaseDeprecatedAllLineStrings(mapDataBase,features){
+        let nodesLines = WegenregisterAntwerpenIntegration.getNodesLinesDeprecatedAllLineStrings(features);
+        mapDataBase.setData(nodesLines.lines,nodesLines.nodes);
+    }
+
+    static getNodesLinesDeprecatedAllLineStrings(features){
+        let openLRLines = {};
+        let openLRNodes = {};
+        for(let i=0;i<features.length;i++){
+
+            if(features[i].geometry.type === "LineString"){
+                if(features[i].geometry.coordinates.length >= 2){
+                    let lat = features[i].geometry.coordinates[0][1];
+                    let long = features[i].geometry.coordinates[0][0];
+                    if(openLRNodes[lat+"_"+long] === undefined){
+                        openLRNodes[lat+"_"+long] = new Node(lat+"_"+long,lat,long);
+                    }
+                    for(let j=1;j<features[i].geometry.coordinates.length;j++){
+                        lat = features[i].geometry.coordinates[j][1];
+                        long = features[i].geometry.coordinates[j][0];
+                        if(openLRNodes[lat+"_"+long] === undefined){
+                            openLRNodes[lat+"_"+long] = new Node(lat+"_"+long,lat,long);
+                        }
+                        let prevLat = features[i].geometry.coordinates[j-1][1];
+                        let prevLong = features[i].geometry.coordinates[j-1][0];
+
+                        if(features[i].properties.RIJRICHTING_AUTO === undefined || features[i].properties.RIJRICHTING_AUTO === null || features[i].properties.RIJRICHTING_AUTO === "enkel (mee)" || features[i].properties.RIJRICHTING_AUTO === "dubbel"){
+                            openLRLines[prevLat+"_"+prevLong+"_"+lat+"_"+long]
+                                = new Line(prevLat+"_"+prevLong+"_"+lat+"_"+long,openLRNodes[prevLat+"_"+prevLong],openLRNodes[lat+"_"+long]);
+                            openLRLines[prevLat+"_"+prevLong+"_"+lat+"_"+long].frc = WegenregisterAntwerpenIntegration.getFRC(features[i].properties);
+                            openLRLines[prevLat+"_"+prevLong+"_"+lat+"_"+long].fow = WegenregisterAntwerpenIntegration.getFOW(features[i].properties);
+                        }
+                        if(features[i].properties.RIJRICHTING_AUTO === undefined || features[i].properties.RIJRICHTING_AUTO === null || features[i].properties.RIJRICHTING_AUTO === "enkel (tegen)"  || features[i].properties.RIJRICHTING_AUTO === "dubbel"){
+                            openLRLines[lat+"_"+long+"_"+prevLat+"_"+prevLong]
+                                = new Line(lat+"_"+long+"_"+prevLat+"_"+prevLong,openLRNodes[lat+"_"+long],openLRNodes[prevLat+"_"+prevLong]);
+                            openLRLines[lat+"_"+long+"_"+prevLat+"_"+prevLong].frc = WegenregisterAntwerpenIntegration.getFRC(features[i].properties);
+                            openLRLines[lat+"_"+long+"_"+prevLat+"_"+prevLong].fow = WegenregisterAntwerpenIntegration.getFOW(features[i].properties);
+                        }
+
+                    }
+                }
+            }
+        }
+        return {
+            nodes: openLRNodes,
+            lines: openLRLines
+        }
+    }
+    */
 
     static getFRC(properties){
         if(properties !== undefined && properties["WEGCAT"] !== undefined){
