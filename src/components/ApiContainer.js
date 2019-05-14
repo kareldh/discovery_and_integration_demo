@@ -39,7 +39,7 @@ export default class ApiContainer extends React.Component{
             fetchRoutableTile(14,x,y).then((data)=>{getNodesWithTrafficSignals(data.triples).then((intersections)=>{this.createMarkers(intersections)})});
         }
         else if(mode === 2){
-            fetchOsmData()
+            fetchOsmData(4.3915,51.2065,4.4076,51.2169)
                 .then((data)=>{parseToJson(data).then((json)=>{getMappedElements(json).then((elements)=>{filterHighwayData(elements).then((highwayData)=>{this.createLineStringsOsm(highwayData)})})})});
                 // .then((data)=>{this.createLineStrings(getMappedElements(parseToJson(data)))});
         }
