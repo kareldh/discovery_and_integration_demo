@@ -4,6 +4,7 @@ import LineDecoder from "./coder/LineDecoder";
 export default class OpenLRDecoder {
     static decode(encoded,mapDataBase,decoderProperties){
         let decoderProp = {};
+        let rangeIncreases = 0;
         for(let k in decoderProperties){
             if(decoderProperties.hasOwnProperty(k)){
                 decoderProp[k] = decoderProperties[k];
@@ -21,6 +22,19 @@ export default class OpenLRDecoder {
                     return LineDecoder.decode(mapDataBase,encoded.LRPs,encoded.posOffset,encoded.negOffset,decoderProp);
                 }
                 else{
+                    while(rangeIncreases < decoderProp.maxDecodeRetries){
+                        rangeIncreases++;
+                        decoderProp.dist = decoderProp.dist * decoderProp.distMultiplierForRetry;
+                        decoderProp.distanceToNextDiff = decoderProp.distanceToNextDiff * decoderProp.distMultiplierForRetry;
+                        try {
+                            return LineDecoder.decode(mapDataBase,encoded.LRPs,encoded.posOffset,encoded.negOffset,decoderProp);
+                        }
+                        catch(err){
+                            if(rangeIncreases >= decoderProp.maxDecodeRetries){
+                                throw(err)
+                            }
+                        }
+                    }
                     throw(e); //re-throw the error
                 }
             }
