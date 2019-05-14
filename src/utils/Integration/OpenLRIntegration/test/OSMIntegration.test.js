@@ -1,6 +1,5 @@
 import {
-    generateStraightLaneTestData, loadOsmTestData,
-    mapNodesLinesToID
+    generateStraightLaneTestData, mapNodesLinesToID
 } from "../../OpenLR/test/Helperfunctions";
 import MapDataBase from "../../OpenLR/map/MapDataBase";
 import LineEncoder from "../../OpenLR/coder/LineEncoder";
@@ -9,6 +8,7 @@ import OSMIntegration from "../OSMIntegration"
 import {filterHighwayData, getMappedElements, parseToJson} from "../../Data/ParseData";
 import {configProperties} from "../../OpenLR/coder/CoderSettings";
 import {internalPrecisionEnum} from "../../OpenLR/map/Enum";
+import {loadOsmTestData} from "../../Data/LoadTestData";
 
 test('initMapDataBase initialization',(done)=>{
     expect.assertions(5);
