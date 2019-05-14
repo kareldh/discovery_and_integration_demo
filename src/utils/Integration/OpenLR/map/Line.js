@@ -15,11 +15,7 @@ export default class Line {
         this.id = id;
         this.fow = fowEnum.UNDEFINED;
         this.frc = frcEnum.FRC_7;
-        // this.pointAlongLine = undefined;
         this.lineLength = undefined;
-        // this.prevLines = [];
-        // this.nextLines = [];
-        // this.shape = undefined;
         this.turnRestriction = undefined;
         this.bearing = undefined;
         this.reverseBearing = undefined;
@@ -44,10 +40,6 @@ export default class Line {
         return this.frc;
     }
 
-    // getPointAlongLine(){
-    //     return this.pointAlongLine;
-    // }
-
     getLength(){
         if(this.lineLength === undefined && this.startNode !== undefined && this.endNode !== undefined){
             let from = point([
@@ -67,7 +59,6 @@ export default class Line {
             if(this.lineLength === 0){
                 this.lineLength = 1;    //but minimum value should be 1
             }
-            // this.lineLength = distance(from,to,{units: "meters"});
         }
         return this.lineLength;
     }
@@ -75,22 +66,6 @@ export default class Line {
     getID(){
         return this.id;
     }
-
-    // getPrevLines(){
-    //     return this.prevLines;
-    // }
-    //
-    // getNextLines(){
-    //     return this.nextLines;
-    // }
-    //
-    // getShapeCoordinates(){
-    //     return this.shape;
-    // }
-    //
-    // getNames(){
-    //     //optional, undefined
-    // }
 
     getTurnRestriction(){
         return this.turnRestriction;
