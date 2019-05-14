@@ -6,8 +6,7 @@ import {
     parseToJson
 } from "../utils/Integration/Data/ParseData";
 import {Marker, Polyline, Popup, Circle} from "react-leaflet";
-import {Input} from "semantic-ui-react";
-import {loadOsmTestData, mapNodesLinesToID} from "../utils/Integration/OpenLR/test/Helperfunctions";
+import {mapNodesLinesToID} from "../utils/Integration/OpenLR/test/Helperfunctions";
 import OSMIntegration from "../utils/Integration/OpenLRIntegration/OSMIntegration";
 import OpenLRDecoder from "../utils/Integration/OpenLR/Decoder";
 import LineEncoder from "../utils/Integration/OpenLR/coder/LineEncoder";
@@ -15,13 +14,18 @@ import MapDataBase from "../utils/Integration/OpenLR/map/MapDataBase";
 import Line from "../utils/Integration/OpenLR/map/Line";
 import Node from "../utils/Integration/OpenLR/map/Node";
 import RoutableTilesIntegration from "../utils/Integration/OpenLRIntegration/RoutableTilesIntegration";
-import {loadNodesLineStringsWegenregsterAntwerpen,fetchRoutableTile} from "../utils/Integration/Data/LoadData";
+import {
+    loadNodesLineStringsWegenregsterAntwerpen, fetchRoutableTile,
+    fetchOsmData
+} from "../utils/Integration/Data/LoadData";
 import WegenregisterAntwerpenIntegration from "../utils/Integration/OpenLRIntegration/WegenregisterAntwerpenIntegration";
 import GeoJsonIntegration from "../utils/Integration/OpenLRIntegration/GeoJsonIntegration";
 import {map} from "../utils/Integration/Data/testdata/junction_with_lanes_manual";
 import {LinesDirectlyToLRPs} from "../utils/Integration/OpenLR/experimental/LinesDirectlyToLRPs";
 import {configProperties, decoderProperties} from "../utils/Integration/OpenLR/coder/CoderSettings";
 import {internalPrecisionEnum} from "../utils/Integration/OpenLR/map/Enum";
+import {getTileXYForLocation, tile2boundingBox} from "../Logic/tileUtils";
+import {loadOsmTestData} from "../utils/Integration/Data/LoadTestData";
 
 let inputDataEnum = {
     "RoutableTiles": "RoutableTiles",
@@ -49,6 +53,7 @@ export default class OpenLrDemo extends React.Component{
         this.x = 8392;
         this.y = 5469;
         this.coordinates =[];
+        this.tiles = {};
         this.addMarker = this.addMarker.bind(this);
         this.createMarker = this.createMarker.bind(this);
         this.reset = this.reset.bind(this);
@@ -57,10 +62,12 @@ export default class OpenLrDemo extends React.Component{
         this.findMarkers = this.findMarkers.bind(this);
         this.handleEncodingStratSelect = this.handleEncodingStratSelect.bind(this);
         this.handleDataSourceSelect = this.handleDataSourceSelect.bind(this);
+        this.addDataBases = this.addDataBases.bind(this);
         this.osmDataBase = undefined;
         this.routableTilesDataBase = undefined;
         this.wegenretisterDataBase = undefined;
         this.geojsonKruispuntDataBase = undefined;
+        this.dataBasesInitialized = undefined;
     }
 
     componentDidMount(){
@@ -122,27 +129,28 @@ export default class OpenLrDemo extends React.Component{
     }
 
     findMarkersOsm(encoded){
-        if(this.osmDataBase === undefined){
-            loadOsmTestData()
-                .then((data)=>{parseToJson(data)
-                    .then((json)=>{getMappedElements(json)
-                        .then((elements)=>{filterHighwayData(elements)
-                            .then((highwayData)=>{
-                                try {
-                                    let t1 = performance.now();
-                                    this.osmDataBase = new MapDataBase();
-                                    OSMIntegration.initMapDataBase(this.osmDataBase,highwayData.nodes,highwayData.ways,highwayData.relations);
-                                    let decoded = OpenLRDecoder.decode(encoded,this.osmDataBase,decoderProperties);
-                                    let t2 = performance.now();
-                                    console.log("Found in Open Street Maps in",t2-t1,"ms",decoded);
-                                    this.createLineStringsOpenLr(decoded.lines,decoded.posOffset,decoded.negOffset);
-                                }
-                                catch(e){
-                                    alert(e);
-                                }
-                            })})})});
-        }
-        else{
+        // if(this.osmDataBase === undefined){
+        //     loadOsmTestData()
+        //         .then((data)=>{parseToJson(data)
+        //             .then((json)=>{getMappedElements(json)
+        //                 .then((elements)=>{filterHighwayData(elements)
+        //                     .then((highwayData)=>{
+        //                         try {
+        //                             let t1 = performance.now();
+        //                             this.osmDataBase = new MapDataBase();
+        //                             OSMIntegration.initMapDataBase(this.osmDataBase,highwayData.nodes,highwayData.ways,highwayData.relations);
+        //                             let decoded = OpenLRDecoder.decode(encoded,this.osmDataBase,decoderProperties);
+        //                             let t2 = performance.now();
+        //                             console.log("Found in Open Street Maps in",t2-t1,"ms",decoded);
+        //                             this.createLineStringsOpenLr(decoded.lines,decoded.posOffset,decoded.negOffset);
+        //                         }
+        //                         catch(e){
+        //                             alert(e);
+        //                         }
+        //                     })})})});
+        // }
+        // else{
+        this.dataBasesInitialized.then(()=>{
             try{
                 let t1 = performance.now();
                 let decoded = OpenLRDecoder.decode(encoded,this.osmDataBase,decoderProperties);
@@ -153,29 +161,31 @@ export default class OpenLrDemo extends React.Component{
             catch(e){
                 alert(e);
             }
-        }
+        });
+        // }
     }
 
     findMarkersRoutableTiles(encoded){
-        if(this.routableTilesDataBase === undefined){
-            fetchRoutableTile(14,this.x,this.y)
-                .then((data)=>{getRoutableTilesNodesAndLines(data.triples)
-                    .then((nodesAndLines)=>{
-                        try{
-                            let t1 = performance.now();
-                            this.routableTilesDataBase = new MapDataBase();
-                            RoutableTilesIntegration.initMapDataBase(this.routableTilesDataBase,nodesAndLines.nodes,nodesAndLines.lines);
-                            let decoded = OpenLRDecoder.decode(encoded,this.routableTilesDataBase,decoderProperties);
-                            let t2 = performance.now();
-                            console.log("Found in RoutableTiles in",t2-t1,"ms",decoded);
-                            this.createLineStringsOpenLr(decoded.lines,decoded.posOffset,decoded.negOffset);
-                        }
-                        catch(e){
-                            alert(e);
-                        }
-                    })});
-        }
-        else{
+        // if(this.routableTilesDataBase === undefined){
+        //     fetchRoutableTile(14,this.x,this.y)
+        //         .then((data)=>{getRoutableTilesNodesAndLines(data.triples)
+        //             .then((nodesAndLines)=>{
+        //                 try{
+        //                     let t1 = performance.now();
+        //                     this.routableTilesDataBase = new MapDataBase();
+        //                     RoutableTilesIntegration.initMapDataBase(this.routableTilesDataBase,nodesAndLines.nodes,nodesAndLines.lines);
+        //                     let decoded = OpenLRDecoder.decode(encoded,this.routableTilesDataBase,decoderProperties);
+        //                     let t2 = performance.now();
+        //                     console.log("Found in RoutableTiles in",t2-t1,"ms",decoded);
+        //                     this.createLineStringsOpenLr(decoded.lines,decoded.posOffset,decoded.negOffset);
+        //                 }
+        //                 catch(e){
+        //                     alert(e);
+        //                 }
+        //             })});
+        // }
+        // else{
+        this.dataBasesInitialized.then(()=>{
             try{
                 let t1 = performance.now();
                 let decoded = OpenLRDecoder.decode(encoded,this.routableTilesDataBase,decoderProperties);
@@ -186,7 +196,8 @@ export default class OpenLrDemo extends React.Component{
             catch(e){
                 alert(e);
             }
-        }
+        });
+        // }
     }
 
     findMarkersWegenregisterAntwerpen(encoded){
@@ -250,6 +261,7 @@ export default class OpenLrDemo extends React.Component{
     }
 
     addMarker(latlng){
+        this.addDataBases(latlng);
         this.coordinates.push(latlng);
         // let marker = this.createMarker(latlng.lat,latlng.lng);
         this.setState(()=>{
@@ -260,6 +272,67 @@ export default class OpenLrDemo extends React.Component{
                 data: d,
             }
         });
+    }
+
+    addDataBases(latlng){
+        let {lat,lng} = latlng;
+        let tileXY = getTileXYForLocation(lat,lng,14);
+        this.x = tileXY.x;
+        this.y = tileXY.y;
+        this.setState({tileXY: tileXY});
+        let promises = [];
+        let t1 = performance.now();
+        this.dataBasesInitialized = new Promise(resolve=>{
+            for(let ix=tileXY.x-1;ix<=tileXY.x+1;ix++){
+                for(let iy=tileXY.y-1;iy<=tileXY.y+1;iy++){
+                    if(!this.tiles[ix+"_"+iy]){
+                        // use this check if we only want to fetch each tile one time during the lifetime of this application
+                        // not using this check results in refilling the mapDataBase every time the location is set
+                        promises.push(this.addRoutableTileToMapDataBase(14,ix,iy));
+                        promises.push(this.addOpenStreetMapTileToMapDataBase(14,ix,iy));
+                        this.tiles[ix+"_"+iy] = true;
+                    }
+                }
+            }
+
+            Promise.all(promises).then(()=>{
+                let t2 = performance.now();
+                console.log("mapDataBases initialized in",t2-t1,"ms");
+                resolve();
+            });
+        });
+    }
+
+    addRoutableTileToMapDataBase(zoom,x,y){
+        if(this.routableTilesDataBase === undefined){
+            this.routableTilesDataBase = new MapDataBase();
+        }
+        return new Promise(resolve=>{
+            fetchRoutableTile(zoom, x, y)
+                .then((data) => {
+                    getRoutableTilesNodesAndLines(data.triples)
+                        .then((nodesAndLines) => {
+                            let nodesLines = RoutableTilesIntegration.getNodesLines(nodesAndLines.nodes, nodesAndLines.lines);
+                            this.routableTilesDataBase.addData(nodesLines.lines, nodesLines.nodes);
+                            resolve();
+                        })
+                })
+        });
+    }
+
+    addOpenStreetMapTileToMapDataBase(zoom,x,y){
+        if(this.osmDataBase === undefined){
+            this.osmDataBase = new MapDataBase();
+        }
+        let boundingBox = tile2boundingBox(x,y,zoom);
+        fetchOsmData(boundingBox.latLower,boundingBox.latUpper,boundingBox.longLower,boundingBox.longUpper)
+            .then((data)=>{parseToJson(data)
+                .then((json)=>{getMappedElements(json)
+                    .then((elements)=>{filterHighwayData(elements)
+                        .then((highwayData)=>{
+                            let nodesLines = OSMIntegration.getNodesLines(highwayData.nodes,highwayData.ways,highwayData.relations);
+                            this.osmDataBase.addData(nodesLines.lines,nodesLines.nodes);
+                        })})})});
     }
 
     createLineStringsOpenLr(lines,posOffset,negOffset){
@@ -323,8 +396,6 @@ export default class OpenLrDemo extends React.Component{
             <button onClick={this.findMarkers}>Find lines in data</button>
             <button onClick={this.reset}>Reset</button>
             current tile x value: {this.x}   current tile y value: {this.y}
-            <Input placeholder="tile x value" onChange={(e,data)=>{this.x = data.value}}/>
-            <Input placeholder="tile y value" onChange={(e,data)=>{this.y = data.value}}/>
         </div>;
     }
 
