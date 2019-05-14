@@ -24,9 +24,9 @@ export function fetchRoutableTile(z, x, y) {
     });
 }
 
-export function fetchOsmData() {
+export function fetchOsmData(latLower,latUpper,longLower,longUpper) {
     return new Promise((resolve, reject) => {
-        axios.get("https://api.openstreetmap.org/api/0.6/map?bbox=4.3915,51.2065,4.4076,51.2169")
+        axios.get("https://api.openstreetmap.org/api/0.6/map?bbox="+longLower+","+latLower+","+longUpper+","+latUpper)
             .then((data) => resolve(data.data))
             .catch((error) => {
                 reject(error)
