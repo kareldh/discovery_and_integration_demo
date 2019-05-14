@@ -1,9 +1,9 @@
-import geojsonrbush from 'geojson-rbush'
-import {polygon,lineString} from '@turf/helpers'
+import {lineString} from '@turf/helpers'
+import GeoJSONRbushSearchTree from "./GeoJSONRbushSearchTree";
 
-export default class RbushLineSearchTree{
+export default class RbushLineSearchTree extends GeoJSONRbushSearchTree{
     constructor(lines){
-        this.tree = geojsonrbush();
+        super();
         this.addLines(lines);
     }
 
@@ -26,33 +26,5 @@ export default class RbushLineSearchTree{
         this.tree.load(data);
     }
 
-    addData(data){
-        this.tree.load(data);
-    }
-
     //todo: remove lines
-
-    //dist given in meters
-    //uses an approximate square bounding box around the given point, so it is possible that lines are returned that
-    //are further than dist away. It is still necessary to iterate the returned lines and calculate their real distance.
-    findCloseBy(lat,long,dist){
-        let earthRadius = 6371000;
-        let latDiff = this.toDegrees(dist/earthRadius);
-        let longDiff = this.toDegrees(dist/(Math.cos(this.toRadians(lat)) * earthRadius));
-        let latUpper = lat+latDiff;
-        let latLower = lat-latDiff;
-        let longUpper = long+longDiff;
-        let longLower = long-longDiff;
-        let p = polygon([[[longLower,latLower],[longLower,latUpper],[longUpper,latUpper],[longUpper,latLower],[longLower,latLower]]]);
-        let r = this.tree.search(p);
-        return r.features;
-    }
-
-    toRadians(degrees){
-        return degrees * Math.PI / 180;
-    }
-
-    toDegrees(radians){
-        return radians / Math.PI * 180
-    }
 }
