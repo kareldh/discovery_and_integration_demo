@@ -1,6 +1,6 @@
 import {fowEnum, frcEnum} from "../map/Enum";
 import Dijkstra from "./Dijkstra";
-import {configProperties} from "./CoderSettings";
+import {configProperties, decoderProperties} from "./CoderSettings";
 
 export default class LineDecoder{
 
@@ -23,7 +23,7 @@ export default class LineDecoder{
             posOffset: Math.round(posOffset*configProperties.internalPrecision),
             negOffset: Math.round(negOffset*configProperties.internalPrecision)
         };
-        LineDecoder.trimAccordingToOffsets(concatShortestPath,offsets);
+        LineDecoder.trimAccordingToOffsets(concatShortestPath,offsets,decoderProperties);
 
         return {
             lines: concatShortestPath.shortestPath,
@@ -195,9 +195,9 @@ export default class LineDecoder{
     }
 
     static findShortestPath(startLine,endLine,lfrcnp,decoderProperties,distanceToNext){
-        if(startLine.startNode === endLine.endNode){
-            console.log("The first LRP starts in the same point where the second LRP ends. If no valid shortest path is found, retry with projections.");
-        }
+        // if(startLine.startNode === endLine.endNode){
+        //     console.log("The first LRP starts in the same point where the second LRP ends. If no valid shortest path is found, retry with projections.");
+        // }
         if(startLine.getID()===endLine.getID()){
             return {lines: [], length: 0};
         }
@@ -360,6 +360,52 @@ export default class LineDecoder{
         };
     }
 
+    // static trimAccordingToOffsets(concatShortestPath,offsets){
+    //     offsets.posOffset+=concatShortestPath.posProjDist;
+    //     offsets.negOffset+=concatShortestPath.negProjDist;
+    //     if(concatShortestPath.shortestPath.length === 0){
+    //         throw Error("can't trim empty path");
+    //     }
+    //     let firstLine = concatShortestPath.shortestPath[0];
+    //     while(offsets.posOffset > 0 && firstLine !== undefined && firstLine.getLength()<=offsets.posOffset){
+    //         offsets.posOffset  -= firstLine.getLength();
+    //         concatShortestPath.shortestPath.shift();
+    //         firstLine = concatShortestPath.shortestPath[0];
+    //     }
+    //     let lastLine = concatShortestPath.shortestPath[concatShortestPath.shortestPath.length-1];
+    //     while(offsets.negOffset > 0 && lastLine !== undefined && lastLine.getLength()<=offsets.negOffset){
+    //         offsets.negOffset -= lastLine.getLength();
+    //         concatShortestPath.shortestPath.pop();
+    //         lastLine = concatShortestPath.shortestPath[concatShortestPath.shortestPath.length-1];
+    //     }
+    //     if(concatShortestPath.shortestPath.length === 0){
+    //         throw Error("The remaining shortest path after trimming according to offsets is empty.");
+    //     }
+    // }
+
+    // static trimAccordingToOffsets(concatShortestPath,offsets,decoderProperties){
+    //     offsets.posOffset+=concatShortestPath.posProjDist;
+    //     offsets.negOffset+=concatShortestPath.negProjDist;
+    //     if(concatShortestPath.shortestPath.length === 0){
+    //         throw Error("can't trim empty path");
+    //     }
+    //     let firstLine = concatShortestPath.shortestPath[0];
+    //     while(offsets.posOffset > 0 && firstLine !== undefined && firstLine.getLength()<=offsets.posOffset && offsets.posOffset-firstLine.getLength() >= decoderProperties.distanceToNextDiff){
+    //         offsets.posOffset  -= firstLine.getLength();
+    //         concatShortestPath.shortestPath.shift();
+    //         firstLine = concatShortestPath.shortestPath[0];
+    //     }
+    //     let lastLine = concatShortestPath.shortestPath[concatShortestPath.shortestPath.length-1];
+    //     while(offsets.negOffset > 0 && lastLine !== undefined && lastLine.getLength()<=offsets.negOffset && offsets.negOffset-lastLine.getLength() >= decoderProperties.distanceToNextDiff){
+    //         offsets.negOffset -= lastLine.getLength();
+    //         concatShortestPath.shortestPath.pop();
+    //         lastLine = concatShortestPath.shortestPath[concatShortestPath.shortestPath.length-1];
+    //     }
+    //     if(concatShortestPath.shortestPath.length === 0){
+    //         throw Error("The remaining shortest path after trimming according to offsets is empty.");
+    //     }
+    // }
+
     static trimAccordingToOffsets(concatShortestPath,offsets){
         offsets.posOffset+=concatShortestPath.posProjDist;
         offsets.negOffset+=concatShortestPath.negProjDist;
@@ -367,16 +413,36 @@ export default class LineDecoder{
             throw Error("can't trim empty path");
         }
         let firstLine = concatShortestPath.shortestPath[0];
-        while(offsets.posOffset > 0 && firstLine !== undefined && firstLine.getLength()<=offsets.posOffset){
-            offsets.posOffset  -= firstLine.getLength();
-            concatShortestPath.shortestPath.shift();
-            firstLine = concatShortestPath.shortestPath[0];
-        }
         let lastLine = concatShortestPath.shortestPath[concatShortestPath.shortestPath.length-1];
-        while(offsets.negOffset > 0 && lastLine !== undefined && lastLine.getLength()<=offsets.negOffset){
-            offsets.negOffset -= lastLine.getLength();
-            concatShortestPath.shortestPath.pop();
-            lastLine = concatShortestPath.shortestPath[concatShortestPath.shortestPath.length-1];
+        let posOffsetOverflow = offsets.posOffset > 0 && firstLine !== undefined && firstLine.getLength()<=offsets.posOffset;
+        let negOffsetOverflow = offsets.negOffset > 0 && lastLine !== undefined && lastLine.getLength()<=offsets.negOffset;
+        while(concatShortestPath.shortestPath.length > 1 && (posOffsetOverflow || negOffsetOverflow)){
+            if(posOffsetOverflow && negOffsetOverflow){
+                let posOverflow = offsets.posOffset-firstLine.getLength();
+                let negOverflow = offsets.negOffset-lastLine.getLength();
+                if(posOverflow>=negOverflow){
+                    offsets.posOffset  -= firstLine.getLength();
+                    concatShortestPath.shortestPath.shift();
+                    firstLine = concatShortestPath.shortestPath[0];
+                }
+                else{
+                    offsets.negOffset -= lastLine.getLength();
+                    concatShortestPath.shortestPath.pop();
+                    lastLine = concatShortestPath.shortestPath[concatShortestPath.shortestPath.length-1];
+                }
+            }
+            else if(posOffsetOverflow){
+                offsets.posOffset  -= firstLine.getLength();
+                concatShortestPath.shortestPath.shift();
+                firstLine = concatShortestPath.shortestPath[0];
+            }
+            else if(negOffsetOverflow){
+                offsets.negOffset -= lastLine.getLength();
+                concatShortestPath.shortestPath.pop();
+                lastLine = concatShortestPath.shortestPath[concatShortestPath.shortestPath.length-1];
+            }
+            posOffsetOverflow = offsets.posOffset > 0 && firstLine !== undefined && firstLine.getLength()<=offsets.posOffset;
+            negOffsetOverflow = offsets.negOffset > 0 && lastLine !== undefined && lastLine.getLength()<=offsets.negOffset;
         }
         if(concatShortestPath.shortestPath.length === 0){
             throw Error("The remaining shortest path after trimming according to offsets is empty.");

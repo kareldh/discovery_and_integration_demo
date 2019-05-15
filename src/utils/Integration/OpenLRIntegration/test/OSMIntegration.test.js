@@ -745,7 +745,7 @@ test('osm integration trimAccordingToOffsets no offsets',(done)=>{
 });
 
 test('osm integration trimAccordingToOffsets with invalid offsets',(done)=>{
-    expect.assertions(1);
+    expect.assertions(6);
     let decoderProperties = {
         dist: 35,    //maximum distance of a candidate node to a LRP
         bearDiff: 60, //maximum difference between the bearing of a candidate node and that of a LRP
@@ -778,7 +778,13 @@ test('osm integration trimAccordingToOffsets with invalid offsets',(done)=>{
                         let candidateLines = LineDecoder.findCandidateLines(LRPs.LRPs,candidateNodes,decoderProperties);
                         let concatShortestPath = LineDecoder.determineShortestPaths(candidateLines,LRPs.LRPs,decoderProperties);
                         let offsets = {posOffset: 0, negOffset: 12000};
-                        expect(()=>{LineDecoder.trimAccordingToOffsets(concatShortestPath,offsets)}).toThrow(Error("The remaining shortest path after trimming according to offsets is empty."));
+                        LineDecoder.trimAccordingToOffsets(concatShortestPath,offsets);
+                        expect(concatShortestPath.shortestPath.length).toEqual(1);
+                        expect(concatShortestPath.shortestPath[0].getID()).toEqual("4579317_28929725_1");
+                        expect(concatShortestPath.posProjDist).toEqual(0);
+                        expect(concatShortestPath.negProjDist).toEqual(osmDataBase.lines["4579317_28929725_1"].getLength()-4030);
+                        expect(offsets.posOffset).toEqual(0);
+                        expect(offsets.negOffset).toEqual(osmDataBase.lines["4579317_28929725_1"].getLength()-4030+12000);
                         done();
                     })})})});
 });
