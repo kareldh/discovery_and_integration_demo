@@ -72,6 +72,22 @@ export default class Line {
     }
 
     getGeoCoordinateAlongLine(distanceAlong){
+        if(Math.abs(distanceAlong)>this.getLength()){
+            let front = distanceAlong >= 0;
+            console.log("Line shorter than "+distanceAlong+". The latitude and longitude of "+(front?"startNode":"endNode")+" are returned");
+            if(front){
+                return {
+                    lat: this.endNode.getLatitudeDeg(),
+                    long: this.endNode.getLongitudeDeg()
+                };
+            }
+            else{
+                return {
+                    lat: this.startNode.getLatitudeDeg(),
+                    long: this.startNode.getLongitudeDeg()
+                };
+            }
+        }
         let line = lineString([
             [this.startNode.getLongitudeDeg(),this.startNode.getLatitudeDeg()],
             [this.endNode.getLongitudeDeg(),this.endNode.getLatitudeDeg()]
