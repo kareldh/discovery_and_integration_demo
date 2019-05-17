@@ -316,6 +316,7 @@ export default class LineDecoder{
         if(prevEndChanged && lrpIndex-1 >= 0){
             // we changed the start line of for this LRP, which means the end line of the last LRP is changed and it's shortest path should be recalculated
             // this can happen recursively until we reach our first LRP
+            // console.log("Start Line adjusted, recalculate path for previous LRP");
             shortestPaths[lrpIndex-1] = LineDecoder.calcSPforLRP(candidateLines,candidateIndexes,lrpIndex-1,tries,shortestPaths,LRPs,decoderProperties);
         }
     }
@@ -390,13 +391,13 @@ export default class LineDecoder{
     //         throw Error("can't trim empty path");
     //     }
     //     let firstLine = concatShortestPath.shortestPath[0];
-    //     while(offsets.posOffset > 0 && firstLine !== undefined && firstLine.getLength()<=offsets.posOffset && offsets.posOffset-firstLine.getLength() >= decoderProperties.distanceToNextDiff){
+    //     while(offsets.posOffset > 0 && firstLine !== undefined && firstLine.getLength()<=offsets.posOffset && offsets.posOffset-firstLine.getLength() >= (decoderProperties.distanceToNextDiff*decoderProperties.internalPrecision)){
     //         offsets.posOffset  -= firstLine.getLength();
     //         concatShortestPath.shortestPath.shift();
     //         firstLine = concatShortestPath.shortestPath[0];
     //     }
     //     let lastLine = concatShortestPath.shortestPath[concatShortestPath.shortestPath.length-1];
-    //     while(offsets.negOffset > 0 && lastLine !== undefined && lastLine.getLength()<=offsets.negOffset && offsets.negOffset-lastLine.getLength() >= decoderProperties.distanceToNextDiff){
+    //     while(offsets.negOffset > 0 && lastLine !== undefined && lastLine.getLength()<=offsets.negOffset && offsets.negOffset-lastLine.getLength() >= (decoderProperties.distanceToNextDiff*decoderProperties.internalPrecision)){
     //         offsets.negOffset -= lastLine.getLength();
     //         concatShortestPath.shortestPath.pop();
     //         lastLine = concatShortestPath.shortestPath[concatShortestPath.shortestPath.length-1];
