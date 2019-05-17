@@ -57,8 +57,8 @@ export default class RoutableTilesIntegration{
     }
 
     static getFRC(osmWay){
-        if(osmWay.highway !== undefined && OsmFrcHighwayMapping[osmWay.highway] !== undefined){
-            return OsmFrcHighwayMapping[osmWay.highway];
+        if(osmWay.highway !== undefined && OsmFrcHighwayMapping[osmWay.highway.slice(4)] !== undefined){
+            return OsmFrcHighwayMapping[osmWay.highway.slice(4)];
         }
         else{
             return frcEnum.FRC_7;
@@ -76,8 +76,8 @@ export default class RoutableTilesIntegration{
         else if(osmWay.junction !== undefined && osmWay.junction === "osm:roundabout"){
             return fowEnum.ROUNDABOUT;
         }
-        else if(osmWay.highway !== undefined && OsmFowHighwayMapping[osmWay.highway] !== undefined){
-            return OsmFowHighwayMapping[osmWay.highway];
+        else if(osmWay.highway !== undefined && OsmFowHighwayMapping[osmWay.highway.slice(4)] !== undefined){
+            return OsmFowHighwayMapping[osmWay.highway.slice(4)];
         }
         else {
             return fowEnum.UNDEFINED;
