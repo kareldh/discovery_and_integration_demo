@@ -29,7 +29,7 @@ export let decoderPropertiesAlwaysProj = {
     frcMultiplier: 10,
     fowMultiplier: 20,
     bearMultiplier: 30,
-    maxSPSearchRetries: 50,
+    maxSPSearchRetries: 1000,
     maxDecodeRetries: 3,
     distMultiplierForRetry: 2
 };
@@ -46,17 +46,20 @@ export let decoderProperties = {
     frcMultiplier: 10,
     fowMultiplier: 20,
     bearMultiplier: 30,
-    maxSPSearchRetries: 50,
+    maxSPSearchRetries: 1000,
     maxDecodeRetries: 3,
     distMultiplierForRetry: 2
 };
 
 let maxDecodedLines = 10;
-let maxDecodedLinesHigh = 15;
+let maxDecodedLinesHigh = 10;
 let wegenregisterLineLengthLimit = 5;
 let maxAmountOfWegenregisterLines = 1000;
+let minLineLength = 0; // in meter
 
 function _fromOneToOther(fromDataBase,toDataBase,decoderProperties,encodeFunction){
+    console.log("Encoder Lines:",Object.keys(fromDataBase.lines).length,"Decoder Lines:",Object.keys(toDataBase.lines).length);
+
     let locations = [];
     let encodeErrors = 0;
     let encodeErrorTypes = {};
@@ -71,7 +74,7 @@ function _fromOneToOther(fromDataBase,toDataBase,decoderProperties,encodeFunctio
     let encodeErrorTimes = [];
     let t1 = performance.now();
     for(let id in fromDataBase.lines){
-        if(fromDataBase.lines.hasOwnProperty(id)){
+        if(fromDataBase.lines.hasOwnProperty(id) && fromDataBase.lines[id].getLength() >= minLineLength*configProperties.internalPrecision){
             let t3;
             let t4;
             try {
@@ -93,7 +96,7 @@ function _fromOneToOther(fromDataBase,toDataBase,decoderProperties,encodeFunctio
         }
     }
     let t2 = performance.now();
-    let total = encodeTimes.reduce((previous, current)=> current += previous);
+    let total = encodeTimes.length > 0 ? encodeTimes.reduce((previous, current)=> current += previous) : 0;
     let errorTotal = encodeErrorTimes.length > 0 ? encodeErrorTimes.reduce((previous, current)=> current += previous) : 0;
     console.log("encoded locations: ",locations.length,"encode errors:",encodeErrors,
         "in time:",t2-t1,"ms",
@@ -127,7 +130,7 @@ function _fromOneToOther(fromDataBase,toDataBase,decoderProperties,encodeFunctio
         }
     }
     t2 = performance.now();
-    let sum = times.reduce((previous, current)=> current += previous);
+    let sum = times.length > 0 ? times.reduce((previous, current)=> current += previous) : 0;
     let errorSum = errorTimes.length > 0 ? errorTimes.reduce((previous, current)=> current += previous) : 0;
     console.log("decoded lines: ",decodedLines.length,"decode errors:",decodeErrors,
         "in time:",t2-t1,"ms,",
@@ -137,6 +140,10 @@ function _fromOneToOther(fromDataBase,toDataBase,decoderProperties,encodeFunctio
     console.log(decodeErrorTypes);
 
     console.warn(erroneousLocations[0]);
+
+    for(let i=0;i<decodedLines.length;i++){
+        expect(decodedLines[i].lines.length).toBeGreaterThan(0);
+    }
 
     return {
         encodedLocations: locations.length,
