@@ -308,8 +308,8 @@ export class MainDemo extends React.Component{
                         </Popup>
                     </Polyline>);
             }
-            let firstOffsetCoord = lines[0].getGeoCoordinateAlongLine(posOffset*100);
-            let lastOffsetCoord = lines[lines.length-1].getGeoCoordinateAlongLine(lines[lines.length-1].getLength()-(negOffset*100));
+            let firstOffsetCoord = lines[0].getGeoCoordinateAlongLine(posOffset*configProperties.internalPrecision);
+            let lastOffsetCoord = lines[lines.length-1].getGeoCoordinateAlongLine(lines[lines.length-1].getLength()-(negOffset*configProperties.internalPrecision));
             lineStrings.push(<Circle key={"firstOffsetPoint"+lane} center={[firstOffsetCoord.lat,firstOffsetCoord.long]} radius={1} color={"red"}>
                 <Popup>
                     <p>Start {lane}</p>
