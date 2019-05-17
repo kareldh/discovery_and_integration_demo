@@ -25,7 +25,8 @@ import {LinesDirectlyToLRPs} from "../utils/Integration/OpenLR/experimental/Line
 import {configProperties, decoderProperties} from "../utils/Integration/OpenLR/coder/CoderSettings";
 import {internalPrecisionEnum} from "../utils/Integration/OpenLR/map/Enum";
 import {getTileXYForLocation, tile2boundingBox} from "../Logic/tileUtils";
-import {loadOsmTestData} from "../utils/Integration/Data/LoadTestData";
+import {downloadOpenTrafficLightsTestData} from "../utils/OpenTrafficLights/data";
+import {MainDemo} from "./MainDemo";
 
 let inputDataEnum = {
     "RoutableTiles": "RoutableTiles",
@@ -42,20 +43,19 @@ let encodingStratEnum = {
 export default class OpenLrDemo extends React.Component{
     constructor(props){
         super(props);
-        this.init = this.init.bind(this);
         this.state = {
             data: [],
             lat: 51.21205,
             lng: 4.39717,
             encodingStrat: encodingStratEnum.OpenLrEncode,
-            dataSource: inputDataEnum.RoutableTiles
+            dataSource: inputDataEnum.RoutableTiles,
+            internalPrecision: internalPrecisionEnum.CENTIMETER
         };
         this.x = 8392;
         this.y = 5469;
         this.coordinates =[];
         this.tiles = {};
         this.addMarker = this.addMarker.bind(this);
-        this.createMarker = this.createMarker.bind(this);
         this.reset = this.reset.bind(this);
         this.findMarkersOsm = this.findMarkersOsm.bind(this);
         this.findMarkersRoutableTiles = this.findMarkersRoutableTiles.bind(this);
@@ -63,25 +63,16 @@ export default class OpenLrDemo extends React.Component{
         this.handleEncodingStratSelect = this.handleEncodingStratSelect.bind(this);
         this.handleDataSourceSelect = this.handleDataSourceSelect.bind(this);
         this.addDataBases = this.addDataBases.bind(this);
+        this.handleInternalPrecisionSelect = this.handleInternalPrecisionSelect.bind(this);
+        this.showLanesAntwerpenTest = this.showLanesAntwerpenTest.bind(this);
         this.osmDataBase = undefined;
         this.routableTilesDataBase = undefined;
         this.wegenretisterDataBase = undefined;
         this.geojsonKruispuntDataBase = undefined;
-        this.dataBasesInitialized = undefined;
+        this.dataBasesInitialized = new Promise((resolve,reject)=>resolve());
     }
 
-    componentDidMount(){
-        this.init(this.x,this.y);
-    }
-
-    init(x,y){
-        if(x === undefined || y === undefined){
-            x = 8392;
-            y = 5469;
-        }
-    }
-
-    createMarker(latitude,longitude){
+    static createMarker(latitude,longitude){
          return <Marker key={latitude+"_"+longitude} position={[latitude, longitude]}>
                 <Popup>
                     <p>{latitude+" "+longitude}</p>
@@ -261,12 +252,12 @@ export default class OpenLrDemo extends React.Component{
     }
 
     addMarker(latlng){
-        this.addDataBases(latlng);
+        this.addDataBases(latlng,this.state.dataSource);
         this.coordinates.push(latlng);
-        // let marker = this.createMarker(latlng.lat,latlng.lng);
+        // let marker = OpenLrDemo.createMarker(latlng.lat,latlng.lng);
         this.setState(()=>{
             let d = this.coordinates.map((c)=>{
-                    return this.createMarker(c.lat,c.lng);
+                    return OpenLrDemo.createMarker(c.lat,c.lng);
                 });
             return {
                 data: d,
@@ -274,22 +265,25 @@ export default class OpenLrDemo extends React.Component{
         });
     }
 
-    addDataBases(latlng){
+    addDataBases(latlng,dataSource){
         let {lat,lng} = latlng;
         let tileXY = getTileXYForLocation(lat,lng,14);
         this.x = tileXY.x;
         this.y = tileXY.y;
-        this.setState({tileXY: tileXY});
         let promises = [];
         let t1 = performance.now();
-        this.dataBasesInitialized = new Promise(resolve=>{
+        let promise = new Promise(resolve=>{
             for(let ix=tileXY.x-1;ix<=tileXY.x+1;ix++){
                 for(let iy=tileXY.y-1;iy<=tileXY.y+1;iy++){
                     if(!this.tiles[ix+"_"+iy]){
                         // use this check if we only want to fetch each tile one time during the lifetime of this application
                         // not using this check results in refilling the mapDataBase every time the location is set
-                        promises.push(this.addRoutableTileToMapDataBase(14,ix,iy));
-                        promises.push(this.addOpenStreetMapTileToMapDataBase(14,ix,iy));
+                        if(dataSource===inputDataEnum.RoutableTiles){
+                            promises.push(this.addRoutableTileToMapDataBase(14,ix,iy));
+                        }
+                        else if(dataSource===inputDataEnum.OpenStreetMap){
+                            promises.push(this.addOpenStreetMapTileToMapDataBase(14,ix,iy));
+                        }
                         this.tiles[ix+"_"+iy] = true;
                     }
                 }
@@ -297,21 +291,25 @@ export default class OpenLrDemo extends React.Component{
 
             Promise.all(promises).then(()=>{
                 let t2 = performance.now();
-                console.log("mapDataBases initialized in",t2-t1,"ms");
+                console.log("mapDataBase initialized in",t2-t1,"ms");
                 resolve();
             });
         });
+        this.dataBasesInitialized = Promise.all([
+           this.dataBasesInitialized,
+           promise
+        ]);
     }
 
     addRoutableTileToMapDataBase(zoom,x,y){
-        if(this.routableTilesDataBase === undefined){
-            this.routableTilesDataBase = new MapDataBase();
-        }
         return new Promise(resolve=>{
             fetchRoutableTile(zoom, x, y)
                 .then((data) => {
                     getRoutableTilesNodesAndLines(data.triples)
                         .then((nodesAndLines) => {
+                            if(this.routableTilesDataBase === undefined){
+                                this.routableTilesDataBase = new MapDataBase();
+                            }
                             let nodesLines = RoutableTilesIntegration.getNodesLines(nodesAndLines.nodes, nodesAndLines.lines);
                             this.routableTilesDataBase.addData(nodesLines.lines, nodesLines.nodes);
                             resolve();
@@ -321,15 +319,15 @@ export default class OpenLrDemo extends React.Component{
     }
 
     addOpenStreetMapTileToMapDataBase(zoom,x,y){
-        if(this.osmDataBase === undefined){
-            this.osmDataBase = new MapDataBase();
-        }
         let boundingBox = tile2boundingBox(x,y,zoom);
         fetchOsmData(boundingBox.latLower,boundingBox.latUpper,boundingBox.longLower,boundingBox.longUpper)
             .then((data)=>{parseToJson(data)
                 .then((json)=>{getMappedElements(json)
                     .then((elements)=>{filterHighwayData(elements)
                         .then((highwayData)=>{
+                            if(this.osmDataBase === undefined){
+                                this.osmDataBase = new MapDataBase();
+                            }
                             let nodesLines = OSMIntegration.getNodesLines(highwayData.nodes,highwayData.ways,highwayData.relations);
                             this.osmDataBase.addData(nodesLines.lines,nodesLines.nodes);
                         })})})});
@@ -352,8 +350,8 @@ export default class OpenLrDemo extends React.Component{
                         </Popup>
                     </Polyline>);
             }
-            let firstOffsetCoord = lines[0].getGeoCoordinateAlongLine(posOffset*100);
-            let lastOffsetCoord = lines[lines.length-1].getGeoCoordinateAlongLine(lines[lines.length-1].getLength()-(negOffset*100));
+            let firstOffsetCoord = lines[0].getGeoCoordinateAlongLine(posOffset*configProperties.internalPrecision);
+            let lastOffsetCoord = lines[lines.length-1].getGeoCoordinateAlongLine(lines[lines.length-1].getLength()-(negOffset*configProperties.internalPrecision));
             lineStrings.push(<Circle key={"firstOffsetPoint"} center={[firstOffsetCoord.lat,firstOffsetCoord.long]} radius={1} color={"red"}/>);
             lineStrings.push(<Circle key={"lastOffsetPoint"} center={[lastOffsetCoord.lat,lastOffsetCoord.long]} radius={1} color={"magenta"}/>);
             this.setState({data: lineStrings});
@@ -395,6 +393,7 @@ export default class OpenLrDemo extends React.Component{
             </select>
             <button onClick={this.findMarkers}>Find lines in data</button>
             <button onClick={this.reset}>Reset</button>
+            <button onClick={this.showLanesAntwerpenTest}>Demo kruispunt</button>
             current tile x value: {this.x}   current tile y value: {this.y}
         </div>;
     }
@@ -412,6 +411,76 @@ export default class OpenLrDemo extends React.Component{
         this.routableTilesDataBase = undefined;
         this.wegenretisterDataBase = undefined;
         this.geojsonKruispuntDataBase = undefined;
-        configProperties.internalPrecision = event.target.value;
+        configProperties.internalPrecision = event.target.value*1;
+        this.tiles = [];
+        this.reset();
+    }
+
+    showLanesAntwerpenTest(){
+        console.log(configProperties);
+        let data = [];
+        let database = undefined;
+        let dataBaseInitialized = new Promise((resolve)=>resolve());
+        if(this.state.dataSource===inputDataEnum.Wegenregister_Antwerpen){
+            if(this.wegenretisterDataBase === undefined){
+                dataBaseInitialized = new Promise(resolve=>{
+                    loadNodesLineStringsWegenregsterAntwerpen().then(features => {
+                        try{
+                            let t1 = performance.now();
+                            this.wegenretisterDataBase = new MapDataBase();
+                            WegenregisterAntwerpenIntegration.initMapDataBase(this.wegenretisterDataBase,features);
+                            let t2 = performance.now();
+                            console.log("Wegenregister initialized in",t2-t1,"ms");
+                            resolve();
+                        }
+                        catch(e){
+                            alert(e);
+                        }
+                    });
+                });
+            }
+        }
+        else if(this.state.dataSource===inputDataEnum.Geojson_kruispunt_tropisch_instituut){
+            if(this.geojsonKruispuntDataBase === undefined){
+                this.geojsonKruispuntDataBase = new MapDataBase();
+                GeoJsonIntegration.initMapDataBase(this.geojsonKruispuntDataBase,map.features);
+            }
+        }
+        else{
+            this.addDataBases({lat: 51.21205, lng: 4.39717},this.state.dataSource);
+            dataBaseInitialized = this.dataBasesInitialized;
+        }
+        downloadOpenTrafficLightsTestData().then(doc=>{
+            MainDemo._getTrafficLightData(doc).then(parsed=> {
+                let LRPs = MainDemo._toLRPs(parsed,this.state.encodingStrat);
+                dataBaseInitialized.then(() => {
+                    if(this.state.dataSource===inputDataEnum.OpenStreetMap){
+                        database = this.osmDataBase;
+                    }
+                    else if(this.state.dataSource===inputDataEnum.RoutableTiles){
+                        database = this.routableTilesDataBase;
+                    }
+                    else if(this.state.dataSource===inputDataEnum.Wegenregister_Antwerpen){
+                        database = this.wegenretisterDataBase;
+                    }
+                    else if(this.state.dataSource===inputDataEnum.Geojson_kruispunt_tropisch_instituut){
+                        database = this.geojsonKruispuntDataBase;
+                    }
+                    let t1 = performance.now();
+                    LRPs.forEach(line => {
+                        try {
+                            let decoded = OpenLRDecoder.decode(line.LRP, database, decoderProperties);
+                            let lineData = MainDemo.createLineStringsOpenLrForLane(decoded.lines, decoded.posOffset, decoded.negOffset, line.lane);
+                            Array.prototype.push.apply(data, lineData);
+                        }
+                        catch (e) {
+                            console.error(e);
+                        }
+                    });
+                    let t2 = performance.now();
+                    console.log("LRPs decoded in ", t2 - t1, "ms");
+                    this.setState({data: data});
+                });
+            })});
     }
 }
