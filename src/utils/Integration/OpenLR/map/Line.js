@@ -142,7 +142,7 @@ export default class Line {
                 bearPoint = point([this.endNode.getLongitudeDeg(),this.endNode.getLatitudeDeg()]);
             }
             else{
-                let bearDistLoc = this.getGeoCoordinateAlongLine(configProperties.bearDist);
+                let bearDistLoc = this.getGeoCoordinateAlongLine(configProperties.bearDist*configProperties.internalPrecision);
                 bearPoint = point([bearDistLoc.long,bearDistLoc.lat]);
             }
 
@@ -162,7 +162,7 @@ export default class Line {
                 bearPoint = point([this.startNode.getLongitudeDeg(),this.startNode.getLatitudeDeg()]);
             }
             else{
-                let bearDistLoc = this.getGeoCoordinateAlongLine(this.getLength()-configProperties.bearDist);
+                let bearDistLoc = this.getGeoCoordinateAlongLine(this.getLength()-(configProperties.bearDist*configProperties.internalPrecision));
                 bearPoint = point([bearDistLoc.long,bearDistLoc.lat]);
             }
 
