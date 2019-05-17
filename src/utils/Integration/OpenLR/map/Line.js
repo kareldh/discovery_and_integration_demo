@@ -138,7 +138,7 @@ export default class Line {
         if(this.bearing === undefined){
             let startNode = point([this.startNode.getLongitudeDeg(),this.startNode.getLatitudeDeg()]);
             let bearPoint;
-            if(this.getLength() <= configProperties.bearDist){
+            if(this.getLength() <= configProperties.bearDist*configProperties.internalPrecision){
                 bearPoint = point([this.endNode.getLongitudeDeg(),this.endNode.getLatitudeDeg()]);
             }
             else{
@@ -158,7 +158,7 @@ export default class Line {
         if(this.reverseBearing === undefined){
             let startNode = point([this.endNode.getLongitudeDeg(),this.endNode.getLatitudeDeg()]);
             let bearPoint;
-            if(this.getLength() <= configProperties.bearDist){
+            if(this.getLength() <= configProperties.bearDist*configProperties.internalPrecision){
                 bearPoint = point([this.startNode.getLongitudeDeg(),this.startNode.getLatitudeDeg()]);
             }
             else{
