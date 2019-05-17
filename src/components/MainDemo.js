@@ -59,44 +59,53 @@ export class MainDemo extends React.Component{
         this.handleGeoJsonClick = this.handleGeoJsonClick.bind(this);
         this.handleEncodingStratSelect = this.handleEncodingStratSelect.bind(this);
         this.handleLineStringVisualisationSelect = this.handleLineStringVisualisationSelect.bind(this);
+        this.handleInternalPrecisionSelect = this.handleInternalPrecisionSelect.bind(this);
     }
 
     initCatalog(){
-        return new Promise(resolve=>{
-            let t1 = performance.now();
-            fetchCatalog("https://cors-anywhere.herokuapp.com/"+CATALOG_URL).then((c)=>{
-                let sets = getDataSetsFromTriples(c.triples,["Boring"]);
-                let res = this.catalog.addCatalogPage(sets);
-                fetchNextPage(res,this.catalog,[],{uriPrefix: "https://cors-anywhere.herokuapp.com/"}).then(()=>{
-                    let t2 = performance.now();
-                    console.log("Catalog initialized in",t2-t1,"ms");
-                    resolve();
-                });
-            });
-        });
         // return new Promise(resolve=>{
         //     let t1 = performance.now();
-        //     download("https://raw.githubusercontent.com/kareldh/TrafficLightsCatalog/master/verkeerslicht_catalog.ttl").then((c)=>{
-        //         parseAndStoreQuads(c).then(store=>{
-        //             getDataSetsFromStore(store,["verkeerslicht"]).then(sets=>{
-        //                 let t2 = performance.now();
-        //                 let r = this.catalog.addCatalogPage(sets);
-        //                 console.log("Catalog initialized in",t2-t1,"ms");
-        //                 resolve(r);
-        //             });
-        //         })
-        //     })
+        //     fetchCatalog("https://cors-anywhere.herokuapp.com/"+CATALOG_URL).then((c)=>{
+        //         let t3 = performance.now();
+        //         let sets = getDataSetsFromTriples(c.triples,["Boring"]);
+        //         let res = this.catalog.addCatalogPage(sets);
+        //         let t4 = performance.now();
+        //         console.log("first catalog page downloaded in",t3-t1,"ms","and parsed in",t4-t3,"ms");
+        //         fetchNextPage(res,this.catalog,["Boring"],{uriPrefix: "https://cors-anywhere.herokuapp.com/", logging: true}).then(()=>{
+        //             let t2 = performance.now();
+        //             console.log("Catalog initialized in",t2-t1,"ms");
+        //             resolve();
+        //         });
+        //     });
         // });
+        return new Promise(resolve=>{
+            let t1 = performance.now();
+            download("https://raw.githubusercontent.com/kareldh/TrafficLightsCatalog/master/verkeerslicht_catalog.ttl").then((c)=>{
+                let t3 = performance.now();
+                console.log("Catalog downloaded in",t3-t1,"ms");
+                parseAndStoreQuads(c).then(store=>{
+                    getDataSetsFromStore(store,["verkeerslicht"]).then(sets=>{
+                        let t2 = performance.now();
+                        let r = this.catalog.addCatalogPage(sets);
+                        console.log("Catalog initialized in",t2-t1,"ms","(Of which parsing took",t2-t3,"ms)");
+                        resolve(r);
+                    });
+                })
+            })
+        });
     }
 
     addRoutableTileToMapDataBase(zoom,x,y){
         return new Promise(resolve=>{
             fetchRoutableTile(zoom, x, y)
                 .then((data) => {
+                    let t1 = performance.now();
                     getRoutableTilesNodesAndLines(data.triples)
                         .then((nodesAndLines) => {
                             let nodesLines = RoutableTilesIntegration.getNodesLines(nodesAndLines.nodes, nodesAndLines.lines);
                             this.mapDataBase.addData(nodesLines.lines, nodesLines.nodes);
+                            let t2 = performance.now();
+                            console.log("Parsed tile",x,y,"in",t2-t1,"ms");
                             this.tiles[x + "_" + y] = true;
                             resolve();
                         })
@@ -164,7 +173,7 @@ export class MainDemo extends React.Component{
                 <option value={encodingStratEnum.OpenLrEncode}>OpenLrEncode</option>
                 <option value={encodingStratEnum.LinesToLRPs}>Lines to LRPs</option>
             </select>
-            <select name={"Internal algorithmic precision"} value={this.state.internalPrecision} onChange={MainDemo.handleInternalPrecisionSelect}>
+            <select name={"Internal algorithmic precision"} value={this.state.internalPrecision} onChange={this.handleInternalPrecisionSelect}>
                 <option value={internalPrecisionEnum.CENTIMETER}>Centimeter</option>
                 <option value={internalPrecisionEnum.METER}>Meter</option>
             </select>
@@ -187,7 +196,7 @@ export class MainDemo extends React.Component{
         download(url).then(doc=>{
             this._getTrafficLightData(doc).then(parsed=>{
                 if(this.state.lineVisualisation === lineVisualisationEnum.MappedLineStrings){
-                    let LRPs = this._toLRPs(parsed);
+                    let LRPs = this._toLRPs(parsed,this.state.en);
                     this.mappedDataSets[datasetFeature.properties.id] = LRPs;
                     this.dataBaseInitialized.then(()=>{
                         let t1 = performance.now();
@@ -218,7 +227,7 @@ export class MainDemo extends React.Component{
             .catch((e)=>{console.log("Could not download distribution:",e)});
     }
 
-    _getTrafficLightData(doc){
+    static _getTrafficLightData(doc){
         return new Promise(resolve => {
             parseAndStoreQuads(doc).then((store)=>{
                 getLaneDefs(store).then((lanes)=>{
@@ -234,7 +243,7 @@ export class MainDemo extends React.Component{
         });
     }
 
-    _createRawLineStrings(parsed){
+    static _createRawLineStrings(parsed){
         let data = [];
         for(let k in parsed){
             if(parsed.hasOwnProperty(k)){
@@ -251,7 +260,7 @@ export class MainDemo extends React.Component{
         return data;
     }
 
-    _toLRPs(parsed){
+    static _toLRPs(parsed,encodingStrat){
         let t1 = performance.now();
         let LRPs = [];
         for(let key in parsed){
@@ -263,7 +272,7 @@ export class MainDemo extends React.Component{
                     n.push(new Node(i,parsed[key][i][0],parsed[key][i][1]));
                     l.push(new Line(i,n[i-1],n[i]));
                 }
-                if(this.state.encodingStrat === encodingStratEnum.LinesToLRPs){
+                if(encodingStrat === encodingStratEnum.LinesToLRPs){
                     LRPs.push({
                         lane: key,
                         LRP: LinesDirectlyToLRPs(l)
