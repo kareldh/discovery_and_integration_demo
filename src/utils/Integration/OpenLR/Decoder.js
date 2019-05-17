@@ -40,6 +40,7 @@ export default class OpenLRDecoder {
     //         }
     //     }
     // }
+    // //retry with bigger dist and use no proj and always proj each time
     static decode(encoded,mapDataBase,decoderProperties){
         let decoderProp = {};
         let rangeIncreases = 0;
@@ -60,10 +61,10 @@ export default class OpenLRDecoder {
                         decoderProp.alwaysUseProjections = true;
                     }
                     else{
+                        rangeIncreases++;
                         if(rangeIncreases >= decoderProp.maxDecodeRetries){
                             throw(e); //re-throw the error
                         }
-                        rangeIncreases++;
                         decoderProp.dist = decoderProp.dist * decoderProp.distMultiplierForRetry;
                         decoderProp.distanceToNextDiff = decoderProp.distanceToNextDiff * decoderProp.distMultiplierForRetry;
                         decoderProp.alwaysUseProjections = false;
@@ -72,4 +73,17 @@ export default class OpenLRDecoder {
             }
         }
     }
+
+    // //no retry mechanism
+    // static decode(encoded,mapDataBase,decoderProperties){
+    //     let decoderProp = {};
+    //     for(let k in decoderProperties){
+    //         if(decoderProperties.hasOwnProperty(k)){
+    //             decoderProp[k] = decoderProperties[k];
+    //         }
+    //     }
+    //     if(encoded.type === locationTypeEnum.LINE_LOCATION){
+    //         return LineDecoder.decode(mapDataBase,encoded.LRPs,encoded.posOffset,encoded.negOffset,decoderProp);
+    //     }
+    // }
 }
