@@ -13,9 +13,15 @@ export function fetchCatalog(catalogUrl){
 //todo: fetching a lot of pages is really slow
 export function fetchNextPage(res,catalog,tags=[],options){
     return new Promise(resolve=>{
+        let t1 = performance.now();
         fetchCatalog(((options && options.uriPrefix)?options.uriPrefix:"")+res.nextPage).then((c)=>{
+            let t2 = performance.now();
             let sets = getDataSetsFromTriples(c.triples,tags);
             let r = catalog.addCatalogPage(sets);
+            let t3 = performance.now();
+            if(options && options.logging){
+                console.log("page downloaded in",t2-t1,"ms","and parsed in",t3-t2,"ms");
+            }
             resolve(r);
         });
     }).then((r2)=>{
