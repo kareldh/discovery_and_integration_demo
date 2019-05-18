@@ -487,14 +487,15 @@ export default class LineEncoder {
             }
             else{
                 // there is no valid or invalid LRP possible in the given distance interval
-                // so we simply convert the first line in the list of lines to an lrpLine (starts in an invalid Node)
-                // since this is a straight line, adjacent to the last LRP, the shortest path to the end of this Line can not deviate from this Line
-                lrpLines.push(lines[lrpIndexInLoc]);
+                // so we simply convert the second line in the list of lines to an lrpLine (starts in an invalid Node)
+                // since the first Line is a straight Line, adjacent to the last LRP, the shortest path to the beginning of second Line can not deviate from this first Line
+                // there always will be a second Line, otherwise an intermediate LRP wasn't needed because the last LRP and the first Line would already cover the location
+                lrpLines.push(lines[lrpIndexInLoc+1]);
                 shortestPaths.push({
-                    length: 0,
-                    lines: []
+                    length: lines[lrpIndexInLoc].getLength(),
+                    lines: [lines[lrpIndexInLoc]]
                 });
-                let shortestPath = Dijkstra.shortestPath(lines[lrpIndexInLoc].getEndNode(),lines[lines.length-1].getStartNode(),{maxDist: maxDist});
+                let shortestPath = Dijkstra.shortestPath(lines[lrpIndexInLoc+1].getEndNode(),lines[lines.length-1].getStartNode(),{maxDist: maxDist});
                 shortestPaths.push(shortestPath);
                 return this.checkShortestPathCoverage(lrpIndexInLoc+1,lines,shortestPath.lines,lines.length-1);
             }
