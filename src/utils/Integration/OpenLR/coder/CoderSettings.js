@@ -7,18 +7,18 @@ let decoderProperties = {
     lfrcnpDiff: 3, //maximum difference between the lowest FRC until next point of a candidate node and that of a LRP
     distanceToNextDiff: 40, //maximum difference (in meter) between the found distance between 2 LRPs and the given distanceToNext of the first LRP
     alwaysUseProjections: false,
-    useFrcFow: true,
+    useFrcFow: true, // not implemented yet
     distMultiplier: 40,
     frcMultiplier: 10,
     fowMultiplier: 20,
     bearMultiplier: 30,
-    maxSPSearchRetries: 50,
-    maxDecodeRetries: 3,
+    maxSPSearchRetries: 200,
+    maxDecodeRetries: 2,
     distMultiplierForRetry: 2
 };
 
 let configProperties = {
-    bearDist: 2000,
+    bearDist: 20, // in meter!!
     internalPrecision: internalPrecisionEnum.CENTIMETER
 };
 
