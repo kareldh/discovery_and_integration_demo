@@ -30,7 +30,7 @@ export let decoderPropertiesAlwaysProj = {
     fowMultiplier: 20,
     bearMultiplier: 30,
     maxSPSearchRetries: 1000,
-    maxDecodeRetries: 3,
+    maxDecodeRetries: 2,
     distMultiplierForRetry: 2
 };
 
@@ -47,7 +47,7 @@ export let decoderProperties = {
     fowMultiplier: 20,
     bearMultiplier: 30,
     maxSPSearchRetries: 1000,
-    maxDecodeRetries: 3,
+    maxDecodeRetries: 2,
     distMultiplierForRetry: 2
 };
 
