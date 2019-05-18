@@ -49,8 +49,11 @@ export default class OpenLRDecoder {
                 decoderProp[k] = decoderProperties[k];
             }
         }
+        if(decoderProp.maxDecodeRetries === undefined){
+            decoderProp.maxDecodeRetries = 0;
+        }
         if(encoded.type === locationTypeEnum.LINE_LOCATION){
-            while(rangeIncreases < decoderProp.maxDecodeRetries){
+            while(rangeIncreases <= decoderProp.maxDecodeRetries){
                 try {
                     return LineDecoder.decode(mapDataBase,encoded.LRPs,encoded.posOffset,encoded.negOffset,decoderProp);
                 }
@@ -61,13 +64,18 @@ export default class OpenLRDecoder {
                         decoderProp.alwaysUseProjections = true;
                     }
                     else{
-                        rangeIncreases++;
-                        if(rangeIncreases >= decoderProp.maxDecodeRetries){
+                        if(decoderProp.dist && decoderProp.distMultiplierForRetry && decoderProp.distanceToNextDiff){
+                            rangeIncreases++;
+                            if(rangeIncreases > decoderProp.maxDecodeRetries){
+                                throw(e); //re-throw the error
+                            }
+                            decoderProp.dist = decoderProp.dist * decoderProp.distMultiplierForRetry;
+                            decoderProp.distanceToNextDiff = decoderProp.distanceToNextDiff * decoderProp.distMultiplierForRetry;
+                            decoderProp.alwaysUseProjections = false;
+                        }
+                        else{
                             throw(e); //re-throw the error
                         }
-                        decoderProp.dist = decoderProp.dist * decoderProp.distMultiplierForRetry;
-                        decoderProp.distanceToNextDiff = decoderProp.distanceToNextDiff * decoderProp.distMultiplierForRetry;
-                        decoderProp.alwaysUseProjections = false;
                     }
                 }
             }
