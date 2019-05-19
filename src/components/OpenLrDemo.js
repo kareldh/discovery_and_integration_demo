@@ -404,6 +404,7 @@ export default class OpenLrDemo extends React.Component{
 
     handleDataSourceSelect(event){
         this.setState({dataSource: event.target.value});
+        this.tiles = [];
     }
 
     handleInternalPrecisionSelect(event){
@@ -412,12 +413,11 @@ export default class OpenLrDemo extends React.Component{
         this.wegenretisterDataBase = undefined;
         this.geojsonKruispuntDataBase = undefined;
         configProperties.internalPrecision = event.target.value*1;
-        this.tiles = [];
+        this.setState({internalPrecision: event.target.value*1});
         this.reset();
     }
 
     showLanesAntwerpenTest(){
-        console.log(configProperties);
         let data = [];
         let database = undefined;
         let dataBaseInitialized = new Promise((resolve)=>resolve());
@@ -449,7 +449,9 @@ export default class OpenLrDemo extends React.Component{
         else{
             this.addDataBases({lat: 51.21205, lng: 4.39717},this.state.dataSource);
             dataBaseInitialized = this.dataBasesInitialized;
+            console.log(dataBaseInitialized);
         }
+        console.log(dataBaseInitialized);
         downloadOpenTrafficLightsTestData().then(doc=>{
             MainDemo._getTrafficLightData(doc).then(parsed=> {
                 let LRPs = MainDemo._toLRPs(parsed,this.state.encodingStrat);
@@ -470,6 +472,7 @@ export default class OpenLrDemo extends React.Component{
                     LRPs.forEach(line => {
                         try {
                             let decoded = OpenLRDecoder.decode(line.LRP, database, decoderProperties);
+                            console.log("Line:",line,"Decoded:",decoded);
                             let lineData = MainDemo.createLineStringsOpenLrForLane(decoded.lines, decoded.posOffset, decoded.negOffset, line.lane);
                             Array.prototype.push.apply(data, lineData);
                         }
