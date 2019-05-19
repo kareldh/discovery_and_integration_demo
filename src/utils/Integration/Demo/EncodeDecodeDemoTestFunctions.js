@@ -72,12 +72,20 @@ function _fromOneToOther(fromDataBase,toDataBase,decoderProperties,encodeFunctio
 
     let encodeTimes = [];
     let encodeErrorTimes = [];
+    let kortste = 100000;
+    let x = 0;
     let t1 = performance.now();
     for(let id in fromDataBase.lines){
         if(fromDataBase.lines.hasOwnProperty(id) && fromDataBase.lines[id].getLength() >= minLineLength*configProperties.internalPrecision){
             let t3;
             let t4;
             try {
+                if(fromDataBase.lines[id].getLength() < kortste){
+                    kortste = fromDataBase.lines[id].getLength();
+                }
+                if(fromDataBase.lines[id].getLength() < 1*configProperties.internalPrecision){
+                    x++;
+                }
                 t3 = performance.now();
                 let location = encodeFunction(fromDataBase,id);
                 t4 = performance.now();
@@ -104,6 +112,7 @@ function _fromOneToOther(fromDataBase,toDataBase,decoderProperties,encodeFunctio
         "error mean time",encodeErrorTimes.length > 0 ? errorTotal/encodeErrorTimes.length : 0,"ms,"
     );
     console.log(encodeErrorTypes);
+    console.log("fromDataBase chorteste:",kortste,"| Amount under 1 meter:",x);
 
     let times = [];
     let errorTimes = [];
@@ -144,6 +153,20 @@ function _fromOneToOther(fromDataBase,toDataBase,decoderProperties,encodeFunctio
     for(let i=0;i<decodedLines.length;i++){
         expect(decodedLines[i].lines.length).toBeGreaterThan(0);
     }
+
+    let kortsteTo = 100000000;
+    let aantalUnder = 0;
+    for(let key in toDataBase.lines){
+        if(toDataBase.lines.hasOwnProperty(key)){
+            if(toDataBase.lines[key].getLength() < kortsteTo){
+                kortsteTo = toDataBase.lines[key].getLength();
+            }
+            if(toDataBase.lines[key].getLength() < 1*configProperties.internalPrecision){
+                aantalUnder++;
+            }
+        }
+    }
+    console.log("toDataBase chortest:",kortsteTo,"| Amount under 1 meter:",aantalUnder);
 
     return {
         encodedLocations: locations.length,
