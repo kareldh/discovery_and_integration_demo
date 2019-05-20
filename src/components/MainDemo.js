@@ -13,7 +13,7 @@ import {download} from "../utils/download";
 import {parseAndStoreQuads} from "../utils/Discovery/TrafficLightDataDiscovery/Parser";
 import {Circle, GeoJSON, Polyline, Popup} from "react-leaflet";
 import {downloadOpenTrafficLightsTestData} from "../utils/OpenTrafficLights/data";
-import {getLaneDefs} from "../utils/OpenTrafficLights/parser";
+import {getLaneDefs, getLanesAsArrayInCorrectDirection} from "../utils/OpenTrafficLights/parser";
 import linestringToLatLng from "../utils/OpenTrafficLights/linestringToLatLng";
 import Line from "../utils/Integration/OpenLR/map/Line";
 import Node from "../utils/Integration/OpenLR/map/Node";
@@ -230,15 +230,9 @@ export class MainDemo extends React.Component{
     static _getTrafficLightData(doc){
         return new Promise(resolve => {
             parseAndStoreQuads(doc).then((store)=>{
-                getLaneDefs(store).then((lanes)=>{
-                    let parsed = {};
-                    for(let key in lanes){
-                        if(lanes.hasOwnProperty(key)){
-                            parsed[key] = linestringToLatLng(lanes[key]);
-                        }
-                    }
-                    resolve(parsed);
-                });
+                getLanesAsArrayInCorrectDirection(store).then(lanes=>{
+                    resolve(lanes);
+                })
             })
         });
     }

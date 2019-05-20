@@ -21,6 +21,8 @@ import {
 import WegenregisterAntwerpenIntegration from "../utils/Integration/OpenLRIntegration/WegenregisterAntwerpenIntegration";
 import GeoJsonIntegration from "../utils/Integration/OpenLRIntegration/GeoJsonIntegration";
 import {map} from "../utils/Integration/Data/testdata/junction_with_lanes_manual";
+// import {map} from "../utils/Integration/Data/testdata/lanes_from_data_with_correct_direction";
+// import {map} from "../utils/Integration/Data/testdata/lanes_manual_empty_junction_3";
 import {LinesDirectlyToLRPs} from "../utils/Integration/OpenLR/experimental/LinesDirectlyToLRPs";
 import {configProperties, decoderProperties} from "../utils/Integration/OpenLR/coder/CoderSettings";
 import {internalPrecisionEnum} from "../utils/Integration/OpenLR/map/Enum";
