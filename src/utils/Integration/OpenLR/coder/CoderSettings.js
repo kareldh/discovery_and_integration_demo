@@ -9,8 +9,8 @@ let decoderProperties = {
     alwaysUseProjections: false,
     useFrcFow: true, // not implemented yet
     distMultiplier: 40,
-    frcMultiplier: 10,
-    fowMultiplier: 20,
+    frcMultiplier: 35,
+    fowMultiplier: 40,
     bearMultiplier: 30,
     maxSPSearchRetries: 200,
     maxDecodeRetries: 2,
