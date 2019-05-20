@@ -67,7 +67,7 @@ export default class OpenLrDemo extends React.Component{
         this.showLanesAntwerpenTest = this.showLanesAntwerpenTest.bind(this);
         this.osmDataBase = undefined;
         this.routableTilesDataBase = undefined;
-        this.wegenretisterDataBase = undefined;
+        this.wegenregisterDataBase = undefined;
         this.geojsonKruispuntDataBase = undefined;
         this.dataBasesInitialized = new Promise((resolve,reject)=>resolve());
     }
@@ -192,13 +192,13 @@ export default class OpenLrDemo extends React.Component{
     }
 
     findMarkersWegenregisterAntwerpen(encoded){
-        if(this.wegenretisterDataBase === undefined){
+        if(this.wegenregisterDataBase === undefined){
             loadNodesLineStringsWegenregsterAntwerpen().then(features => {
                 try{
-                    this.wegenretisterDataBase = new MapDataBase();
+                    this.wegenregisterDataBase = new MapDataBase();
                     let t1 = performance.now();
-                    WegenregisterAntwerpenIntegration.initMapDataBase(this.wegenretisterDataBase,features);
-                    let decoded = OpenLRDecoder.decode(encoded,this.wegenretisterDataBase,decoderProperties);
+                    WegenregisterAntwerpenIntegration.initMapDataBase(this.wegenregisterDataBase,features);
+                    let decoded = OpenLRDecoder.decode(encoded,this.wegenregisterDataBase,decoderProperties);
                     let t2 = performance.now();
                     console.log("Found in Wegenregister Antwerpen in",t2-t1,"ms",decoded);
                     this.createLineStringsOpenLr(decoded.lines,decoded.posOffset,decoded.negOffset);
@@ -211,7 +211,7 @@ export default class OpenLrDemo extends React.Component{
         else{
             try{
                 let t1 = performance.now();
-                let decoded = OpenLRDecoder.decode(encoded,this.wegenretisterDataBase,decoderProperties);
+                let decoded = OpenLRDecoder.decode(encoded,this.wegenregisterDataBase,decoderProperties);
                 let t2 = performance.now();
                 console.log("Found in Wegenregister Antwerpen in",t2-t1,"ms",decoded);
                 this.createLineStringsOpenLr(decoded.lines,decoded.posOffset,decoded.negOffset);
@@ -293,7 +293,7 @@ export default class OpenLrDemo extends React.Component{
                 let t2 = performance.now();
                 console.log("mapDataBase initialized in",t2-t1,"ms");
                 resolve();
-            });
+            }).catch();
         });
         this.dataBasesInitialized = Promise.all([
            this.dataBasesInitialized,
@@ -302,7 +302,7 @@ export default class OpenLrDemo extends React.Component{
     }
 
     addRoutableTileToMapDataBase(zoom,x,y){
-        return new Promise(resolve=>{
+        return new Promise((resolve,reject)=>{
             fetchRoutableTile(zoom, x, y)
                 .then((data) => {
                     getRoutableTilesNodesAndLines(data.triples)
@@ -315,22 +315,28 @@ export default class OpenLrDemo extends React.Component{
                             resolve();
                         })
                 })
+                .catch((e)=>reject(e));
         });
     }
 
     addOpenStreetMapTileToMapDataBase(zoom,x,y){
         let boundingBox = tile2boundingBox(x,y,zoom);
-        fetchOsmData(boundingBox.latLower,boundingBox.latUpper,boundingBox.longLower,boundingBox.longUpper)
-            .then((data)=>{parseToJson(data)
-                .then((json)=>{getMappedElements(json)
-                    .then((elements)=>{filterHighwayData(elements)
-                        .then((highwayData)=>{
-                            if(this.osmDataBase === undefined){
-                                this.osmDataBase = new MapDataBase();
-                            }
-                            let nodesLines = OSMIntegration.getNodesLines(highwayData.nodes,highwayData.ways,highwayData.relations);
-                            this.osmDataBase.addData(nodesLines.lines,nodesLines.nodes);
-                        })})})});
+        return new Promise((resolve,reject)=>{
+            fetchOsmData(boundingBox.latLower,boundingBox.latUpper,boundingBox.longLower,boundingBox.longUpper)
+                .then((data)=>{parseToJson(data)
+                    .then((json)=>{getMappedElements(json)
+                        .then((elements)=>{filterHighwayData(elements)
+                            .then((highwayData)=>{
+                                if(this.osmDataBase === undefined){
+                                    this.osmDataBase = new MapDataBase();
+                                }
+                                let nodesLines = OSMIntegration.getNodesLines(highwayData.nodes,highwayData.ways,highwayData.relations);
+                                this.osmDataBase.addData(nodesLines.lines,nodesLines.nodes);
+                                resolve();
+                            })})})})
+                .catch(e=>reject(e));
+        });
+
     }
 
     createLineStringsOpenLr(lines,posOffset,negOffset){
@@ -410,8 +416,9 @@ export default class OpenLrDemo extends React.Component{
     handleInternalPrecisionSelect(event){
         this.osmDataBase = undefined;
         this.routableTilesDataBase = undefined;
-        this.wegenretisterDataBase = undefined;
+        this.wegenregisterDataBase = undefined;
         this.geojsonKruispuntDataBase = undefined;
+        this.tiles = [];
         configProperties.internalPrecision = event.target.value*1;
         this.setState({internalPrecision: event.target.value*1});
         this.reset();
@@ -422,13 +429,13 @@ export default class OpenLrDemo extends React.Component{
         let database = undefined;
         let dataBaseInitialized = new Promise((resolve)=>resolve());
         if(this.state.dataSource===inputDataEnum.Wegenregister_Antwerpen){
-            if(this.wegenretisterDataBase === undefined){
+            if(this.wegenregisterDataBase === undefined){
                 dataBaseInitialized = new Promise(resolve=>{
                     loadNodesLineStringsWegenregsterAntwerpen().then(features => {
                         try{
                             let t1 = performance.now();
-                            this.wegenretisterDataBase = new MapDataBase();
-                            WegenregisterAntwerpenIntegration.initMapDataBase(this.wegenretisterDataBase,features);
+                            this.wegenregisterDataBase = new MapDataBase();
+                            WegenregisterAntwerpenIntegration.initMapDataBase(this.wegenregisterDataBase,features);
                             let t2 = performance.now();
                             console.log("Wegenregister initialized in",t2-t1,"ms");
                             resolve();
@@ -449,13 +456,13 @@ export default class OpenLrDemo extends React.Component{
         else{
             this.addDataBases({lat: 51.21205, lng: 4.39717},this.state.dataSource);
             dataBaseInitialized = this.dataBasesInitialized;
-            console.log(dataBaseInitialized);
         }
         console.log(dataBaseInitialized);
         downloadOpenTrafficLightsTestData().then(doc=>{
             MainDemo._getTrafficLightData(doc).then(parsed=> {
                 let LRPs = MainDemo._toLRPs(parsed,this.state.encodingStrat);
                 dataBaseInitialized.then(() => {
+                    console.log(dataBaseInitialized);
                     if(this.state.dataSource===inputDataEnum.OpenStreetMap){
                         database = this.osmDataBase;
                     }
@@ -463,7 +470,7 @@ export default class OpenLrDemo extends React.Component{
                         database = this.routableTilesDataBase;
                     }
                     else if(this.state.dataSource===inputDataEnum.Wegenregister_Antwerpen){
-                        database = this.wegenretisterDataBase;
+                        database = this.wegenregisterDataBase;
                     }
                     else if(this.state.dataSource===inputDataEnum.Geojson_kruispunt_tropisch_instituut){
                         database = this.geojsonKruispuntDataBase;
@@ -483,7 +490,16 @@ export default class OpenLrDemo extends React.Component{
                     let t2 = performance.now();
                     console.log("LRPs decoded in ", t2 - t1, "ms");
                     this.setState({data: data});
-                });
+                })
+                    .catch(e=>{
+                        this.osmDataBase = undefined;
+                        this.routableTilesDataBase = undefined;
+                        this.wegenregisterDataBase = undefined;
+                        this.geojsonKruispuntDataBase = undefined;
+                        this.tiles = [];
+                        this.dataBasesInitialized = new Promise((resolve,reject)=>resolve());
+                        alert(e);
+                    });
             })});
     }
 }
