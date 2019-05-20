@@ -7,6 +7,8 @@ import Node from "../../OpenLR/map/Node";
 import {LinesDirectlyToLRPs} from "../../OpenLR/experimental/LinesDirectlyToLRPs";
 import OpenLRDecoder from "../../OpenLR/Decoder";
 import {fetchRoutableTile} from "../../Data/LoadData";
+import {decoderProperties} from "../../OpenLR/coder/CoderSettings";
+import {fowEnum, frcEnum} from "../../OpenLR/map/Enum";
 
 test("initMapDatabase",(done)=>{
     expect.assertions(3);
@@ -145,4 +147,151 @@ test("encode way at the edge of a tile, so that it's closest junction (=valid no
         expect(encoded.negOffset).toEqual(0);
         done();
     });
+});
+
+test("decode impact of FRC/FOW",(done)=>{
+    expect.assertions(23);
+
+    let locationDefaultDecodedToRoad = {
+        LRPs: [
+            {
+                bearing: 170,
+                distanceToNext: 87,
+                fow: 0,
+                frc: 7,
+                isLast: false,
+                lat: 51.2122,
+                lfrcnp: 7,
+                long: 4.40748,
+                seqNr: 1
+            },
+            {
+                bearing: 352,
+                distanceToNext: 0,
+                fow: 0,
+                frc: 7,
+                isLast: true,
+                lat: 51.21142,
+                lfrcnp: 7,
+                long: 4.40767,
+                seqNr: 2
+            }
+        ],
+        negOffset: 0,
+        posOffset: 0,
+        type: 1
+    };
+
+    let locationDefaultDecodedToFoot = {
+        LRPs: [
+            {
+                bearing: 170,
+                distanceToNext: 87,
+                fow: 0,
+                frc: 7,
+                isLast: false,
+                lat: 51.21211,
+                lfrcnp: 7,
+                long: 4.40749,
+                seqNr: 1
+            },
+            {
+                bearing: 352,
+                distanceToNext: 0,
+                fow: 0,
+                frc: 7,
+                isLast: true,
+                lat: 51.21147,
+                lfrcnp: 7,
+                long: 4.40766,
+                seqNr: 2
+            }
+        ],
+        negOffset: 0,
+        posOffset: 0,
+        type: 1
+    };
+
+    let expectedIdsRoad = ["http://www.openstreetmap.org/way/178553514_http://www.openstreetmap.org/node/1635567707","http://www.openstreetmap.org/way/8414722_http://www.openstreetmap.org/node/27306720"];
+    let expectedIdsFoot = ["http://www.openstreetmap.org/way/178553520_http://www.openstreetmap.org/node/1888840697","http://www.openstreetmap.org/way/178553520_http://www.openstreetmap.org/node/1888840692"];
+
+    let decoderProp = {};
+    for(let k in decoderProperties){
+        if(decoderProperties.hasOwnProperty(k)){
+            decoderProp[k] = decoderProperties[k];
+        }
+    }
+
+    let mapDataBase = new MapDataBase();
+    let promises = [
+        fetchRoutableTile(14,8392,5469)
+            .then((data)=>{getRoutableTilesNodesAndLines(data.triples)
+                .then((nodesAndLines)=> {
+                    let r = RoutableTilesIntegration.getNodesLines(nodesAndLines.nodes,nodesAndLines.lines);
+                    mapDataBase.addData(r.lines,r.nodes);
+                })})
+    ];
+    Promise.all(promises).then(()=>{
+        // defaults to road (if frcMultiplier 10 and fowMultiplier 20)
+        locationDefaultDecodedToRoad.LRPs[0].frc = frcEnum.FRC_4;
+        locationDefaultDecodedToRoad.LRPs[0].fow = fowEnum.SINGLE_CARRIAGEWAY;
+        locationDefaultDecodedToRoad.LRPs[1].frc = frcEnum.FRC_4;
+        locationDefaultDecodedToRoad.LRPs[1].fow = fowEnum.SINGLE_CARRIAGEWAY;
+
+        let decoded = OpenLRDecoder.decode(locationDefaultDecodedToRoad,mapDataBase,decoderProp);
+        expect(decoded).toBeDefined();
+        console.log(decoded);
+        expect(decoded.lines.length).toEqual(2);
+        expect(decoded.lines[0].getID()).toEqual(expectedIdsRoad[0]);
+        expect(decoded.lines[1].getID()).toEqual(expectedIdsRoad[1]);
+        expect(isNaN(decoded.posOffset)).not.toBeTruthy();
+        expect(isNaN(decoded.negOffset)).not.toBeTruthy();
+
+        //defaulted to road, should now be foot
+        locationDefaultDecodedToRoad.LRPs[0].frc = frcEnum.FRC_5;
+        locationDefaultDecodedToRoad.LRPs[0].fow = fowEnum.OTHER;
+        locationDefaultDecodedToRoad.LRPs[1].frc = frcEnum.FRC_5;
+        locationDefaultDecodedToRoad.LRPs[1].fow = fowEnum.OTHER;
+
+        decoderProp.frcMultiplier = 35;
+        decoderProp.fowMultiplier = 40;
+        let decoded2 = OpenLRDecoder.decode(locationDefaultDecodedToRoad,mapDataBase,decoderProp);
+        expect(decoded2).toBeDefined();
+        console.log(decoded2);
+        expect(decoded2.lines.length).toEqual(3);
+        expect(decoded2.lines[1].getID()).toEqual(expectedIdsFoot[0]);
+        expect(decoded2.lines[2].getID()).toEqual(expectedIdsFoot[1]);
+        expect(isNaN(decoded2.posOffset)).not.toBeTruthy();
+        expect(isNaN(decoded2.negOffset)).not.toBeTruthy();
+
+        //defaulted to foot
+        decoderProp.frcMultiplier = 35;
+        decoderProp.fowMultiplier = 40;
+        let decoded3 = OpenLRDecoder.decode(locationDefaultDecodedToFoot,mapDataBase,decoderProp);
+        expect(decoded3).toBeDefined();
+        console.log(decoded3);
+        expect(decoded3.lines.length).toEqual(2);
+        expect(decoded3.lines[0].getID()).toEqual(expectedIdsFoot[0]);
+        expect(decoded3.lines[1].getID()).toEqual(expectedIdsFoot[1]);
+        expect(isNaN(decoded3.posOffset)).not.toBeTruthy();
+        expect(isNaN(decoded3.negOffset)).not.toBeTruthy();
+
+        //defaulted to foot, should now be road
+        locationDefaultDecodedToFoot.LRPs[0].frc = frcEnum.FRC_4;
+        locationDefaultDecodedToFoot.LRPs[0].fow = fowEnum.SINGLE_CARRIAGEWAY;
+        locationDefaultDecodedToFoot.LRPs[1].frc = frcEnum.FRC_4;
+        locationDefaultDecodedToFoot.LRPs[1].fow = fowEnum.SINGLE_CARRIAGEWAY;
+
+        decoderProp.frcMultiplier = 35;
+        decoderProp.fowMultiplier = 40;
+        let decoded4 = OpenLRDecoder.decode(locationDefaultDecodedToFoot,mapDataBase,decoderProp);
+        expect(decoded4).toBeDefined();
+        console.log(decoded4);
+        expect(decoded4.lines.length).toEqual(1);
+        expect(decoded4.lines[0].getID()).toEqual(expectedIdsRoad[1]);
+        expect(isNaN(decoded4.posOffset)).not.toBeTruthy();
+        expect(isNaN(decoded4.negOffset)).not.toBeTruthy();
+        done();
+    });
+
 });
