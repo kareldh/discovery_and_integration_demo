@@ -1,4 +1,6 @@
 import n3 from 'n3';
+import linestringToLatLng from "./linestringToLatLng";
+import {calcDistance} from "./GeoFunctions";
 
 const { DataFactory } = n3;
 const { namedNode } = DataFactory;
@@ -111,5 +113,61 @@ export function getLanesForSignalGroup(_store){ //build index which gives an arr
             })
         }
         resolve(signalGroups);
+    });
+}
+
+export function getLanesAsArrayInCorrectDirection(store){
+    return new Promise(resolve=>{
+        let lanes;
+        let startArrive;
+        Promise.all([
+            getLaneDefs(store).then((laneDefs)=>{
+                lanes = laneDefs;
+            }),
+            getLanesForSignalGroup(store).then(lanesForSignalGroup=>{
+                startArrive = lanesForSignalGroup
+            })
+        ]).then(()=>{
+            for(let key in lanes){
+                if(lanes.hasOwnProperty(key)){
+                    lanes[key] = linestringToLatLng(lanes[key]);
+                }
+            }
+            let newLanes = {};
+            for(let key in startArrive){
+                if(startArrive.hasOwnProperty(key)){
+                    for(let i=0;i<startArrive[key].departureLanes.length;i++){
+                        for(let j=0;j<startArrive[key].arrivalLanes.length;j++){
+                            let departureLane = lanes[startArrive[key].departureLanes[i]].slice();
+                            let arrivalLane = lanes[startArrive[key].arrivalLanes[j]].slice();
+                            let depEndToArrStart = calcDistance(departureLane[departureLane.length-1][0],departureLane[departureLane.length-1][1],arrivalLane[0][0],arrivalLane[0][1]);
+                            let depEndToArrEnd = calcDistance(departureLane[departureLane.length-1][0],departureLane[departureLane.length-1][1],arrivalLane[arrivalLane.length-1][0],arrivalLane[arrivalLane.length-1][1]);
+                            let depStartToArrStart = calcDistance(departureLane[0][0],departureLane[0][1],arrivalLane[0][0],arrivalLane[0][1]);
+                            let depStartToArrEnd = calcDistance(departureLane[0][0],departureLane[0][1],arrivalLane[arrivalLane.length-1][0],arrivalLane[arrivalLane.length-1][1]);
+                            if(depEndToArrStart < depEndToArrEnd && depEndToArrStart < depStartToArrStart && depEndToArrStart < depStartToArrEnd){
+                                newLanes[startArrive[key].departureLanes[i]] = departureLane;
+                                newLanes[startArrive[key].arrivalLanes[j]] = arrivalLane;
+                            }
+                            else if(depEndToArrEnd < depEndToArrStart && depEndToArrEnd < depStartToArrStart && depEndToArrEnd < depStartToArrEnd){
+                                // reverse arrival lane
+                                newLanes[startArrive[key].departureLanes[i]] = departureLane;
+                                newLanes[startArrive[key].arrivalLanes[j]+"_reversed"] = arrivalLane.reverse();
+                            }
+                            else if(depStartToArrStart < depEndToArrEnd && depStartToArrStart < depEndToArrStart && depStartToArrStart < depStartToArrEnd){
+                                // reverse departure lane
+                                newLanes[startArrive[key].departureLanes[i]+"_reversed"] = departureLane.reverse();
+                                newLanes[startArrive[key].arrivalLanes[j]] = arrivalLane;
+                            }
+                            else if(depStartToArrEnd < depEndToArrEnd && depStartToArrEnd < depStartToArrStart && depStartToArrEnd < depEndToArrStart){
+                                // reverse both arrival and departure lane
+                                newLanes[startArrive[key].departureLanes[i]+"_reversed"] = departureLane.reverse();
+                                newLanes[startArrive[key].arrivalLanes[j]+"_reversed"] = arrivalLane.reverse();
+                            }
+                        }
+                    }
+                }
+            }
+            resolve(newLanes);
+        });
     });
 }
