@@ -9,8 +9,8 @@ class App extends Component {
         return (
             <div>
                 {/*<ApiContainer/>*/}
-                {/*<OpenLrDemo/>*/}
-                {<MainDemo/>}
+                <OpenLrDemo/>
+                {/*{<MainDemo/>}*/}
             <div>
         </div>
         </div>

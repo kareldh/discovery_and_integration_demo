@@ -1,6 +1,6 @@
 import {fowEnum, frcEnum} from "../map/Enum";
 import Dijkstra from "./Dijkstra";
-import {configProperties, decoderProperties} from "./CoderSettings";
+import {configProperties} from "./CoderSettings";
 
 export default class LineDecoder{
 
@@ -86,7 +86,7 @@ export default class LineDecoder{
                         ? Math.abs(node.line.getReverseBearing()-LRPs[LRPs.length-1].bearing)
                         : Math.abs(node.line.getBearing()-LRPs[i].bearing);
                     let frcDiff;
-                    if(node.line.getFRC() !== undefined && node.line.getFRC() >= frcEnum.FRC_0
+                    if(decoderProperties.useFrcFow && node.line.getFRC() !== undefined && node.line.getFRC() >= frcEnum.FRC_0
                         && node.line.getFRC() <= frcEnum.FRC_7 && LRPs[i].frc !== undefined){
                         frcDiff = Math.abs(node.line.getFRC()-LRPs[i].frc);
                     }
@@ -120,7 +120,7 @@ export default class LineDecoder{
                             ? Math.abs(line.getReverseBearing()-LRPs[LRPs.length-1].bearing)
                             : Math.abs(line.getBearing()-LRPs[i].bearing);
                         let frcDiff;
-                        if(line.getFRC() !== undefined && line.getFRC() >= frcEnum.FRC_0
+                        if(decoderProperties.useFrcFow && line.getFRC() !== undefined && line.getFRC() >= frcEnum.FRC_0
                             && line.getFRC() <= frcEnum.FRC_7 && LRPs[i].frc !== undefined){
                             frcDiff = Math.abs(line.getFRC()-LRPs[i].frc);
                         }
@@ -173,14 +173,14 @@ export default class LineDecoder{
         maxRating += decoderProperties.distMultiplier;
         // the functional road class of the candidate line should match the functional road class
         // of the location reference point
-        if(candidateLine.frcDiff !== undefined){
+        if(decoderProperties.useFrcFow && candidateLine.frcDiff !== undefined){
             let frcRating = candidateLine.frcDiff/decoderProperties.frcDiff;
             rating += frcRating * decoderProperties.frcMultiplier;
             maxRating += decoderProperties.frcMultiplier;
         }
         // the form of way of the candidate line should match the form of way of the location reference point
         // form of way isn't hierarchical so it either does or does not match
-        if(candidateLine.line.getFOW() !== undefined && candidateLine.line.getFOW() >= fowEnum.UNDEFINED
+        if(decoderProperties.useFrcFow && candidateLine.line.getFOW() !== undefined && candidateLine.line.getFOW() >= fowEnum.UNDEFINED
             && candidateLine.line.getFOW() <= fowEnum.OTHER && lrp.fow !== undefined && lrp.fow >= fowEnum.UNDEFINED
             && lrp.fow <= fowEnum.OTHER){
             let fowRating = candidateLine.line.getFOW() === lrp.fow ? 0 : 1;
@@ -206,8 +206,8 @@ export default class LineDecoder{
                 startLine.getEndNode(),
                 endLine.getStartNode(),
                 {
-                    lfrcnp: lfrcnp,
-                    lfrcnpDiff: decoderProperties.lfrcnpDiff,
+                    lfrcnp: decoderProperties.useFrcFow ? lfrcnp : undefined,
+                    lfrcnpDiff: decoderProperties.useFrcFow ? decoderProperties.lfrcnpDiff : undefined,
                     maxDist: distanceToNext !== undefined ? decoderProperties.distanceToNextDiff*configProperties.internalPrecision + distanceToNext : undefined
                 });
         }

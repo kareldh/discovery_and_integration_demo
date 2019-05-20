@@ -72,6 +72,7 @@ export default class OpenLrDemo extends React.Component{
         this.wegenregisterDataBase = undefined;
         this.geojsonKruispuntDataBase = undefined;
         this.dataBasesInitialized = new Promise((resolve,reject)=>resolve());
+        decoderProperties.useFrcFow = false;
     }
 
     static createMarker(latitude,longitude){
