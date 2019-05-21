@@ -11,6 +11,7 @@ test('decoder 4 LRPs no offsets perfect candidates',()=>{
         lfrcnpDiff: 2, //maximum difference between the lowest FRC until next point of a candidate node and that of a LRP
         distanceToNextDiff: 100, //maximum difference between the found distance between 2 LRPs and the given distanceToNext of the first LRP
         alwaysUseProjections: false,
+        useFrcFow: true,
         distMultiplier: 40,
         frcMultiplier: 10,
         fowMultiplier: 20,
@@ -40,6 +41,7 @@ test('findCandidatesOrProjections 4 LRPs no offsets perfect candidates',()=>{
         lfrcnpDiff: 2, //maximum difference between the lowest FRC until next point of a candidate node and that of a LRP
         distanceToNextDiff: 100, //maximum difference between the found distance between 2 LRPs and the given distanceToNext of the first LRP
         alwaysUseProjections: false,
+        useFrcFow: true,
         distMultiplier: 40,
         frcMultiplier: 10,
         fowMultiplier: 20,
@@ -73,6 +75,7 @@ test('rateCandidateLine 4 LRPs no offsets perfect candidates',()=>{
         lfrcnpDiff: 2, //maximum difference between the lowest FRC until next point of a candidate node and that of a LRP
         distanceToNextDiff: 100, //maximum difference between the found distance between 2 LRPs and the given distanceToNext of the first LRP
         alwaysUseProjections: false,
+        useFrcFow: true,
         distMultiplier: 40,
         frcMultiplier: 10,
         fowMultiplier: 20,
@@ -105,6 +108,7 @@ test('findCandidateLines 4 LRPs no offsets extended perfect candidates',()=>{
         lfrcnpDiff: 2, //maximum difference between the lowest FRC until next point of a candidate node and that of a LRP
         distanceToNextDiff: 100, //maximum difference between the found distance between 2 LRPs and the given distanceToNext of the first LRP
         alwaysUseProjections: false,
+        useFrcFow: true,
         distMultiplier: 40,
         frcMultiplier: 10,
         fowMultiplier: 20,
