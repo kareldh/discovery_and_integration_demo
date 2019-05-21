@@ -26,8 +26,8 @@ export let decoderPropertiesAlwaysProj = {
     alwaysUseProjections: true,
     useFrcFow: true,
     distMultiplier: 40,
-    frcMultiplier: 10,
-    fowMultiplier: 20,
+    frcMultiplier: 35,
+    fowMultiplier: 40,
     bearMultiplier: 30,
     maxSPSearchRetries: 1000,
     maxDecodeRetries: 2,
@@ -43,8 +43,8 @@ export let decoderProperties = {
     alwaysUseProjections: false,
     useFrcFow: true,
     distMultiplier: 40,
-    frcMultiplier: 10,
-    fowMultiplier: 20,
+    frcMultiplier: 35,
+    fowMultiplier: 40,
     bearMultiplier: 30,
     maxSPSearchRetries: 1000,
     maxDecodeRetries: 2,
@@ -54,6 +54,7 @@ export let decoderProperties = {
 let maxDecodedLines = 10;
 let maxDecodedLinesHigh = 10;
 let wegenregisterLineLengthLimit = 5;
+let lineLengthLimitSameDataBase = 0; // in meter
 let maxAmountOfWegenregisterLines = 1000;
 let minLineLength = 0; // in meter
 
@@ -345,7 +346,7 @@ export function osmToOsm(decoderProperties){
                             let encodeErrorTimes = [];
                             let t1 = performance.now();
                             for(let id in osmMapDataBase.lines){
-                                if(osmMapDataBase.lines.hasOwnProperty(id)){
+                                if(osmMapDataBase.lines.hasOwnProperty(id) && osmMapDataBase.lines[id].getLength() > lineLengthLimitSameDataBase*configProperties.internalPrecision){
                                     let t3;
                                     let t4;
                                     try {
@@ -500,7 +501,7 @@ export function osmToOsmNoEncoding(decoderProperties){
                             let encodeErrorTimes = [];
                             let t1 = performance.now();
                             for(let id in osmMapDataBase.lines){
-                                if(osmMapDataBase.lines.hasOwnProperty(id)){
+                                if(osmMapDataBase.lines.hasOwnProperty(id) && osmMapDataBase.lines[id].getLength() > lineLengthLimitSameDataBase*configProperties.internalPrecision){
                                     let t3;
                                     let t4;
                                     try {
@@ -653,7 +654,7 @@ export function wegenregisterToWegenregister(decoderProperties){
             let encodeErrorTimes = [];
             let t1 = performance.now();
             for(let id in wegenregisterMapDataBase.lines){
-                if(wegenregisterMapDataBase.lines.hasOwnProperty(id) && i<maxAmountOfWegenregisterLines){
+                if(wegenregisterMapDataBase.lines.hasOwnProperty(id) && i<maxAmountOfWegenregisterLines && wegenregisterMapDataBase.lines[id].getLength() > lineLengthLimitSameDataBase*configProperties.internalPrecision){
                     let t3;
                     let t4;
                     try {
@@ -807,7 +808,7 @@ export function wegenregisterToWegenregisterNoEncoding(decoderProperties){
             let encodeErrorTimes = [];
             let t1 = performance.now();
             for(let id in wegenregisterMapDataBase.lines){
-                if(wegenregisterMapDataBase.lines.hasOwnProperty(id) && i<maxAmountOfWegenregisterLines){
+                if(wegenregisterMapDataBase.lines.hasOwnProperty(id) && i<maxAmountOfWegenregisterLines && wegenregisterMapDataBase.lines[id].getLength() > lineLengthLimitSameDataBase*configProperties.internalPrecision){
                     let t3;
                     let t4;
                     try {
@@ -967,7 +968,7 @@ export function routableTilesToRoutableTiles(decoderProperties){
                     let encodeErrorTimes = [];
                     let t1 = performance.now();
                     for(let id in mapDatabase.lines){
-                        if(mapDatabase.lines.hasOwnProperty(id)){
+                        if(mapDatabase.lines.hasOwnProperty(id) && mapDatabase.lines[id].getLength() > lineLengthLimitSameDataBase*configProperties.internalPrecision){
                             let t3;
                             let t4;
                             try {
@@ -1121,7 +1122,7 @@ export function routableTilesToRoutableTilesNoEncoding(decoderProperties){
                     let encodeErrorTimes = [];
                     let t1 = performance.now();
                     for(let id in mapDatabase.lines){
-                        if(mapDatabase.lines.hasOwnProperty(id)){
+                        if(mapDatabase.lines.hasOwnProperty(id) && mapDatabase.lines[id].getLength() > lineLengthLimitSameDataBase*configProperties.internalPrecision){
                             let t3;
                             let t4;
                             try {
@@ -1275,7 +1276,7 @@ export function routableTilesToRoutableTiles4MeterOffsetsDiff(decoderProperties)
                     let encodeErrorTimes = [];
                     let t1 = performance.now();
                     for(let id in mapDatabase.lines){
-                        if(mapDatabase.lines.hasOwnProperty(id)){
+                        if(mapDatabase.lines.hasOwnProperty(id) && mapDatabase.lines[id].getLength() > lineLengthLimitSameDataBase*configProperties.internalPrecision){
                             let t3;
                             let t4;
                             try {
