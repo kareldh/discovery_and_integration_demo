@@ -26,9 +26,10 @@ export let catalog = `@prefix dc: <http://purl.org/dc/terms/> .
   vocals:hasEndPoint <https://lodi.ilabt.imec.be/observer/rawdata/latest#Endpoint> ;
   dcat:distribution <https://lodi.ilabt.imec.be/observer/rawdata/latest#Endpoint> ;
   dcat:keyword "verkeerslicht" ;
+  dc:subject <http://dbpedia.org/resource/Signal_timing>, <http://dbpedia.org/resource/Traffic_light> ;
   dc:spatial [
     a dc:Location ;
-    ns1:geometry "{\\"type\\": \\"Polygon\\", \\"coordinates\\": [[[4.394016265869141, 51.21098346459735], [4.39927339553833, 51.21098346459735], [4.39927339553833, 51.213214824559365], [4.394016265869141, 51.213214824559365], [4.394016265869141, 51.21098346459735]]]}"^^ns2:json, "POLYGON ((4.394016265869141 51.21098346459735, 4.39927339553833 51.21098346459735, 4.39927339553833 51.213214824559365, 4.394016265869141 51.213214824559365, 4.394016265869141 51.21098346459735))"^^ns3:wktLiteral
+    ns1:geometry "{\\"type\\": \\"Polygon\\", \\"coordinates\\": [[[4.3942387, 51.2106996],[4.3942387, 51.2127026],[4.3991321, 51.2127026],[4.3991321, 51.2106996],[4.3942387, 51.2106996]]]}"^^ns2:json, "POLYGON ((4.3942387 51.2106996,4.3942387 51.2127026,4.3991321 51.2127026,4.3991321 51.2106996,4.3942387 51.2106996))"^^ns3:wktLiteral
   ] ;
   dc:description "Publicatie van verkeerslichtdata voor het kruispunt aan het Tropisch Instituut in Antwerpen volgen OpenTrafficLights.org" ;
   dc:publisher <https://github.com/kareldh/TrafficLightsCatalog> ;
@@ -48,7 +49,7 @@ export let catalog = `@prefix dc: <http://purl.org/dc/terms/> .
 
 <https://lodi.ilabt.imec.be/observer/rawdata/latest#Endpoint>
   a vocals:StreamEndpoint, dcat:Distribution ;
-  dcat:format "application/trig" ;
+  dcat:mediaType "application/trig" ;
   dcat:downloadURL "https://lodi.ilabt.imec.be/observer/rawdata/latest" ;
   dcat:accessURL "https://lodi.ilabt.imec.be/observer/rawdata/latest" ;
   dc:title "OpenTrafficLights" ;
@@ -56,5 +57,6 @@ export let catalog = `@prefix dc: <http://purl.org/dc/terms/> .
   dc:license <https://creativecommons.org/publicdomain/zero/1.0/> .
 
 <https://creativecommons.org/publicdomain/zero/1.0/>
-  a dc:LicenseDocument .
+  a dc:LicenseDocument ;
+  dc:type <http://purl.org/dc/dcmitype/Text> .
 `;
