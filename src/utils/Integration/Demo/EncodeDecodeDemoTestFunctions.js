@@ -18,7 +18,7 @@ import {configProperties} from "../OpenLR/coder/CoderSettings";
 import {fetchRoutableTile, loadNodesLineStringsWegenregsterAntwerpen} from "../Data/LoadData";
 
 export let decoderPropertiesAlwaysProj = {
-    dist: 15,    //maximum distance (in meter) of a candidate node to a LRP
+    dist: 5,    //maximum distance (in meter) of a candidate node to a LRP
     bearDiff: 60, //maximum difference (in degrees) between the bearing of a candidate node and that of a LRP
     frcDiff: 3, //maximum difference between the FRC of a candidate node and that of a LRP
     lfrcnpDiff: 3, //maximum difference between the lowest FRC until next point of a candidate node and that of a LRP
@@ -35,7 +35,7 @@ export let decoderPropertiesAlwaysProj = {
 };
 
 export let decoderProperties = {
-    dist: 15,    //maximum distance (in meter) of a candidate node to a LRP
+    dist: 5,    //maximum distance (in meter) of a candidate node to a LRP
     bearDiff: 60, //maximum difference (in degrees) between the bearing of a candidate node and that of a LRP
     frcDiff: 3, //maximum difference between the FRC of a candidate node and that of a LRP
     lfrcnpDiff: 3, //maximum difference between the lowest FRC until next point of a candidate node and that of a LRP
@@ -75,7 +75,7 @@ function _fromOneToOther(fromDataBase,toDataBase,decoderProperties,encodeFunctio
     let encodeErrorTimes = [];
     let kortste = 100000;
     let x = 0;
-    let t1 = performance.now();
+    // let t1 = performance.now();
     for(let id in fromDataBase.lines){
         if(fromDataBase.lines.hasOwnProperty(id) && fromDataBase.lines[id].getLength() >= minLineLength*configProperties.internalPrecision){
             let t3;
@@ -87,9 +87,9 @@ function _fromOneToOther(fromDataBase,toDataBase,decoderProperties,encodeFunctio
                 if(fromDataBase.lines[id].getLength() < 1*configProperties.internalPrecision){
                     x++;
                 }
-                t3 = performance.now();
+                // t3 = performance.now();
                 let location = encodeFunction(fromDataBase,id);
-                t4 = performance.now();
+                // t4 = performance.now();
                 locations.push(location);
                 encodeTimes.push(t4-t3);
             }
@@ -104,11 +104,11 @@ function _fromOneToOther(fromDataBase,toDataBase,decoderProperties,encodeFunctio
             }
         }
     }
-    let t2 = performance.now();
+    // let t2 = performance.now();
     let total = encodeTimes.length > 0 ? encodeTimes.reduce((previous, current)=> current += previous) : 0;
     let errorTotal = encodeErrorTimes.length > 0 ? encodeErrorTimes.reduce((previous, current)=> current += previous) : 0;
     console.log("encoded locations: ",locations.length,"encode errors:",encodeErrors,
-        "in time:",t2-t1,"ms",
+        // "in time:",t2-t1,"ms",
         "mean time:",total/encodeTimes.length,"ms,",
         "error mean time",encodeErrorTimes.length > 0 ? errorTotal/encodeErrorTimes.length : 0,"ms,"
     );
@@ -117,19 +117,19 @@ function _fromOneToOther(fromDataBase,toDataBase,decoderProperties,encodeFunctio
 
     let times = [];
     let errorTimes = [];
-    t1 = performance.now();
+    // t1 = performance.now();
     for(let i=0;i<locations.length;i++){
         let t3;
         let t4;
         try {
-            t3 = performance.now();
+            // t3 = performance.now();
             let decoded = OpenLRDecoder.decode(locations[i],toDataBase,decoderProperties);
-            t4 = performance.now();
+            // t4 = performance.now();
             decodedLines.push(decoded);
             times.push(t4-t3);
         }
         catch (err){
-            t4 = performance.now();
+            // t4 = performance.now();
             if(decodeErrorTypes[err] === undefined){
                 decodeErrorTypes[err] = 0;
             }
@@ -139,11 +139,11 @@ function _fromOneToOther(fromDataBase,toDataBase,decoderProperties,encodeFunctio
             erroneousLocations.push(locations[i]);
         }
     }
-    t2 = performance.now();
+    // t2 = performance.now();
     let sum = times.length > 0 ? times.reduce((previous, current)=> current += previous) : 0;
     let errorSum = errorTimes.length > 0 ? errorTimes.reduce((previous, current)=> current += previous) : 0;
     console.log("decoded lines: ",decodedLines.length,"decode errors:",decodeErrors,
-        "in time:",t2-t1,"ms,",
+        // "in time:",t2-t1,"ms,",
         "mean time:",sum/times.length,"ms,",
         "error mean time",errorSum/errorTimes.length,"ms,"
     );

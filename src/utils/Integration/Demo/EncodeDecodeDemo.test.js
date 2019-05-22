@@ -1,3 +1,7 @@
+/**
+ * @jest-environment node
+ */
+
 import {
     decoderProperties, decoderPropertiesAlwaysProj,
     osmToOsm, osmToOsmNoEncoding, osmToRoutableTiles, osmToRoutableTilesNoEnc, osmToWegenregister,
@@ -22,7 +26,7 @@ describe("tests using configProperties in centimeter",()=>{
                 expect(res).toBeDefined();
                 done();
             });
-        },60000);
+        },160000);
         test('demo osm to wegenregister always proj',(done)=>{
             expect.hasAssertions();
             osmToWegenregister(decoderPropertiesAlwaysProj).then((res)=>{
@@ -30,7 +34,7 @@ describe("tests using configProperties in centimeter",()=>{
                 expect(res).toBeDefined();
                 done();
             });
-        },60000);
+        },160000);
         test('demo osm to wegenregister no enc no proj',(done)=>{
             expect.hasAssertions();
             osmToWegenregisterNoEnc(decoderProperties).then((res)=>{
@@ -38,7 +42,7 @@ describe("tests using configProperties in centimeter",()=>{
                 expect(res).toBeDefined();
                 done();
             });
-        },60000);
+        },160000);
         test('demo osm to wegenregister no enc always proj',(done)=>{
             expect.hasAssertions();
             osmToWegenregisterNoEnc(decoderPropertiesAlwaysProj).then((res)=>{
@@ -46,7 +50,7 @@ describe("tests using configProperties in centimeter",()=>{
                 expect(res).toBeDefined();
                 done();
             });
-        },60000);
+        },160000);
 
         test('demo osm to RoutableTiles no proj',(done)=>{
             expect.hasAssertions();
@@ -55,7 +59,7 @@ describe("tests using configProperties in centimeter",()=>{
                 expect(res).toBeDefined();
                 done();
             });
-        },60000);
+        },160000);
         test('demo osm to RoutableTiles always proj',(done)=>{
             expect.hasAssertions();
             osmToRoutableTiles(decoderPropertiesAlwaysProj).then((res)=>{
@@ -63,7 +67,7 @@ describe("tests using configProperties in centimeter",()=>{
                 expect(res).toBeDefined();
                 done();
             });
-        },60000);
+        },160000);
         test('demo osm to RoutableTiles no enc no proj',(done)=>{
             expect.hasAssertions();
             osmToRoutableTilesNoEnc(decoderProperties).then((res)=>{
@@ -71,7 +75,7 @@ describe("tests using configProperties in centimeter",()=>{
                 expect(res).toBeDefined();
                 done();
             });
-        },60000);
+        },160000);
         test('demo osm to RoutableTiles no enc always proj',(done)=>{
             expect.hasAssertions();
             osmToRoutableTilesNoEnc(decoderPropertiesAlwaysProj).then((res)=>{
@@ -79,7 +83,7 @@ describe("tests using configProperties in centimeter",()=>{
                 expect(res).toBeDefined();
                 done();
             });
-        },60000);
+        },160000);
 
         test('demo RoutableTiles to wegenregister no proj',(done)=>{
             expect.hasAssertions();
@@ -88,7 +92,7 @@ describe("tests using configProperties in centimeter",()=>{
                 expect(res).toBeDefined();
                 done();
             });
-        },60000);
+        },160000);
         test('demo RoutableTiles to wegenregister always proj',(done)=>{
             expect.hasAssertions();
             routableTilesToWegenregister(decoderPropertiesAlwaysProj).then((res)=>{
@@ -96,7 +100,7 @@ describe("tests using configProperties in centimeter",()=>{
                 expect(res).toBeDefined();
                 done();
             });
-        },60000);
+        },160000);
         test('demo RoutableTiles to wegenregister no enc no proj',(done)=>{
             expect.hasAssertions();
             routableTilesToWegenregisterNoEnc(decoderProperties).then((res)=>{
@@ -104,7 +108,7 @@ describe("tests using configProperties in centimeter",()=>{
                 expect(res).toBeDefined();
                 done();
             });
-        },60000);
+        },160000);
         test('demo RoutableTiles to wegenregister no enc always proj',(done)=>{
             expect.hasAssertions();
             routableTilesToWegenregisterNoEnc(decoderPropertiesAlwaysProj).then((res)=>{
@@ -112,7 +116,7 @@ describe("tests using configProperties in centimeter",()=>{
                 expect(res).toBeDefined();
                 done();
             });
-        },60000);
+        },160000);
     });
 
     describe("tests same database",()=>{

@@ -1,3 +1,7 @@
+/**
+ * @jest-environment node
+ */
+
 import {loadNodesLineStringsWegenregsterAntwerpen} from "../../Data/LoadData";
 import WegenregisterAntwerpenIntegration from "../WegenregisterAntwerpenIntegration";
 import MapDataBase from "../../OpenLR/map/MapDataBase";
@@ -14,7 +18,7 @@ test("initMapDatabase",(done)=>{
          expect(mapDatabase.nodes).not.toEqual({});
          done();
     });
-});
+},60000);
 
 test("LinesDirectlyToLRPs short line decode",(done)=>{
     let decoderProperties = {
@@ -44,4 +48,4 @@ test("LinesDirectlyToLRPs short line decode",(done)=>{
         // but it is not exactly the same line (it is its neighbour that is found because they are so short + rounding errors)
         done();
     });
-});
+},60000);
