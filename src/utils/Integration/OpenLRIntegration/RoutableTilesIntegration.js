@@ -69,7 +69,7 @@ export default class RoutableTilesIntegration{
         if(osmWay.highway !== undefined
             && osmWay.highway === "https://w3id.org/openstreetmap/terms#Pedestrian"
             && osmWay.area !== undefined
-            && osmWay.area === "osm:yes"
+            && osmWay.area === "yes"
         ){
             return fowEnum.TRAFFICSQUARE;
         }
