@@ -194,9 +194,9 @@ export class MainDemo extends React.Component{
         let data = [];
         // downloadOpenTrafficLightsTestData().then(doc=>{
         download(url).then(doc=>{
-            this._getTrafficLightData(doc).then(parsed=>{
+            MainDemo._getTrafficLightData(doc).then(parsed=>{
                 if(this.state.lineVisualisation === lineVisualisationEnum.MappedLineStrings){
-                    let LRPs = this._toLRPs(parsed,this.state.en);
+                    let LRPs = MainDemo._toLRPs(parsed,this.state.en);
                     this.mappedDataSets[datasetFeature.properties.id] = LRPs;
                     this.dataBaseInitialized.then(()=>{
                         let t1 = performance.now();
@@ -217,7 +217,7 @@ export class MainDemo extends React.Component{
                 }
                 else if(this.state.lineVisualisation === lineVisualisationEnum.RawLineStrings){
                     let t1 = performance.now();
-                    Array.prototype.push.apply(data,this._createRawLineStrings(parsed));
+                    Array.prototype.push.apply(data,MainDemo._createRawLineStrings(parsed));
                     let t2 = performance.now();
                     console.log("Raw lines drawn in ",t2-t1,"ms");
                     this.setState({data: data});
