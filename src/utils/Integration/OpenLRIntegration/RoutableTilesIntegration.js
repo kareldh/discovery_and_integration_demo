@@ -58,7 +58,7 @@ export default class RoutableTilesIntegration{
 
     static getFRC(osmWay){
         if(osmWay.highway !== undefined && OsmFrcHighwayMapping[osmWay.highway.slice(4)] !== undefined){
-            return OsmFrcHighwayMapping[osmWay.highway.slice(4)];
+            return OsmFrcHighwayMapping[osmWay.highway.slice(37).toLowerCase()];
         }
         else{
             return frcEnum.FRC_7;
@@ -67,17 +67,17 @@ export default class RoutableTilesIntegration{
 
     static getFOW(osmWay){
         if(osmWay.highway !== undefined
-            && osmWay.highway === "osm:pedestrian"
+            && osmWay.highway === "https://w3id.org/openstreetmap/terms#Pedestrian"
             && osmWay.area !== undefined
             && osmWay.area === "osm:yes"
         ){
             return fowEnum.TRAFFICSQUARE;
         }
-        else if(osmWay.junction !== undefined && osmWay.junction === "osm:roundabout"){
+        else if(osmWay.junction !== undefined && osmWay.junction === "https://w3id.org/openstreetmap/terms#Roundabout"){
             return fowEnum.ROUNDABOUT;
         }
         else if(osmWay.highway !== undefined && OsmFowHighwayMapping[osmWay.highway.slice(4)] !== undefined){
-            return OsmFowHighwayMapping[osmWay.highway.slice(4)];
+            return OsmFowHighwayMapping[osmWay.highway.slice(37).toLowerCase()];
         }
         else {
             return fowEnum.UNDEFINED;
