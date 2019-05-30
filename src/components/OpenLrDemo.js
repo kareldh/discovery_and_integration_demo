@@ -305,9 +305,13 @@ export default class OpenLrDemo extends React.Component{
     }
 
     addRoutableTileToMapDataBase(zoom,x,y){
+        let t3 = performance.now();
         return new Promise((resolve,reject)=>{
             fetchRoutableTile(zoom, x, y)
                 .then((data) => {
+                    let t4 = performance.now();
+                    console.log("downloaded tile",x,y,zoom,"in",t4-t3,"ms");
+                    let t1 = performance.now();
                     getRoutableTilesNodesAndLines(data.triples)
                         .then((nodesAndLines) => {
                             if(this.routableTilesDataBase === undefined){
@@ -315,6 +319,8 @@ export default class OpenLrDemo extends React.Component{
                             }
                             let nodesLines = RoutableTilesIntegration.getNodesLines(nodesAndLines.nodes, nodesAndLines.lines);
                             this.routableTilesDataBase.addData(nodesLines.lines, nodesLines.nodes);
+                            let t2 = performance.now();
+                            console.log("parsed tile",x,y,zoom,"in",t2-t1,"ms");
                             resolve();
                         })
                 })
@@ -324,9 +330,14 @@ export default class OpenLrDemo extends React.Component{
 
     addOpenStreetMapTileToMapDataBase(zoom,x,y){
         let boundingBox = tile2boundingBox(x,y,zoom);
+        let t3 = performance.now();
         return new Promise((resolve,reject)=>{
             fetchOsmData(boundingBox.latLower,boundingBox.latUpper,boundingBox.longLower,boundingBox.longUpper)
-                .then((data)=>{parseToJson(data)
+                .then((data)=>{
+                    let t4 = performance.now();
+                    console.log("downloaded tile",x,y,zoom,"in",t4-t3,"ms");
+                    let t1 = performance.now();
+                    parseToJson(data)
                     .then((json)=>{getMappedElements(json)
                         .then((elements)=>{filterHighwayData(elements)
                             .then((highwayData)=>{
@@ -335,6 +346,8 @@ export default class OpenLrDemo extends React.Component{
                                 }
                                 let nodesLines = OSMIntegration.getNodesLines(highwayData.nodes,highwayData.ways,highwayData.relations);
                                 this.osmDataBase.addData(nodesLines.lines,nodesLines.nodes);
+                                let t2 = performance.now();
+                                console.log("parsed tile",x,y,zoom,"in",t2-t1,"ms");
                                 resolve();
                             })})})})
                 .catch(e=>reject(e));
@@ -434,13 +447,17 @@ export default class OpenLrDemo extends React.Component{
         if(this.state.dataSource===inputDataEnum.Wegenregister_Antwerpen){
             if(this.wegenregisterDataBase === undefined){
                 dataBaseInitialized = new Promise(resolve=>{
+                    let t3 = performance.now();
                     loadNodesLineStringsWegenregsterAntwerpen().then(features => {
+                        let t4 = performance.now();
+                        console.log("Wegenregister downloaded in",t4-t3,"ms");
                         try{
                             let t1 = performance.now();
                             this.wegenregisterDataBase = new MapDataBase();
                             WegenregisterAntwerpenIntegration.initMapDataBase(this.wegenregisterDataBase,features);
                             let t2 = performance.now();
-                            console.log("Wegenregister initialized in",t2-t1,"ms");
+                            console.log("Wegenregister parsed in",t2-t1,"ms");
+                            console.log("Wegenregister initialised in",t2-t3);
                             resolve();
                         }
                         catch(e){
@@ -478,6 +495,7 @@ export default class OpenLrDemo extends React.Component{
                     else if(this.state.dataSource===inputDataEnum.Geojson_kruispunt_tropisch_instituut){
                         database = this.geojsonKruispuntDataBase;
                     }
+                    console.log("Lines in target database:",Object.keys(database.lines).length);
                     let t1 = performance.now();
                     LRPs.forEach(line => {
                         try {
