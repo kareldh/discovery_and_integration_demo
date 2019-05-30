@@ -17,7 +17,7 @@ export function getIntersectionNodes(triples){
         triples.forEach(function(element){
             if(element.subject && element.predicate && element.object){
                 let found = /http:\/\/www\.openstreetmap\.org\/way\/\d*/g.exec(element.subject.value);
-                if(found && element.predicate.value === "https://w3id.org/openstreetmap/terms#nodes"){
+                if(found && element.predicate.value === "https://w3id.org/openstreetmap/terms#hasNodes"){
                     // console.log(element);
                     nodeListStarts[element.object.value] = true;
                 }
@@ -132,7 +132,7 @@ export function getRoutableTilesNodesAndLines(triples){
                 //     // console.log(element);
                 // }
                 else if(foundWayInSubject){
-                    if(element.predicate.value === "https://w3id.org/openstreetmap/terms#nodes") {
+                    if(element.predicate.value === "https://w3id.org/openstreetmap/terms#hasNodes") {
                         if (ways[element.subject.value] === undefined) {
                             ways[element.subject.value] = {
                                 nodes: [],
