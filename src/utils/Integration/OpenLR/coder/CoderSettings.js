@@ -1,7 +1,7 @@
 import {internalPrecisionEnum} from "../map/Enum";
 
 let decoderProperties = {
-    dist: 15,    //maximum distance (in meter) of a candidate node to a LRP
+    dist: 5,    //maximum distance (in meter) of a candidate node to a LRP
     bearDiff: 60, //maximum difference (in degrees) between the bearing of a candidate node and that of a LRP
     frcDiff: 3, //maximum difference between the FRC of a candidate node and that of a LRP
     lfrcnpDiff: 3, //maximum difference between the lowest FRC until next point of a candidate node and that of a LRP
