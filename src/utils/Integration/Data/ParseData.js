@@ -152,7 +152,17 @@ export function getRoutableTilesNodesAndLines(triples){
                                     id: element.subject.value
                                 };
                             }
-                            ways[element.subject.value][match[1]] = element.object.value;
+                            if(match[1] === "hasTag"){ // compatibility code with new routable tiles standard 30/05/2019, will definitely change in future
+                                if(element.object.value.indexOf("=") !== -1){
+                                    let res = element.object.value.split("=");
+                                    if(res[0] === "area" || res[0] === "junction"){
+                                        ways[element.subject.value][res[0]] = res[1];
+                                    }
+                                }
+                            }
+                            else{
+                                ways[element.subject.value][match[1]] = element.object.value;
+                            }
                         }
                     }
                 }
