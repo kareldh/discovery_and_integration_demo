@@ -58,6 +58,18 @@ let lineLengthLimitSameDataBase = 0; // in meter
 let maxAmountOfWegenregisterLines = 1000;
 let minLineLength = 0; // in meter
 
+function clock(start) {
+    if ( !start ) return process.hrtime();
+    let end = process.hrtime(start);
+    return Math.round((end[0]*1000) + (end[1]/1000000));
+}
+
+let performance = {};
+performance.now = ()=>{
+    let t = process.hrtime();
+    return  Math.round((t[0]*1000) + (t[1]/1000000));
+};
+
 function _fromOneToOther(fromDataBase,toDataBase,decoderProperties,encodeFunction){
     console.log("Encoder Lines:",Object.keys(fromDataBase.lines).length,"Decoder Lines:",Object.keys(toDataBase.lines).length);
 
@@ -75,11 +87,11 @@ function _fromOneToOther(fromDataBase,toDataBase,decoderProperties,encodeFunctio
     let encodeErrorTimes = [];
     let kortste = 100000;
     let x = 0;
-    // let t1 = performance.now();
+    let t1 = clock();
     for(let id in fromDataBase.lines){
         if(fromDataBase.lines.hasOwnProperty(id) && fromDataBase.lines[id].getLength() >= minLineLength*configProperties.internalPrecision){
             let t3;
-            let t4;
+            let time4;
             try {
                 if(fromDataBase.lines[id].getLength() < kortste){
                     kortste = fromDataBase.lines[id].getLength();
@@ -87,11 +99,11 @@ function _fromOneToOther(fromDataBase,toDataBase,decoderProperties,encodeFunctio
                 if(fromDataBase.lines[id].getLength() < 1*configProperties.internalPrecision){
                     x++;
                 }
-                // t3 = performance.now();
+                t3 = clock();
                 let location = encodeFunction(fromDataBase,id);
-                // t4 = performance.now();
+                time4 = clock(t3);
                 locations.push(location);
-                encodeTimes.push(t4-t3);
+                encodeTimes.push(time4);
             }
             catch (err){
                 // console.warn(err);
@@ -100,15 +112,15 @@ function _fromOneToOther(fromDataBase,toDataBase,decoderProperties,encodeFunctio
                     encodeErrorTypes[err] = 0;
                 }
                 encodeErrorTypes[err]++;
-                encodeErrorTimes.push(t4-t3);
+                encodeErrorTimes.push(time4);
             }
         }
     }
-    // let t2 = performance.now();
+    let time2 = clock(t1);
     let total = encodeTimes.length > 0 ? encodeTimes.reduce((previous, current)=> current += previous) : 0;
     let errorTotal = encodeErrorTimes.length > 0 ? encodeErrorTimes.reduce((previous, current)=> current += previous) : 0;
     console.log("encoded locations: ",locations.length,"encode errors:",encodeErrors,
-        // "in time:",t2-t1,"ms",
+        "in time:",time2,"ms",
         "mean time:",total/encodeTimes.length,"ms,",
         "error mean time",encodeErrorTimes.length > 0 ? errorTotal/encodeErrorTimes.length : 0,"ms,"
     );
@@ -117,33 +129,33 @@ function _fromOneToOther(fromDataBase,toDataBase,decoderProperties,encodeFunctio
 
     let times = [];
     let errorTimes = [];
-    // t1 = performance.now();
+    t1 = clock();
     for(let i=0;i<locations.length;i++){
         let t3;
-        let t4;
+        let time4;
         try {
-            // t3 = performance.now();
+            t3 = clock();
             let decoded = OpenLRDecoder.decode(locations[i],toDataBase,decoderProperties);
-            // t4 = performance.now();
+            time4 = clock(t3);
             decodedLines.push(decoded);
-            times.push(t4-t3);
+            times.push(time4);
         }
         catch (err){
-            // t4 = performance.now();
+            time4 = clock(t3);
             if(decodeErrorTypes[err] === undefined){
                 decodeErrorTypes[err] = 0;
             }
             decodeErrorTypes[err]++;
             decodeErrors++;
-            errorTimes.push(t4-t3);
+            errorTimes.push(time4);
             erroneousLocations.push(locations[i]);
         }
     }
-    // t2 = performance.now();
+    time2 = clock(t1);
     let sum = times.length > 0 ? times.reduce((previous, current)=> current += previous) : 0;
     let errorSum = errorTimes.length > 0 ? errorTimes.reduce((previous, current)=> current += previous) : 0;
     console.log("decoded lines: ",decodedLines.length,"decode errors:",decodeErrors,
-        // "in time:",t2-t1,"ms,",
+        "in time:",time2,"ms,",
         "mean time:",sum/times.length,"ms,",
         "error mean time",errorSum/errorTimes.length,"ms,"
     );
