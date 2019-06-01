@@ -361,16 +361,7 @@ export default class OpenLrDemo extends React.Component{
         let lineStrings = [];
         if(lines !== undefined){
             for (let i=0;i<lines.length;i++) {
-                lineStrings.push(
-                    <Polyline
-                        positions = {[[lines[i].getStartNode().getLatitudeDeg(),lines[i].getStartNode().getLongitudeDeg()],[lines[i].getEndNode().getLatitudeDeg(),lines[i].getEndNode().getLongitudeDeg()]]}
-                        key={lines[i].getID()}
-                        color={i%2===0?"Blue":"DarkTurquoise "}
-                    >
-                        <Popup>
-                            <p>{lines[i].getID()}</p>
-                        </Popup>
-                    </Polyline>);
+                lineStrings.push(OpenLrDemo.createPolyline(lines[i],i));
             }
             let firstOffsetCoord = lines[0].getGeoCoordinateAlongLine(posOffset*configProperties.internalPrecision);
             let lastOffsetCoord = lines[lines.length-1].getGeoCoordinateAlongLine(lines[lines.length-1].getLength()-(negOffset*configProperties.internalPrecision));
@@ -380,8 +371,20 @@ export default class OpenLrDemo extends React.Component{
         }
     }
 
+    static createPolyline(line,seq){
+        return <Polyline
+            positions = {[[line.getStartNode().getLatitudeDeg(),line.getStartNode().getLongitudeDeg()],[line.getEndNode().getLatitudeDeg(),line.getEndNode().getLongitudeDeg()]]}
+            key={line.getID()}
+            color={seq%2===0?"Green":"DarkTurquoise "}
+        >
+            <Popup>
+                <p>{line.getID()}</p>
+            </Popup>
+        </Polyline>;
+    }
+
     reset(){
-        this.setState((state,props)=>{
+        this.setState((state)=>{
             return {
                 data: [],
                 coordinates: [],
