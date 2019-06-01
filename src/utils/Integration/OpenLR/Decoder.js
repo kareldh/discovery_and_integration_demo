@@ -69,8 +69,9 @@ export default class OpenLRDecoder {
                             if(rangeIncreases > decoderProp.maxDecodeRetries){
                                 throw(e); //re-throw the error
                             }
+                            let oldDist = decoderProp.dist;
                             decoderProp.dist = decoderProp.dist * decoderProp.distMultiplierForRetry;
-                            decoderProp.distanceToNextDiff = decoderProp.distanceToNextDiff * decoderProp.distMultiplierForRetry;
+                            decoderProp.distanceToNextDiff = decoderProp.distanceToNextDiff + (decoderProp.dist - oldDist) * 2;
                             decoderProp.alwaysUseProjections = false;
                         }
                         else{
