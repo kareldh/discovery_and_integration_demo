@@ -9,8 +9,8 @@ export default class LineEncoder {
         let lrpLines = [];
         let shortestPaths = [];
         let offsets = {
-            posOffset: posOffset,
-            negOffset: negOffset
+            posOffset: Math.round(posOffset*configProperties.internalPrecision),
+            negOffset: Math.round(negOffset*configProperties.internalPrecision)
         };
 
         // 1: check validity of the location and offsets to be encoded

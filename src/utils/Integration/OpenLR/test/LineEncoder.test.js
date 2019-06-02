@@ -96,7 +96,7 @@ test('encode 4 lines with expansion and valid offsets',()=>{
     let network = generateRealisticLengthTestNetwork();
     let data = mapNodesLinesToID(network.nodes,network.lines);
     let mapDataBase = new MapDataBase(data.lines,data.nodes);
-    let LRPs = LineEncoder.encode(mapDataBase,[network.lines[26],network.lines[7],network.lines[19],network.lines[23]],3000,3000);
+    let LRPs = LineEncoder.encode(mapDataBase,[network.lines[26],network.lines[7],network.lines[19],network.lines[23]],30,30);
     //the startnodes of line 26 and line 23 are not valid, so they both should be expanded to include node 6 (line 18) and node 9 (line22)
     expect(LRPs.LRPs.length).toEqual(4);
     expect(LRPs.LRPs[0].lat).toEqual(network.lines[9].getStartNode().getLatitudeDeg());
@@ -119,7 +119,7 @@ test('encode 4 lines with expansion and invalid pos offset',()=>{
     let network = generateRealisticLengthTestNetwork();
     let data = mapNodesLinesToID(network.nodes,network.lines);
     let mapDataBase = new MapDataBase(data.lines,data.nodes);
-    let LRPs = LineEncoder.encode(mapDataBase,[network.lines[26],network.lines[7],network.lines[19],network.lines[23]],network.lines[26].getLength()+3000,0);
+    let LRPs = LineEncoder.encode(mapDataBase,[network.lines[26],network.lines[7],network.lines[19],network.lines[23]],Math.round(network.lines[26].getLength()/100)+30,0);
     //the startnodes of line 26 and line 23 are not valid, so they both should be expanded to include node 6 (line 18) and node 9 (line22)
     //but the posOffset > the length of line 26 so it will be omitted and the next line 7's end node is valid, so no front expansion needed
     expect(LRPs.LRPs.length).toEqual(3);
@@ -140,7 +140,7 @@ test('encode 4 lines with expansion and invalid neg offset',()=>{
     let network = generateRealisticLengthTestNetwork();
     let data = mapNodesLinesToID(network.nodes,network.lines);
     let mapDataBase = new MapDataBase(data.lines,data.nodes);
-    let LRPs = LineEncoder.encode(mapDataBase,[network.lines[26],network.lines[7],network.lines[19],network.lines[23]],0,network.lines[23].getLength()+3000);
+    let LRPs = LineEncoder.encode(mapDataBase,[network.lines[26],network.lines[7],network.lines[19],network.lines[23]],0,Math.round(network.lines[23].getLength()/100)+30);
     //the startnodes of line 26 and line 23 are not valid, so they both should be expanded to include node 6 (line 18) and node 9 (line22)
     //but the negOffset > the length of line 23 so it will be omitted and the next line 19's end node is valid, so no end expansion needed
     console.info(LRPs.LRPs);
