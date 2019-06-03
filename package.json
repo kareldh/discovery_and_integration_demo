@@ -10,7 +10,7 @@
     "@turf/helpers": "^6.1.4",
     "@turf/nearest-point-on-line": "^6.0.2",
     "@turf/point-to-line-distance": "^6.0.0",
-    "axios": "^0.18.0",
+    "axios": "^0.19.0",
     "fast-xml-parser": "^3.12.16",
     "geojson-rbush": "^3.1.1",
     "gh-pages": "^2.0.1",
