@@ -375,7 +375,7 @@ export default class OpenLrDemo extends React.Component{
         return <Polyline
             positions = {[[line.getStartNode().getLatitudeDeg(),line.getStartNode().getLongitudeDeg()],[line.getEndNode().getLatitudeDeg(),line.getEndNode().getLongitudeDeg()]]}
             key={line.getID()}
-            color={seq%2===0?"Green":"DarkTurquoise "}
+            color={seq%2===0?"Blue":"DarkTurquoise "}
         >
             <Popup>
                 <p>{line.getID()}</p>
