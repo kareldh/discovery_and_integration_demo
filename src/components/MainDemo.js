@@ -34,6 +34,11 @@ let lineVisualisationEnum = {
     "MappedLineStrings": "Show the LineStrings mapped on the current mapDataBase"
 };
 
+let catalogEnum = {
+    "vodap": "Vlaamse Open Data Portaal",
+    "verkeerslichtdata_catalog_ttl": "Custom catalog for traffic light data on https://github.com/kareldh/TrafficLightsCatalog"
+};
+
 export class MainDemo extends React.Component{
     constructor() {
         super();
@@ -45,11 +50,11 @@ export class MainDemo extends React.Component{
             data: [],
             tileXY: getTileXYForLocation(this.location.lat,this.location.lng,14),
             encodingStrat: encodingStratEnum.OpenLrEncode,
-            lineVisualisation: lineVisualisationEnum.MappedLineStrings
+            lineVisualisation: lineVisualisationEnum.MappedLineStrings,
+            catalog: catalogEnum.verkeerslichtdata_catalog_ttl
         };
         this.key = 0;
         this.mapDataBase = new MapDataBase();
-        this.catalog = new Catalog();
         this.tiles = {};
         this.catalogInitialized = this.initCatalog();
         this.dataBaseInitialized = new Promise(resolve => resolve(true));
@@ -60,39 +65,45 @@ export class MainDemo extends React.Component{
         this.handleEncodingStratSelect = this.handleEncodingStratSelect.bind(this);
         this.handleLineStringVisualisationSelect = this.handleLineStringVisualisationSelect.bind(this);
         this.handleInternalPrecisionSelect = this.handleInternalPrecisionSelect.bind(this);
+        this.handleCatalogSelect = this.handleCatalogSelect.bind(this);
     }
 
-    initCatalog(){
-        // return new Promise(resolve=>{
-        //     let t1 = performance.now();
-        //     fetchCatalog("https://cors-anywhere.herokuapp.com/"+CATALOG_URL).then((c)=>{
-        //         let t3 = performance.now();
-        //         let sets = getDataSetsFromTriples(c.triples,["Boring"]);
-        //         let res = this.catalog.addCatalogPage(sets);
-        //         let t4 = performance.now();
-        //         console.log("first catalog page downloaded in",t3-t1,"ms","and parsed in",t4-t3,"ms");
-        //         fetchNextPage(res,this.catalog,["Boring"],{uriPrefix: "https://cors-anywhere.herokuapp.com/", logging: true}).then(()=>{
-        //             let t2 = performance.now();
-        //             console.log("Catalog initialized in",t2-t1,"ms");
-        //             resolve();
-        //         });
-        //     });
-        // });
-        return new Promise(resolve=>{
-            let t1 = performance.now();
-            download("https://raw.githubusercontent.com/kareldh/TrafficLightsCatalog/master/verkeerslicht_catalog.ttl").then((c)=>{
-                let t3 = performance.now();
-                console.log("Catalog downloaded in",t3-t1,"ms");
-                parseAndStoreQuads(c).then(store=>{
-                    getDataSetsFromStore(store,["verkeerslicht"]).then(sets=>{
+    initCatalog(catalog){
+        this.catalog = new Catalog();
+        if(catalog === catalogEnum.vodap){
+            return new Promise(resolve=>{
+                let t1 = performance.now();
+                fetchCatalog("https://cors-anywhere.herokuapp.com/"+CATALOG_URL).then((c)=>{
+                    let t3 = performance.now();
+                    let sets = getDataSetsFromTriples(c.triples,["Boring"]);
+                    let res = this.catalog.addCatalogPage(sets);
+                    let t4 = performance.now();
+                    console.log("first catalog page downloaded in",t3-t1,"ms","and parsed in",t4-t3,"ms");
+                    fetchNextPage(res,this.catalog,["Boring"],{uriPrefix: "https://cors-anywhere.herokuapp.com/", logging: true}).then(()=>{
                         let t2 = performance.now();
-                        let r = this.catalog.addCatalogPage(sets);
-                        console.log("Catalog initialized in",t2-t1,"ms","(Of which parsing took",t2-t3,"ms)");
-                        resolve(r);
+                        console.log("Catalog initialized in",t2-t1,"ms");
+                        resolve();
                     });
+                });
+            });
+        }
+        else{
+            return new Promise(resolve=>{
+                let t1 = performance.now();
+                download("https://raw.githubusercontent.com/kareldh/TrafficLightsCatalog/master/verkeerslicht_catalog.ttl").then((c)=>{
+                    let t3 = performance.now();
+                    console.log("Catalog downloaded in",t3-t1,"ms");
+                    parseAndStoreQuads(c).then(store=>{
+                        getDataSetsFromStore(store,["verkeerslicht"]).then(sets=>{
+                            let t2 = performance.now();
+                            let r = this.catalog.addCatalogPage(sets);
+                            console.log("Catalog initialized in",t2-t1,"ms","(Of which parsing took",t2-t3,"ms)");
+                            resolve(r);
+                        });
+                    })
                 })
-            })
-        });
+            });
+        }
     }
 
     addRoutableTileToMapDataBase(zoom,x,y){
@@ -168,7 +179,10 @@ export class MainDemo extends React.Component{
             <div>
                 <TileView zoom={14} lat={lat} lng={lng} data={data} onMouseClick={this.setLocation}/>
             </div>
-            <div>Tile X value: {tileXY.x} | Tile Y value: {tileXY.y}</div>
+            <select name={"Catalog"} value={this.state.catalog} onChange={this.handleCatalogSelect}>
+                <option value={catalogEnum.verkeerslichtdata_catalog_ttl}>verkeerslichtdata_catalog_ttl</option>
+                <option value={catalogEnum.vodap}>VODAP</option>
+            </select>
             <select name={"Encode strategy"} value={this.state.encodingStrat} onChange={this.handleEncodingStratSelect}>
                 <option value={encodingStratEnum.OpenLrEncode}>OpenLrEncode</option>
                 <option value={encodingStratEnum.LinesToLRPs}>Lines to LRPs</option>
@@ -182,6 +196,7 @@ export class MainDemo extends React.Component{
                 <option value={lineVisualisationEnum.RawLineStrings}>Raw LineStrings</option>
             </select>
             <button onClick={this.resetMap}>Reset</button>
+            current Tile X value: {tileXY.x} | Tile Y value: {tileXY.y}
         </div>;
     }
 
@@ -338,5 +353,10 @@ export class MainDemo extends React.Component{
 
     handleLineStringVisualisationSelect(event){
         this.setState({lineVisualisation: event.target.value});
+    }
+
+    handleCatalogSelect(event){
+        this.setState({catalog: event.target.value});
+        this.initCatalog(event.target.value);
     }
 }
