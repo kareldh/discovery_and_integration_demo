@@ -285,14 +285,18 @@ function _fromOneToSame(mapDatabase,decoderProperties,encodeFunction,lineLimit,l
     let minDiff = undefined;
     let maxDiff = undefined;
     let maxAmountOfLines = undefined;
+    let offsetDiffs = [];
+    let amountBothDiffsUnderMinOffsetDiff = 0;
     let a = 0;
     for(let i=0;i<locations.length;i++){
         if(a >= decodeErrorIndexes.length || i !== decodeErrorIndexes[a]){
             let diffBegin = undefined;
             let diffEnd = undefined;
+            let originalLineIsNotPresent = false;
             if(decodedLines[i-a].lines.length === 1){
                 if(decodedLines[i-a].lines[0].getID() !== lineIds[i-a]){
                     originalLineNotPresent++;
+                    originalLineIsNotPresent = true;
                 }
                 else{
                     diffBegin = decodedLines[i-a].posOffset;
@@ -303,14 +307,15 @@ function _fromOneToSame(mapDatabase,decoderProperties,encodeFunction,lineLimit,l
                 decodedToTwo++;
                 if(!(decodedLines[i-a].lines[0].getID() === lineIds[i-a] || decodedLines[i-a].lines[1].getID() === lineIds[i-a])){
                     originalLineNotPresent++;
+                    originalLineIsNotPresent = true;
                 }
                 else {
                     if(decodedLines[i-a].lines[0].getID() === lineIds[i-a]){ //the first line is the correct one
                         diffBegin = decodedLines[i - a].posOffset;
-                        diffEnd = decodedLines[i - a].negOffset - decodedLines[i-a].lines[1].getLength();
+                        diffEnd = Math.round((decodedLines[i - a].negOffset*configProperties.internalPrecision - decodedLines[i-a].lines[1].getLength())/configProperties.internalPrecision);
                     }
                     else{ // the second line is the correct one
-                        diffBegin = decodedLines[i - a].posOffset - decodedLines[i-a].lines[0].getLength();
+                        diffBegin = Math.round((decodedLines[i - a].posOffset*configProperties.internalPrecision - decodedLines[i-a].lines[0].getLength())/configProperties.internalPrecision);
                         diffEnd = decodedLines[i - a].negOffset;
                     }
                     // if (!((decodedLines[i - a].posOffset <= minOffsetDiff * configProperties.internalPrecision && decodedLines[i - a].negOffset >= (decodedLines[i - a].lines[1].getLength() - minOffsetDiff * configProperties.internalPrecision)) || (decodedLines[i - a].posOffset >= (decodedLines[i - a].lines[0].getLength() - minOffsetDiff * configProperties.internalPrecision) && decodedLines[i - a].negOffset <= minOffsetDiff * configProperties.internalPrecision))) {
@@ -328,11 +333,12 @@ function _fromOneToSame(mapDatabase,decoderProperties,encodeFunction,lineLimit,l
                 decodedToThree++;
                 if(!(decodedLines[i-a].lines[0].getID() === lineIds[i-a] || decodedLines[i-a].lines[1].getID() === lineIds[i-a] || decodedLines[i-a].lines[2].getID() === lineIds[i-a])){
                     originalLineNotPresent++;
+                    originalLineIsNotPresent = true;
                 }
                 else{
                     expect(decodedLines[i-a].lines[1].getID() === lineIds[i-a]);
-                    diffBegin = decodedLines[i - a].posOffset - decodedLines[i-a].lines[0].getLength();
-                    diffEnd = decodedLines[i - a].negOffset - decodedLines[i-a].lines[2].getLength();
+                    diffBegin = Math.round((decodedLines[i - a].posOffset*configProperties.internalPrecision - decodedLines[i-a].lines[0].getLength())/configProperties.internalPrecision);
+                    diffEnd = Math.round((decodedLines[i - a].negOffset*configProperties.internalPrecision - decodedLines[i-a].lines[2].getLength())/configProperties.internalPrecision);
                 }
             }
             else if(decodedLines[i-a].lines.length > 3){
@@ -343,49 +349,64 @@ function _fromOneToSame(mapDatabase,decoderProperties,encodeFunction,lineLimit,l
                 }
                 if(r >= decodedLines[i-a].lines.length){
                     originalLineNotPresent++;
+                    originalLineIsNotPresent = true;
                 }
                 else{
-                    diffBegin = decodedLines[i-a].posOffset;
-                    diffEnd = decodedLines[i-a].negOffset;
+                    diffBegin = decodedLines[i-a].posOffset*configProperties.internalPrecision;
+                    diffEnd = decodedLines[i-a].negOffset*configProperties.internalPrecision;
                     for(let x=0;x<r;x++){
                         diffBegin -= decodedLines[i-a].lines[x].getLength();
                     }
                     for(let x=r+1;x<decodedLines[i-a].lines.length;x++){
                         diffEnd -= decodedLines[i-a].lines[x].getLength();
                     }
+                    diffBegin = Math.round(diffBegin/configProperties.internalPrecision);
+                    diffEnd = Math.round(diffEnd/configProperties.internalPrecision);
                 }
             }
 
-            //check the minimum and maximum offset distance deviation if the original Line is present
-            if(minDiff === undefined || minDiff>Math.abs(diffBegin)){
-                minDiff = Math.abs(diffBegin);
-            }
-            if(minDiff === undefined || minDiff>Math.abs(diffEnd)){
-                minDiff = Math.abs(diffEnd);
-            }
-            if(maxDiff === undefined || maxDiff<Math.abs(diffBegin)){
-                maxDiff = Math.abs(diffBegin);
-            }
-            if(maxDiff === undefined || maxDiff<Math.abs(diffEnd)){
-                maxDiff = Math.abs(diffEnd);
-            }
+            if(!originalLineIsNotPresent){
+                //check the minimum and maximum offset distance deviation if the original Line is present
+                if(minDiff === undefined || minDiff>Math.abs(diffBegin)){
+                    minDiff = Math.abs(diffBegin);
+                }
+                if(minDiff === undefined || minDiff>Math.abs(diffEnd)){
+                    minDiff = Math.abs(diffEnd);
+                }
+                if(maxDiff === undefined || maxDiff<Math.abs(diffBegin)){
+                    maxDiff = Math.abs(diffBegin);
+                }
+                if(maxDiff === undefined || maxDiff<Math.abs(diffEnd)){
+                    maxDiff = Math.abs(diffEnd);
+                }
 
-            if(Math.abs(diffBegin) > minOffsetDiff*configProperties.internalPrecision || Math.abs(diffEnd) > minOffsetDiff*configProperties.internalPrecision){
-                // console.log("Line encoded: ",lineIds[i]);
-                // console.log("Original Line:",mapDatabase.lines[lineIds[i]]);
-                // console.log("Encoded location:",locations[i]);
-                // console.log("Decoded location:",decodedLines[i-a]);
-                console.log("Begin diff:",diffBegin,"End diff:",diffEnd);
-            }
-            //check the precision of the offset values (Are they under minOffsetDiff?)
-            // expect(Math.abs(diffBegin)).toBeLessThanOrEqual(minOffsetDiff*configProperties.internalPrecision);
-            // expect(Math.abs(diffEnd)).toBeLessThanOrEqual(minOffsetDiff*configProperties.internalPrecision);
+                if(Math.abs(diffBegin) > minOffsetDiff || Math.abs(diffEnd) > minOffsetDiff){
+                    // console.log("Line encoded: ",lineIds[i]);
+                    console.log("Original Line:",mapDatabase.lines[lineIds[i]]);
+                    console.log("Encoded location:",locations[i]);
+                    console.log("Decoded location:",decodedLines[i-a]);
+                    console.log("Begin diff:",diffBegin,"End diff:",diffEnd);
+                }
 
-            //check if the total amount of resulting lines after decoding is smaller than maxDecodedLines and bigger than 1
-            expect(decodedLines[i-a].lines.length).toBeGreaterThanOrEqual(1);
-            expect(decodedLines[i-a].lines.length).toBeLessThanOrEqual(maxDecodedLines);
-            if(maxAmountOfLines === undefined || maxAmountOfLines < decodedLines[i-a].lines.length){
-                maxAmountOfLines = decodedLines[i-a].lines.length;
+                expect(diffBegin).toBeDefined();
+                expect(diffEnd).toBeDefined();
+                offsetDiffs.push(Math.abs(diffBegin));
+                offsetDiffs.push(Math.abs(diffEnd));
+
+                if(Math.abs(diffBegin) <= minOffsetDiff && Math.abs(diffEnd) <= minOffsetDiff){
+                    amountBothDiffsUnderMinOffsetDiff++;
+                }
+
+                //check the precision of the offset values (Are they under minOffsetDiff?)
+                // expect(Math.abs(diffBegin)).toBeLessThanOrEqual(minOffsetDiff);
+                // expect(Math.abs(diffEnd)).toBeLessThanOrEqual(minOffsetDiff);
+
+                //check if the total amount of resulting lines after decoding is smaller than maxDecodedLines and bigger than 1
+                expect(decodedLines[i-a].lines.length).toBeGreaterThanOrEqual(1);
+                expect(decodedLines[i-a].lines.length).toBeLessThanOrEqual(maxDecodedLines);
+                if(maxAmountOfLines === undefined || maxAmountOfLines < decodedLines[i-a].lines.length){
+                    maxAmountOfLines = decodedLines[i-a].lines.length;
+                }
             }
         }
         else{
@@ -396,8 +417,10 @@ function _fromOneToSame(mapDatabase,decoderProperties,encodeFunction,lineLimit,l
     //since nodes are than projected during decoding, they can be projected up to half a meter to the left or right of our original line
     console.log("decoded to two:",decodedToTwo,"decoded to three:",decodedToThree,"decoded to more",decodedToMoreThanThree);
     console.log("original line not present",originalLineNotPresent);
-    console.log("Minimum offset error:",minDiff,"Maximum offset error:",maxDiff);
+    let offsetErrorSum = offsetDiffs.reduce((previous, current)=> current += previous);
+    console.log("Minimum offset error:",minDiff,"Maximum offset error:",maxDiff,"Mean offset error:",offsetErrorSum/offsetDiffs.length);
     console.log("Maximum amount of resulting lines after decoding",maxAmountOfLines);
+    console.log("Amount of Lines were offsetDiff at both sides was lower than",minOffsetDiff,":",amountBothDiffsUnderMinOffsetDiff);
 
     return({
         encodedLocations: locations.length,
@@ -636,160 +659,160 @@ export function routableTilesToRoutableTilesNoEncoding(decoderProperties){
                 });
             })});
 }
-export function routableTilesToRoutableTiles4MeterOffsetsDiff(decoderProperties){
-    return new Promise(resolve=>{
-        fetchRoutableTile(14,8392,5469)
-            .then((data)=>{getRoutableTilesNodesAndLines(data.triples)
-                .then((nodesAndLines)=> {
-                    let mapDatabase = new MapDataBase();
-                    RoutableTilesIntegration.initMapDataBase(mapDatabase, nodesAndLines.nodes,nodesAndLines.lines);
-
-                    let lineIds = [];
-                    let decodeErrorIndexes = [];
-                    let locations = [];
-                    let encodeErrors = 0;
-                    let encodeErrorTypes = {};
-
-                    let decodedLines = [];
-                    let decodeErrors = 0;
-                    let decodeErrorTypes = {};
-
-                    let erroneousLocations = [];
-
-                    let encodeTimes = [];
-                    let encodeErrorTimes = [];
-                    let t1 = performance.now();
-                    for(let id in mapDatabase.lines){
-                        if(mapDatabase.lines.hasOwnProperty(id) && mapDatabase.lines[id].getLength() > lineLengthLimitSameDataBase*configProperties.internalPrecision){
-                            let t3;
-                            let t4;
-                            try {
-                                t3 = performance.now();
-                                let location = LineEncoder.encode(mapDatabase,[mapDatabase.lines[id]],0,0);
-                                t4 = performance.now();
-                                locations.push(location);
-                                encodeTimes.push(t4-t3);
-                                lineIds.push(id);
-                            }
-                            catch (err){
-                                t4 = performance.now();
-                                if(encodeErrorTypes[err] === undefined){
-                                    encodeErrorTypes[err] = 0;
-                                }
-                                encodeErrorTypes[err]++;
-                                encodeErrors++;
-                                encodeErrorTimes.push(t4-t3);
-                            }
-                        }
-                    }
-                    let t2 = performance.now();
-                    let total = encodeTimes.reduce((previous, current)=> current += previous);
-                    let errorTotal = encodeErrorTimes.length > 0 ? encodeErrorTimes.reduce((previous, current)=> current += previous) : 0;
-                    console.log("encoded locations: ",locations.length,"encode errors:",encodeErrors,
-                        "in time:",t2-t1,"ms",
-                        "mean time:",total/encodeTimes.length,"ms,",
-                        "error mean time",encodeErrorTimes.length > 0 ? errorTotal/encodeErrorTimes.length : 0,"ms,"
-                    );
-                    console.log(encodeErrorTypes);
-
-                    let times = [];
-                    let errorTimes = [];
-                    t1 = performance.now();
-                    for(let i=0;i<locations.length;i++){
-                        let t3;
-                        let t4;
-                        try {
-                            t3 = performance.now();
-                            let decoded = OpenLRDecoder.decode(locations[i],mapDatabase,decoderProperties);
-                            t4 = performance.now();
-                            decodedLines.push(decoded);
-                            times.push(t4-t3);
-                        }
-                        catch (err){
-                            if(decodeErrorTypes[err] === undefined){
-                                decodeErrorTypes[err] = 0;
-                            }
-                            decodeErrorTypes[err]++;
-                            t4 = performance.now();
-                            decodeErrors++;
-                            errorTimes.push(t4-t3);
-                            erroneousLocations.push(locations[i]);
-                            decodeErrorIndexes.push(i);
-                            lineIds.splice(i,1);
-                        }
-                    }
-                    t2 = performance.now();
-                    let sum = times.reduce((previous, current)=> current += previous);
-                    let errorSum = errorTimes.length > 0 ? errorTimes.reduce((previous, current)=> current += previous) : 0;
-                    console.log("decoded lines: ",decodedLines.length,"decode errors:",decodeErrors,
-                        "in time:",t2-t1,"ms,",
-                        "mean time:",sum/times.length,"ms,",
-                        "error mean time",errorTimes.length > 0 ? errorSum/errorTimes.length : 0,"ms,"
-                    );
-                    console.log(decodeErrorTypes);
-
-                    let decodedToTwo = 0;
-                    let decodedToThree = 0;
-                    let decodedToMoreThanThree = 0;
-                    let originalLineNotPresent = 0;
-                    let a = 0;
-                    for(let i=0;i<locations.length;i++){
-                        if(a >= decodeErrorIndexes.length || i !== decodeErrorIndexes[a]){
-                            // if(decodedLines[i].lines.length === 2){
-                            //     console.log(osmMapDataBase.lines[lineIds[i]]);
-                            //     console.log(locations[i]);
-                            //     console.log(decodedLines[i].lines);
-                            //     console.log(decodedLines[i].posOffset,decodedLines[i].negOffset);
-                            // }
-                            // expect(decodedLines[i].lines.length).toEqual(1);
-                            if(decodedLines[i-a].lines.length===2){
-                                decodedToTwo++;
-                                // expect(decodedLines[i].lines[0].getID() === lineIds[i] || decodedLines[i].lines[1].getID() === lineIds[i]).toBeTruthy();
-                                if(!(decodedLines[i-a].lines[0].getID() === lineIds[i-a] || decodedLines[i-a].lines[1].getID() === lineIds[i-a])){
-                                    originalLineNotPresent++;
-                                }
-                                // expect((decodedLines[i].posOffset === 0 && decodedLines[i].negOffset > 0) || (decodedLines[i].posOffset > 0 && decodedLines[i].negOffset === 0)).toBeTruthy();
-                                expect((decodedLines[i-a].posOffset <= 4 && decodedLines[i-a].negOffset >= 0) || (decodedLines[i-a].posOffset >= 0 && decodedLines[i-a].negOffset <= 4)).toBeTruthy(); //4 meter precision
-                            }
-                            else if(decodedLines[i-a].lines.length===3){
-                                decodedToThree++;
-                                // expect(decodedLines[i].lines[0].getID() === lineIds[i] || decodedLines[i].lines[1].getID() === lineIds[i] || decodedLines[i].lines[2].getID() === lineIds[i]).toBeTruthy();
-                                if(!(decodedLines[i-a].lines[0].getID() === lineIds[i-a] || decodedLines[i-a].lines[1].getID() === lineIds[i-a] || decodedLines[i-a].lines[2].getID() === lineIds[i-a])){
-                                    originalLineNotPresent++;
-                                }
-                                // expect(decodedLines[i].posOffset > 0 && decodedLines[i].negOffset > 0).toBeTruthy();
-                                expect(decodedLines[i-a].posOffset >= 0 && decodedLines[i-a].negOffset >= 0).toBeTruthy(); //1 meter precision
-                            }
-                            else if(decodedLines[i-a].lines.length === 1){
-                                // expect(decodedLines[i].lines[0].getID()).toEqual(lineIds[i]);
-                                if(decodedLines[i-a].lines[0].getID() !== lineIds[i-a]){
-                                    originalLineNotPresent++;
-                                }
-                            }
-                            expect(decodedLines[i-a].lines.length).toBeGreaterThanOrEqual(1);
-                            expect(decodedLines[i-a].lines.length).toBeLessThanOrEqual(maxDecodedLines);
-                            if(decodedLines[i-a].lines.length > 3){
-                                decodedToMoreThanThree++;
-                            }
-                        }
-                        else{
-                            a++;
-                        }
-                    }
-                    //happens because encoder moves to valid nodes, which in combination with the rounding to meters has a small loss in precision
-                    //since nodes are than projected during decoding, they can be projected up to half a meter to the left or right of our original line
-                    console.log("decoded to two:",decodedToTwo,"decoded to three:",decodedToThree,"decoded to more",decodedToMoreThanThree);
-                    console.log("original line not present",originalLineNotPresent);
-
-                    resolve({
-                        encodedLocations: locations.length,
-                        encodeErrors: encodeErrors,
-                        decodedLines: decodedLines.length,
-                        decodeErrors: decodeErrors
-                    })
-                });
-            })});
-}
+// export function routableTilesToRoutableTiles4MeterOffsetsDiff(decoderProperties){
+//     return new Promise(resolve=>{
+//         fetchRoutableTile(14,8392,5469)
+//             .then((data)=>{getRoutableTilesNodesAndLines(data.triples)
+//                 .then((nodesAndLines)=> {
+//                     let mapDatabase = new MapDataBase();
+//                     RoutableTilesIntegration.initMapDataBase(mapDatabase, nodesAndLines.nodes,nodesAndLines.lines);
+//
+//                     let lineIds = [];
+//                     let decodeErrorIndexes = [];
+//                     let locations = [];
+//                     let encodeErrors = 0;
+//                     let encodeErrorTypes = {};
+//
+//                     let decodedLines = [];
+//                     let decodeErrors = 0;
+//                     let decodeErrorTypes = {};
+//
+//                     let erroneousLocations = [];
+//
+//                     let encodeTimes = [];
+//                     let encodeErrorTimes = [];
+//                     let t1 = performance.now();
+//                     for(let id in mapDatabase.lines){
+//                         if(mapDatabase.lines.hasOwnProperty(id) && mapDatabase.lines[id].getLength() > lineLengthLimitSameDataBase*configProperties.internalPrecision){
+//                             let t3;
+//                             let t4;
+//                             try {
+//                                 t3 = performance.now();
+//                                 let location = LineEncoder.encode(mapDatabase,[mapDatabase.lines[id]],0,0);
+//                                 t4 = performance.now();
+//                                 locations.push(location);
+//                                 encodeTimes.push(t4-t3);
+//                                 lineIds.push(id);
+//                             }
+//                             catch (err){
+//                                 t4 = performance.now();
+//                                 if(encodeErrorTypes[err] === undefined){
+//                                     encodeErrorTypes[err] = 0;
+//                                 }
+//                                 encodeErrorTypes[err]++;
+//                                 encodeErrors++;
+//                                 encodeErrorTimes.push(t4-t3);
+//                             }
+//                         }
+//                     }
+//                     let t2 = performance.now();
+//                     let total = encodeTimes.reduce((previous, current)=> current += previous);
+//                     let errorTotal = encodeErrorTimes.length > 0 ? encodeErrorTimes.reduce((previous, current)=> current += previous) : 0;
+//                     console.log("encoded locations: ",locations.length,"encode errors:",encodeErrors,
+//                         "in time:",t2-t1,"ms",
+//                         "mean time:",total/encodeTimes.length,"ms,",
+//                         "error mean time",encodeErrorTimes.length > 0 ? errorTotal/encodeErrorTimes.length : 0,"ms,"
+//                     );
+//                     console.log(encodeErrorTypes);
+//
+//                     let times = [];
+//                     let errorTimes = [];
+//                     t1 = performance.now();
+//                     for(let i=0;i<locations.length;i++){
+//                         let t3;
+//                         let t4;
+//                         try {
+//                             t3 = performance.now();
+//                             let decoded = OpenLRDecoder.decode(locations[i],mapDatabase,decoderProperties);
+//                             t4 = performance.now();
+//                             decodedLines.push(decoded);
+//                             times.push(t4-t3);
+//                         }
+//                         catch (err){
+//                             if(decodeErrorTypes[err] === undefined){
+//                                 decodeErrorTypes[err] = 0;
+//                             }
+//                             decodeErrorTypes[err]++;
+//                             t4 = performance.now();
+//                             decodeErrors++;
+//                             errorTimes.push(t4-t3);
+//                             erroneousLocations.push(locations[i]);
+//                             decodeErrorIndexes.push(i);
+//                             lineIds.splice(i,1);
+//                         }
+//                     }
+//                     t2 = performance.now();
+//                     let sum = times.reduce((previous, current)=> current += previous);
+//                     let errorSum = errorTimes.length > 0 ? errorTimes.reduce((previous, current)=> current += previous) : 0;
+//                     console.log("decoded lines: ",decodedLines.length,"decode errors:",decodeErrors,
+//                         "in time:",t2-t1,"ms,",
+//                         "mean time:",sum/times.length,"ms,",
+//                         "error mean time",errorTimes.length > 0 ? errorSum/errorTimes.length : 0,"ms,"
+//                     );
+//                     console.log(decodeErrorTypes);
+//
+//                     let decodedToTwo = 0;
+//                     let decodedToThree = 0;
+//                     let decodedToMoreThanThree = 0;
+//                     let originalLineNotPresent = 0;
+//                     let a = 0;
+//                     for(let i=0;i<locations.length;i++){
+//                         if(a >= decodeErrorIndexes.length || i !== decodeErrorIndexes[a]){
+//                             // if(decodedLines[i].lines.length === 2){
+//                             //     console.log(osmMapDataBase.lines[lineIds[i]]);
+//                             //     console.log(locations[i]);
+//                             //     console.log(decodedLines[i].lines);
+//                             //     console.log(decodedLines[i].posOffset,decodedLines[i].negOffset);
+//                             // }
+//                             // expect(decodedLines[i].lines.length).toEqual(1);
+//                             if(decodedLines[i-a].lines.length===2){
+//                                 decodedToTwo++;
+//                                 // expect(decodedLines[i].lines[0].getID() === lineIds[i] || decodedLines[i].lines[1].getID() === lineIds[i]).toBeTruthy();
+//                                 if(!(decodedLines[i-a].lines[0].getID() === lineIds[i-a] || decodedLines[i-a].lines[1].getID() === lineIds[i-a])){
+//                                     originalLineNotPresent++;
+//                                 }
+//                                 // expect((decodedLines[i].posOffset === 0 && decodedLines[i].negOffset > 0) || (decodedLines[i].posOffset > 0 && decodedLines[i].negOffset === 0)).toBeTruthy();
+//                                 expect((decodedLines[i-a].posOffset <= 4 && decodedLines[i-a].negOffset >= 0) || (decodedLines[i-a].posOffset >= 0 && decodedLines[i-a].negOffset <= 4)).toBeTruthy(); //4 meter precision
+//                             }
+//                             else if(decodedLines[i-a].lines.length===3){
+//                                 decodedToThree++;
+//                                 // expect(decodedLines[i].lines[0].getID() === lineIds[i] || decodedLines[i].lines[1].getID() === lineIds[i] || decodedLines[i].lines[2].getID() === lineIds[i]).toBeTruthy();
+//                                 if(!(decodedLines[i-a].lines[0].getID() === lineIds[i-a] || decodedLines[i-a].lines[1].getID() === lineIds[i-a] || decodedLines[i-a].lines[2].getID() === lineIds[i-a])){
+//                                     originalLineNotPresent++;
+//                                 }
+//                                 // expect(decodedLines[i].posOffset > 0 && decodedLines[i].negOffset > 0).toBeTruthy();
+//                                 expect(decodedLines[i-a].posOffset >= 0 && decodedLines[i-a].negOffset >= 0).toBeTruthy(); //1 meter precision
+//                             }
+//                             else if(decodedLines[i-a].lines.length === 1){
+//                                 // expect(decodedLines[i].lines[0].getID()).toEqual(lineIds[i]);
+//                                 if(decodedLines[i-a].lines[0].getID() !== lineIds[i-a]){
+//                                     originalLineNotPresent++;
+//                                 }
+//                             }
+//                             expect(decodedLines[i-a].lines.length).toBeGreaterThanOrEqual(1);
+//                             expect(decodedLines[i-a].lines.length).toBeLessThanOrEqual(maxDecodedLines);
+//                             if(decodedLines[i-a].lines.length > 3){
+//                                 decodedToMoreThanThree++;
+//                             }
+//                         }
+//                         else{
+//                             a++;
+//                         }
+//                     }
+//                     //happens because encoder moves to valid nodes, which in combination with the rounding to meters has a small loss in precision
+//                     //since nodes are than projected during decoding, they can be projected up to half a meter to the left or right of our original line
+//                     console.log("decoded to two:",decodedToTwo,"decoded to three:",decodedToThree,"decoded to more",decodedToMoreThanThree);
+//                     console.log("original line not present",originalLineNotPresent);
+//
+//                     resolve({
+//                         encodedLocations: locations.length,
+//                         encodeErrors: encodeErrors,
+//                         decodedLines: decodedLines.length,
+//                         decodeErrors: decodeErrors
+//                     })
+//                 });
+//             })});
+// }
 
 export function wegenregisterToWegenregisterNoShortLines(decoderProperties){
     return new Promise(resolve=>{

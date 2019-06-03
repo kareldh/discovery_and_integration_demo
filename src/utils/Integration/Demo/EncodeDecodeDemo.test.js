@@ -432,9 +432,9 @@ describe("tests using configProperties in meter",()=>{
             });
         },60000);
 
-        test('demo RoutableTiles to RoutableTiles 4 meter prec',(done)=>{
+        test('demo RoutableTiles to RoutableTiles',(done)=>{
             expect.hasAssertions();
-            routableTilesToRoutableTiles4MeterOffsetsDiff(decoderPropertiesAlwaysProj).then((res)=>{
+            routableTilesToRoutableTiles(decoderPropertiesAlwaysProj).then((res)=>{
                 console.log(res);
                 expect(res).toBeDefined();
                 done();
