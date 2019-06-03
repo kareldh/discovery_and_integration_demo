@@ -1,14 +1,10 @@
 import React from 'react';
 import TileView from "./TileView";
-import {
-    filterHighwayData,
-    getIntersectionNodes, getMappedElements,
-    getNodesWithTrafficSignals,
-    parseToJson
-} from "../utils/Integration/Data/ParseData";
+import {filterHighwayData, getMappedElements, parseToJson} from "../utils/Integration/Data/ParseData";
 import {Marker, Polyline, Popup} from "react-leaflet";
 import {Input} from "semantic-ui-react";
 import {fetchOsmData, fetchRoutableTile} from "../utils/Integration/Data/LoadData";
+import {getIntersectionNodes, getNodesWithTrafficSignals} from "../Logic/ApiContainerData";
 
 export default class ApiContainer extends React.Component{
     constructor(props){
@@ -39,7 +35,7 @@ export default class ApiContainer extends React.Component{
             fetchRoutableTile(14,x,y).then((data)=>{getNodesWithTrafficSignals(data.triples).then((intersections)=>{this.createMarkers(intersections)})});
         }
         else if(mode === 2){
-            fetchOsmData(4.3915,51.2065,4.4076,51.2169)
+            fetchOsmData(51.2065,51.2169,4.39481,4.4076)
                 .then((data)=>{parseToJson(data).then((json)=>{getMappedElements(json).then((elements)=>{filterHighwayData(elements).then((highwayData)=>{this.createLineStringsOsm(highwayData)})})})});
                 // .then((data)=>{this.createLineStrings(getMappedElements(parseToJson(data)))});
         }
