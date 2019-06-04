@@ -16,7 +16,7 @@ import {
 import {internalPrecisionEnum} from "../OpenLR/map/Enum";
 import {configProperties} from "../OpenLR/coder/CoderSettings";
 
-describe("tests using configProperties in centimeter",()=>{
+describe.skip("tests using configProperties in centimeter",()=>{
 
     describe("tests different databases",()=>{
         test('demo osm to wegenregister no proj',(done)=>{
@@ -258,7 +258,7 @@ describe("tests using configProperties in centimeter",()=>{
 
 
 
-describe("tests using configProperties in meter",()=>{
+describe.skip("tests using configProperties in meter",()=>{
     beforeEach(()=>{
         configProperties.internalPrecision = internalPrecisionEnum.METER;
         configProperties.bearDist = 20;
