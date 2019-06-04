@@ -12,13 +12,18 @@ export function loadNodesLineStringsWegenregisterAntwerpen(){
 }
 
 export function fetchRoutableTile(z, x, y) {
-    return new Promise((resolve) => {
-        let fetch = new ldfetch({headers: {accept: 'application/ld+json'}});
-        fetch.get(DATASET_URL + z + "/" + x + "/" + y).then(
-            response => {
-                resolve(response)
-            }
-        )
+    return new Promise((resolve,reject) => {
+        try{
+            let fetch = new ldfetch({headers: {accept: 'application/ld+json'}});
+            fetch.get(DATASET_URL + z + "/" + x + "/" + y).then(
+                response => {
+                    resolve(response)
+                }
+            )
+        }
+        catch(e){
+            reject(e);
+        }
     });
 }
 
