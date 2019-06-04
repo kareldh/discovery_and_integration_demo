@@ -2,7 +2,7 @@
   "name": "intersection_visualisation_demo",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://kareldh.github.io/intersection_visualisation_demo/",
+  "homepage": "https://kareldh.github.io/discovery_and_integration_demo/",
   "dependencies": {
     "@turf/along": "^6.0.1",
     "@turf/bearing": "^6.0.1",
