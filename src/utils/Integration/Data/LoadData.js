@@ -3,7 +3,7 @@ import ldfetch from "ldfetch";
 import {DATASET_URL} from "./const";
 
 
-export function loadNodesLineStringsWegenregsterAntwerpen(){
+export function loadNodesLineStringsWegenregisterAntwerpen(){
     return new Promise((resolve, reject) => {
         axios.get("https://portaal-stadantwerpen.opendata.arcgis.com/datasets/6bad868c084a43ef8031cfe1b96956b2_297.geojson ")
             .then((data) => { resolve(data.data.features) })

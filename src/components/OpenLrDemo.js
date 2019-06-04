@@ -15,7 +15,7 @@ import Line from "../utils/Integration/OpenLR/map/Line";
 import Node from "../utils/Integration/OpenLR/map/Node";
 import RoutableTilesIntegration from "../utils/Integration/OpenLRIntegration/RoutableTilesIntegration";
 import {
-    loadNodesLineStringsWegenregsterAntwerpen, fetchRoutableTile,
+    loadNodesLineStringsWegenregisterAntwerpen, fetchRoutableTile,
     fetchOsmData
 } from "../utils/Integration/Data/LoadData";
 import WegenregisterAntwerpenIntegration from "../utils/Integration/OpenLRIntegration/WegenregisterAntwerpenIntegration";
@@ -196,7 +196,7 @@ export default class OpenLrDemo extends React.Component{
 
     findMarkersWegenregisterAntwerpen(encoded){
         if(this.wegenregisterDataBase === undefined){
-            loadNodesLineStringsWegenregsterAntwerpen().then(features => {
+            loadNodesLineStringsWegenregisterAntwerpen().then(features => {
                 try{
                     this.wegenregisterDataBase = new MapDataBase();
                     let t1 = performance.now();
@@ -451,7 +451,7 @@ export default class OpenLrDemo extends React.Component{
             if(this.wegenregisterDataBase === undefined){
                 dataBaseInitialized = new Promise(resolve=>{
                     let t3 = performance.now();
-                    loadNodesLineStringsWegenregsterAntwerpen().then(features => {
+                    loadNodesLineStringsWegenregisterAntwerpen().then(features => {
                         let t4 = performance.now();
                         console.log("Wegenregister downloaded in",t4-t3,"ms");
                         try{

@@ -5,7 +5,7 @@
 import MapDataBase from "../map/MapDataBase";
 import SlowMapDataBase from "../map/SlowMapDataBase";
 import {mapNodesLinesToID, generateStraightLaneTestData} from "./Helperfunctions";
-import {loadNodesLineStringsWegenregsterAntwerpen} from "../../Data/LoadData";
+import {loadNodesLineStringsWegenregisterAntwerpen} from "../../Data/LoadData";
 import WegenregisterAntwerpenIntegration from "../../OpenLRIntegration/WegenregisterAntwerpenIntegration";
 import {filterHighwayData, getMappedElements, parseToJson} from "../../Data/ParseData";
 import OSMIntegration from "../../OpenLRIntegration/OSMIntegration";
@@ -27,7 +27,7 @@ test('initialize mapdatabase',()=>{
 
 test.skip('findNodesCloseByCoordinate use with a lot of nodes (from wegenregister Antwerpen)',(done)=>{
     expect.assertions(19);
-    loadNodesLineStringsWegenregsterAntwerpen().then(features => {
+    loadNodesLineStringsWegenregisterAntwerpen().then(features => {
         let slowMapDataBase = new SlowMapDataBase();
         let mapDataBase = new MapDataBase();
         WegenregisterAntwerpenIntegration.initMapDataBase(slowMapDataBase,features);
@@ -52,7 +52,7 @@ test.skip('findNodesCloseByCoordinate use with a lot of nodes (from wegenregiste
 
 test.skip('findLinesCloseByCoordinate use with a lot of lines (from wegenregister Antwerpen)',(done)=>{
     expect.assertions(41);
-    loadNodesLineStringsWegenregsterAntwerpen().then(features => {
+    loadNodesLineStringsWegenregisterAntwerpen().then(features => {
         let slowMapDataBase = new SlowMapDataBase();
         let mapDataBase = new MapDataBase();
         WegenregisterAntwerpenIntegration.initMapDataBase(slowMapDataBase,features);

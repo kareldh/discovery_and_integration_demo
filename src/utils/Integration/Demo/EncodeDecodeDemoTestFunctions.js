@@ -15,7 +15,7 @@ import OpenLRDecoder from "../OpenLR/Decoder";
 import RoutableTilesIntegration from "../OpenLRIntegration/RoutableTilesIntegration";
 import {LinesDirectlyToLRPs} from "../OpenLR/experimental/LinesDirectlyToLRPs";
 import {configProperties} from "../OpenLR/coder/CoderSettings";
-import {fetchRoutableTile, loadNodesLineStringsWegenregsterAntwerpen} from "../Data/LoadData";
+import {fetchRoutableTile, loadNodesLineStringsWegenregisterAntwerpen} from "../Data/LoadData";
 
 export let decoderPropertiesAlwaysProj = {
     dist: 5,    //maximum distance (in meter) of a candidate node to a LRP
@@ -441,7 +441,7 @@ function _fromOneToSame(mapDatabase,decoderProperties,encodeFunction,lineLimit,l
 
 export function osmToWegenregister(decoderProperties){
     return new Promise(resolve=>{
-        loadNodesLineStringsWegenregsterAntwerpen().then(features => {
+        loadNodesLineStringsWegenregisterAntwerpen().then(features => {
             let wegenregisterMapDataBase = new MapDataBase();
             WegenregisterAntwerpenIntegration.initMapDataBase(wegenregisterMapDataBase,features);
 
@@ -461,7 +461,7 @@ export function osmToWegenregister(decoderProperties){
 }
 export function routableTilesToWegenregister(decoderProperties){
     return new Promise(resolve=>{
-        loadNodesLineStringsWegenregsterAntwerpen().then(features => {
+        loadNodesLineStringsWegenregisterAntwerpen().then(features => {
             let wegenregisterMapDataBase = new MapDataBase();
             WegenregisterAntwerpenIntegration.initMapDataBase(wegenregisterMapDataBase,features);
 
@@ -512,7 +512,7 @@ export function osmToRoutableTiles(decoderProperties){
 }
 export function osmToWegenregisterNoEnc(decoderProperties){
     return new Promise(resolve=>{
-        loadNodesLineStringsWegenregsterAntwerpen().then(features => {
+        loadNodesLineStringsWegenregisterAntwerpen().then(features => {
             let wegenregisterMapDataBase = new MapDataBase();
             WegenregisterAntwerpenIntegration.initMapDataBase(wegenregisterMapDataBase,features);
 
@@ -532,7 +532,7 @@ export function osmToWegenregisterNoEnc(decoderProperties){
 }
 export function routableTilesToWegenregisterNoEnc(decoderProperties){
     return new Promise(resolve=>{
-        loadNodesLineStringsWegenregsterAntwerpen().then(features => {
+        loadNodesLineStringsWegenregisterAntwerpen().then(features => {
             let wegenregisterMapDataBase = new MapDataBase();
             WegenregisterAntwerpenIntegration.initMapDataBase(wegenregisterMapDataBase,features);
 
@@ -617,7 +617,7 @@ export function osmToOsmNoEncoding(decoderProperties){
 
 export function wegenregisterToWegenregister(decoderProperties){
     return new Promise(resolve=>{
-        loadNodesLineStringsWegenregsterAntwerpen().then(features => {
+        loadNodesLineStringsWegenregisterAntwerpen().then(features => {
             let wegenregisterMapDataBase = new MapDataBase();
             WegenregisterAntwerpenIntegration.initMapDataBase(wegenregisterMapDataBase,features);
 
@@ -629,7 +629,7 @@ export function wegenregisterToWegenregister(decoderProperties){
 }
 export function wegenregisterToWegenregisterNoEncoding(decoderProperties){
     return new Promise(resolve=>{
-        loadNodesLineStringsWegenregsterAntwerpen().then(features => {
+        loadNodesLineStringsWegenregisterAntwerpen().then(features => {
             let wegenregisterMapDataBase = new MapDataBase();
             WegenregisterAntwerpenIntegration.initMapDataBase(wegenregisterMapDataBase,features);
 
@@ -825,7 +825,7 @@ export function routableTilesToRoutableTilesNoEncoding(decoderProperties){
 
 export function wegenregisterToWegenregisterNoShortLines(decoderProperties){
     return new Promise(resolve=>{
-        loadNodesLineStringsWegenregsterAntwerpen().then(features => {
+        loadNodesLineStringsWegenregisterAntwerpen().then(features => {
             let wegenregisterMapDataBase = new MapDataBase();
             WegenregisterAntwerpenIntegration.initMapDataBase(wegenregisterMapDataBase,features);
 
@@ -837,7 +837,7 @@ export function wegenregisterToWegenregisterNoShortLines(decoderProperties){
 }
 export function wegenregisterToWegenregisterNoEncodingNoShortLines(decoderProperties){
     return new Promise(resolve=>{
-        loadNodesLineStringsWegenregsterAntwerpen().then(features => {
+        loadNodesLineStringsWegenregisterAntwerpen().then(features => {
             let wegenregisterMapDataBase = new MapDataBase();
             WegenregisterAntwerpenIntegration.initMapDataBase(wegenregisterMapDataBase,features);
 

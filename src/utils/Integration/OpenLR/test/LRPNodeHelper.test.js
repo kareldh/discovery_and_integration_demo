@@ -7,7 +7,7 @@ import Node from "../Map/Node";
 
 test('lrpLinesToLRPs single line from wegenregister Antwerpen',()=>{
     expect.assertions(12);
-    // loadNodesLineStringsWegenregsterAntwerpen().then(features => {
+    // loadNodesLineStringsWegenregisterAntwerpen().then(features => {
         // let wegenregisterMapDataBase = new MapDataBase();
         // WegenregisterAntwerpenIntegration.initMapDataBase(wegenregisterMapDataBase,features);
         //

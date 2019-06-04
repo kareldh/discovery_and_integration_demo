@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 
-import {loadNodesLineStringsWegenregsterAntwerpen} from "../../Data/LoadData";
+import {loadNodesLineStringsWegenregisterAntwerpen} from "../../Data/LoadData";
 import WegenregisterAntwerpenIntegration from "../WegenregisterAntwerpenIntegration";
 import MapDataBase from "../../OpenLR/map/MapDataBase";
 import {LinesDirectlyToLRPs} from "../../OpenLR/experimental/LinesDirectlyToLRPs";
@@ -10,7 +10,7 @@ import OpenLRDecoder from "../../OpenLR/Decoder";
 
 test("initMapDatabase",(done)=>{
     expect.assertions(3);
-    loadNodesLineStringsWegenregsterAntwerpen().then(features => {
+    loadNodesLineStringsWegenregisterAntwerpen().then(features => {
          let mapDatabase = new MapDataBase();
          WegenregisterAntwerpenIntegration.initMapDataBase(mapDatabase,features);
          expect(mapDatabase).toBeDefined();
@@ -36,7 +36,7 @@ test("LinesDirectlyToLRPs short line decode",(done)=>{
     };
 
     expect.assertions(1);
-    loadNodesLineStringsWegenregsterAntwerpen().then(features => {
+    loadNodesLineStringsWegenregisterAntwerpen().then(features => {
         let mapDatabase = new MapDataBase();
         WegenregisterAntwerpenIntegration.initMapDataBase(mapDatabase,features);
         let lines = [mapDatabase.lines["51.16968550738436_4.399282793207395_51.16968943633098_4.399279221440794"]];

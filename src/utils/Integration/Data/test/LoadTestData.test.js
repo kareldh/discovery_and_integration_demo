@@ -1,8 +1,8 @@
-import {loadNodesLineStringsWegenregsterAntwerpen} from "../LoadData";
+import {loadNodesLineStringsWegenregisterAntwerpen} from "../LoadData";
 
-test('loadNodesLineStringsWegenregsterAntwerpen',(done)=>{
+test('loadNodesLineStringsWegenregisterAntwerpen',(done)=>{
     expect.assertions(1);
-    loadNodesLineStringsWegenregsterAntwerpen().then(
+    loadNodesLineStringsWegenregisterAntwerpen().then(
         data => {
             expect(data).toBeDefined();
             console.log(data.length);
