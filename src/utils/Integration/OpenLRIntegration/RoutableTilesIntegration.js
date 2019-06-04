@@ -1,5 +1,3 @@
-//currently uses the nodes and ways it is given, doesn't care if those are coming from a single or multiple tiles
-
 import Line from "../OpenLR/map/Line";
 import Node from "../OpenLR/map/Node";
 import {fowEnum, frcEnum} from "../OpenLR/map/Enum";
@@ -12,7 +10,7 @@ export default class RoutableTilesIntegration{
         mapDataBase.setData(nodesLines.lines,nodesLines.nodes); //todo: set bounding box
     }
 
-    static getNodesLines(nodes,ways,relations){
+    static getNodesLines(nodes,ways,relations){ //todo: use relations?
         let openLRLines = {};
         let openLRNodes = {};
         let osmNodes = {};
@@ -29,7 +27,7 @@ export default class RoutableTilesIntegration{
         for(let id in ways){
             if(ways.hasOwnProperty(id)){
                 for(let i =0;i<ways[id].nodes.length-1;i++){
-                    if(ways[id].highway !== undefined){
+                    // if(ways[id].highway !== undefined){ //todo: should we filter on highway data?
                         // add a line from this node to the next one
                         // the id of the line is created out of the id of the way + underscore + id of the start node (since these lines aren't directly identified in RoutableTiles)
                         let openLRLine = new Line(id+"_"+refToNodeId[ways[id].nodes[i]],osmNodes[refToNodeId[ways[id].nodes[i]]],osmNodes[refToNodeId[ways[id].nodes[i+1]]]);
@@ -46,7 +44,7 @@ export default class RoutableTilesIntegration{
                         //since we only want to keep the nodes that are part of the road network, and not the other nodes of OSM, so we will add only those in the openLRNodes map
                         openLRNodes[refToNodeId[ways[id].nodes[i]]] = osmNodes[refToNodeId[ways[id].nodes[i]]];
                         openLRNodes[refToNodeId[ways[id].nodes[i+1]]] = osmNodes[refToNodeId[ways[id].nodes[i+1]]];
-                    }
+                    // }
                 }
             }
         }
