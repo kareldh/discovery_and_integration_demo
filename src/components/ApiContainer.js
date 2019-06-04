@@ -1,14 +1,10 @@
 import React from 'react';
 import TileView from "./TileView";
-import {
-    fetchOsmData,
-    fetchRoutableTile, filterHighwayData,
-    getIntersectionNodes, getMappedElements,
-    getNodesWithTrafficSignals,
-    parseToJson
-} from "../data/api";
+import {filterHighwayData, getMappedElements, parseToJson} from "../utils/Integration/Data/ParseData";
 import {Marker, Polyline, Popup} from "react-leaflet";
 import {Input} from "semantic-ui-react";
+import {fetchOsmData, fetchRoutableTile} from "../utils/Integration/Data/LoadData";
+import {getIntersectionNodes, getNodesWithTrafficSignals} from "../Logic/ApiContainerData";
 
 export default class ApiContainer extends React.Component{
     constructor(props){
@@ -39,8 +35,8 @@ export default class ApiContainer extends React.Component{
             fetchRoutableTile(14,x,y).then((data)=>{getNodesWithTrafficSignals(data.triples).then((intersections)=>{this.createMarkers(intersections)})});
         }
         else if(mode === 2){
-            fetchOsmData()
-                .then((data)=>{parseToJson(data).then((json)=>{getMappedElements(json).then((elements)=>{filterHighwayData(elements).then((highwayData)=>{this.createLineStrings(highwayData)})})})});
+            fetchOsmData(51.2065,51.2169,4.39481,4.4076)
+                .then((data)=>{parseToJson(data).then((json)=>{getMappedElements(json).then((elements)=>{filterHighwayData(elements).then((highwayData)=>{this.createLineStringsOsm(highwayData)})})})});
                 // .then((data)=>{this.createLineStrings(getMappedElements(parseToJson(data)))});
         }
     }
@@ -68,7 +64,7 @@ export default class ApiContainer extends React.Component{
         this.setState({data: markers, lat: lat, lng: lng});
     }
 
-    createLineStrings(data){
+    createLineStringsOsm(data){
         let i = 0;
         let lat = 51.21205;
         let lng = 4.39717;
@@ -103,7 +99,7 @@ export default class ApiContainer extends React.Component{
 
     render(){
         let {data,lat,lng} = this.state;
-        console.log(data);
+        // console.log(data);
         return <div>
             <div>
                 <TileView zoom={14} lat={lat} lng={lng} data={data}/>
