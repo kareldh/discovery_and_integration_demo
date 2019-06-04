@@ -786,7 +786,7 @@ test('removeLRPatEnd unnecessary',()=>{
     expect(()=>{LineEncoder.removeLRPatEnd(lrpLines,shortestPaths,lines,offsets,50000)}).toThrow(Error("unnecessary removing of LRP at end"));
 });
 
-test('encode lane existing of two lines can be binary encoded and decoded',()=>{
+test.skip('encode lane existing of two lines can be binary encoded and decoded',()=>{
     expect.assertions(1);
     let startData = generateStraightLaneTestData();
     let {nodes,lines} = mapNodesLinesToID(startData.nodes,startData.lines);
