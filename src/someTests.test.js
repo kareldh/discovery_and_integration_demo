@@ -4,7 +4,7 @@
 
 import axios from 'axios';
 
-test('speed ophalen catalogus',(done)=>{
+test.skip('speed ophalen catalogus',(done)=>{
     expect.assertions(1);
     let t1 = clock();
     axios.get("https://opendata.vlaanderen.be/catalog.rdf?page=10").then((c)=>{
@@ -16,7 +16,7 @@ test('speed ophalen catalogus',(done)=>{
     })
 });
 
-test('speed ophalen catalogus na doorsturen',(done)=>{
+test.skip('speed ophalen catalogus na doorsturen',(done)=>{
     expect.assertions(1);
     let t1 = performance.now();
     axios.get("https://cors-anywhere.herokuapp.com/https://opendata.vlaanderen.be/catalog.rdf?page=10").then((c)=>{
