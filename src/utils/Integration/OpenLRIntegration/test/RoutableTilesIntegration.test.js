@@ -152,7 +152,7 @@ test("decode impact of FRC/FOW",(done)=>{
         type: 1
     };
 
-    let locationDefaultDecodedToFoot = {
+    let locationDefaultDecodedToBike = {
         LRPs: [
             {
                 bearing: 170,
@@ -162,7 +162,7 @@ test("decode impact of FRC/FOW",(done)=>{
                 isLast: false,
                 lat: 51.21211,
                 lfrcnp: 7,
-                long: 4.40749,
+                long: 4.40738,
                 seqNr: 1
             },
             {
@@ -173,7 +173,7 @@ test("decode impact of FRC/FOW",(done)=>{
                 isLast: true,
                 lat: 51.21147,
                 lfrcnp: 7,
-                long: 4.40766,
+                long: 4.40759,
                 seqNr: 2
             }
         ],
@@ -183,7 +183,7 @@ test("decode impact of FRC/FOW",(done)=>{
     };
 
     let expectedIdsRoad = ["http://www.openstreetmap.org/way/178553514_http://www.openstreetmap.org/node/1635567707","http://www.openstreetmap.org/way/8414722_http://www.openstreetmap.org/node/27306720"];
-    let expectedIdsFoot = ["http://www.openstreetmap.org/way/178553520_http://www.openstreetmap.org/node/1888840697","http://www.openstreetmap.org/way/178553520_http://www.openstreetmap.org/node/1888840692"];
+    let expectedIdsBike = ["http://www.openstreetmap.org/way/178553520_http://www.openstreetmap.org/node/1888840697","http://www.openstreetmap.org/way/178553520_http://www.openstreetmap.org/node/1888840692"];
 
     let decoderProp = {};
     for(let k in decoderProperties){
@@ -191,6 +191,7 @@ test("decode impact of FRC/FOW",(done)=>{
             decoderProp[k] = decoderProperties[k];
         }
     }
+    decoderProp.dist = 10;
 
     let mapDataBase = new MapDataBase();
     let promises = [
@@ -217,10 +218,10 @@ test("decode impact of FRC/FOW",(done)=>{
         expect(isNaN(decoded.posOffset)).not.toBeTruthy();
         expect(isNaN(decoded.negOffset)).not.toBeTruthy();
 
-        //defaulted to road, should now be foot
-        locationDefaultDecodedToRoad.LRPs[0].frc = frcEnum.FRC_5;
+        //defaulted to road, should now be bike
+        locationDefaultDecodedToRoad.LRPs[0].frc = frcEnum.FRC_7;
         locationDefaultDecodedToRoad.LRPs[0].fow = fowEnum.OTHER;
-        locationDefaultDecodedToRoad.LRPs[1].frc = frcEnum.FRC_5;
+        locationDefaultDecodedToRoad.LRPs[1].frc = frcEnum.FRC_7;
         locationDefaultDecodedToRoad.LRPs[1].fow = fowEnum.OTHER;
 
         decoderProp.frcMultiplier = 35;
@@ -228,33 +229,33 @@ test("decode impact of FRC/FOW",(done)=>{
         let decoded2 = OpenLRDecoder.decode(locationDefaultDecodedToRoad,mapDataBase,decoderProp);
         expect(decoded2).toBeDefined();
         console.log(decoded2);
+        expect(decoded2.lines[1].getID()).toEqual(expectedIdsBike[0]);
+        expect(decoded2.lines[2].getID()).toEqual(expectedIdsBike[1]);
         expect(decoded2.lines.length).toEqual(3);
-        expect(decoded2.lines[1].getID()).toEqual(expectedIdsFoot[0]);
-        expect(decoded2.lines[2].getID()).toEqual(expectedIdsFoot[1]);
         expect(isNaN(decoded2.posOffset)).not.toBeTruthy();
         expect(isNaN(decoded2.negOffset)).not.toBeTruthy();
 
-        //defaulted to foot
+        //defaulted to bike
         decoderProp.frcMultiplier = 35;
         decoderProp.fowMultiplier = 40;
-        let decoded3 = OpenLRDecoder.decode(locationDefaultDecodedToFoot,mapDataBase,decoderProp);
+        let decoded3 = OpenLRDecoder.decode(locationDefaultDecodedToBike,mapDataBase,decoderProp);
         expect(decoded3).toBeDefined();
         console.log(decoded3);
+        expect(decoded3.lines[0].getID()).toEqual(expectedIdsBike[0]);
+        expect(decoded3.lines[1].getID()).toEqual(expectedIdsBike[1]);
         expect(decoded3.lines.length).toEqual(2);
-        expect(decoded3.lines[0].getID()).toEqual(expectedIdsFoot[0]);
-        expect(decoded3.lines[1].getID()).toEqual(expectedIdsFoot[1]);
         expect(isNaN(decoded3.posOffset)).not.toBeTruthy();
         expect(isNaN(decoded3.negOffset)).not.toBeTruthy();
 
-        //defaulted to foot, should now be road
-        locationDefaultDecodedToFoot.LRPs[0].frc = frcEnum.FRC_4;
-        locationDefaultDecodedToFoot.LRPs[0].fow = fowEnum.SINGLE_CARRIAGEWAY;
-        locationDefaultDecodedToFoot.LRPs[1].frc = frcEnum.FRC_4;
-        locationDefaultDecodedToFoot.LRPs[1].fow = fowEnum.SINGLE_CARRIAGEWAY;
+        //defaulted to bike, should now be road
+        locationDefaultDecodedToBike.LRPs[0].frc = frcEnum.FRC_4;
+        locationDefaultDecodedToBike.LRPs[0].fow = fowEnum.SINGLE_CARRIAGEWAY;
+        locationDefaultDecodedToBike.LRPs[1].frc = frcEnum.FRC_4;
+        locationDefaultDecodedToBike.LRPs[1].fow = fowEnum.SINGLE_CARRIAGEWAY;
 
         decoderProp.frcMultiplier = 35;
         decoderProp.fowMultiplier = 40;
-        let decoded4 = OpenLRDecoder.decode(locationDefaultDecodedToFoot,mapDataBase,decoderProp);
+        let decoded4 = OpenLRDecoder.decode(locationDefaultDecodedToBike,mapDataBase,decoderProp);
         expect(decoded4).toBeDefined();
         console.log(decoded4);
         expect(decoded4.lines.length).toEqual(1);
