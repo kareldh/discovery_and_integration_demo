@@ -52,9 +52,10 @@ export let decoderProperties = {
 };
 
 let maxDecodedLines = 10;
-let wegenregisterLineLengthLimit = 5;
+let wegenregisterLineLengthLimit = 5; // in meter
 let lineLengthLimitSameDataBase = 0; // in meter
 let maxAmountOfWegenregisterLines = 1000;
+let maxAmountOfLinesEncoded = 100;
 let minLineLength = 0; // in meter
 let minOffsetDiff = 1;
 
@@ -88,8 +89,12 @@ function _fromOneToOther(fromDataBase,toDataBase,decoderProperties,encodeFunctio
     let kortste = 100000;
     let x = 0;
     let t1 = clock();
+    let linesEncoded = 0;
     for(let id in fromDataBase.lines){
-        if(fromDataBase.lines.hasOwnProperty(id) && fromDataBase.lines[id].getLength() >= minLineLength*configProperties.internalPrecision){
+        if(fromDataBase.lines.hasOwnProperty(id)
+            && fromDataBase.lines[id].getLength() >= minLineLength*configProperties.internalPrecision
+            && linesEncoded < maxAmountOfLinesEncoded
+        ){
             let t3;
             let time4;
             try {
@@ -104,6 +109,7 @@ function _fromOneToOther(fromDataBase,toDataBase,decoderProperties,encodeFunctio
                 time4 = clock(t3);
                 locations.push(location);
                 encodeTimes.push(time4);
+                linesEncoded++;
             }
             catch (err){
                 // console.warn(err);
@@ -204,11 +210,13 @@ function _fromOneToSame(mapDatabase,decoderProperties,encodeFunction,lineLimit,l
 
     let encodeTimes = [];
     let encodeErrorTimes = [];
+    let linesEncoded = 0;
     let t1 = performance.now();
     for(let id in mapDatabase.lines){
         if(mapDatabase.lines.hasOwnProperty(id) && mapDatabase.lines[id].getLength() > lineLengthLimitSameDataBase*configProperties.internalPrecision
             && (lineLimit === undefined || locations.length < lineLimit)
-            && (lineLengthLimit === undefined || mapDatabase.lines[id].getLength > lineLengthLimit*configProperties.internalPrecision)
+            && (lineLengthLimit === undefined || mapDatabase.lines[id].getLength() > lineLengthLimit*configProperties.internalPrecision)
+            && linesEncoded < maxAmountOfLinesEncoded
         ){
             let t3;
             let t4;
@@ -220,6 +228,7 @@ function _fromOneToSame(mapDatabase,decoderProperties,encodeFunction,lineLimit,l
                 locations.push(location);
                 encodeTimes.push(t4-t3);
                 lineIds.push(id);
+                linesEncoded++;
             }
             catch (err){
                 t4 = performance.now();
@@ -233,11 +242,11 @@ function _fromOneToSame(mapDatabase,decoderProperties,encodeFunction,lineLimit,l
         }
     }
     let t2 = performance.now();
-    let total = encodeTimes.reduce((previous, current)=> current += previous);
+    let total = encodeTimes.length > 0 ? encodeTimes.reduce((previous, current)=> current += previous) : 0;
     let errorTotal = encodeErrorTimes.length > 0 ? encodeErrorTimes.reduce((previous, current)=> current += previous) : 0;
     console.log("encoded locations: ",locations.length,"encode errors:",encodeErrors,
         "in time:",t2-t1,"ms",
-        "mean time:",total/encodeTimes.length,"ms,",
+        "mean time:",encodeTimes.length > 0 ? total/encodeTimes.length : 0,"ms,",
         "error mean time",encodeErrorTimes.length > 0 ? errorTotal/encodeErrorTimes.length : 0,"ms,"
     );
     console.log(encodeErrorTypes);
@@ -269,9 +278,9 @@ function _fromOneToSame(mapDatabase,decoderProperties,encodeFunction,lineLimit,l
         }
     }
     t2 = performance.now();
-    let sum = times.reduce((previous, current)=> current += previous);
+    let sum = decodedLines.length > 0 ? times.reduce((previous, current)=> current += previous) : 0;
     let errorSum = errorTimes.length > 0 ? errorTimes.reduce((previous, current)=> current += previous) : 0;
-    console.log("decoded lines: ",decodedLines.length,"decode errors:",decodeErrors,
+    console.log("decoded lines: ",decodedLines.length > 0 ? decodedLines.length : 0,"decode errors:",decodeErrors,
         "in time:",t2-t1,"ms,",
         "mean time:",sum/times.length,"ms,",
         "error mean time",errorTimes.length > 0 ? errorSum/errorTimes.length : 0,"ms,"
@@ -417,8 +426,8 @@ function _fromOneToSame(mapDatabase,decoderProperties,encodeFunction,lineLimit,l
     //since nodes are than projected during decoding, they can be projected up to half a meter to the left or right of our original line
     console.log("decoded to two:",decodedToTwo,"decoded to three:",decodedToThree,"decoded to more",decodedToMoreThanThree);
     console.log("original line not present",originalLineNotPresent);
-    let offsetErrorSum = offsetDiffs.reduce((previous, current)=> current += previous);
-    console.log("Minimum offset error:",minDiff,"Maximum offset error:",maxDiff,"Mean offset error:",offsetErrorSum/offsetDiffs.length);
+    let offsetErrorSum = offsetDiffs.length > 0 ? offsetDiffs.reduce((previous, current)=> current += previous) : 0;
+    console.log("Minimum offset error:",minDiff,"Maximum offset error:",maxDiff,"Mean offset error:",offsetDiffs.length > 0 ? offsetErrorSum/offsetDiffs.length : 0);
     console.log("Maximum amount of resulting lines after decoding",maxAmountOfLines);
     console.log("Amount of Lines were offsetDiff at both sides was lower than",minOffsetDiff,":",amountBothDiffsUnderMinOffsetDiff);
 
