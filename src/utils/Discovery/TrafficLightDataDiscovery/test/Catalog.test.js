@@ -5,7 +5,7 @@ import {getDataSetsFromStore, getDataSetsFromTriples} from "../Data";
 import {parseAndStoreQuads} from "../Parser";
 import {catalog} from "../testdata/verkeerslichtCatalog";
 
-describe("use opendata.vlaanderen catalog",()=>{
+describe.skip("use opendata.vlaanderen catalog",()=>{
     test('addCatalogPage',(done)=>{
         expect.assertions(6);
         fetchCatalog(CATALOG_URL).then((c)=>{
@@ -22,7 +22,7 @@ describe("use opendata.vlaanderen catalog",()=>{
         });
     },60000);
 
-    test.skip('getDataSetsByDistance',(done)=>{
+    test('getDataSetsByDistance',(done)=>{
         expect.assertions(9);
         fetchCatalog(CATALOG_URL).then((c)=>{
             expect(c).toBeDefined();
