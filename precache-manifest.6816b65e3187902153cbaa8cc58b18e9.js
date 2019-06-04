@@ -4,7 +4,7 @@ self.__precacheManifest = [
     "url": "/discovery_and_integration_demo/static/media/icons.faff9214.woff"
   },
   {
-    "revision": "0006757e4e80b3f51a79",
+    "revision": "04256c66fc372293e457",
     "url": "/discovery_and_integration_demo/static/css/main.bad90bc2.chunk.css"
   },
   {
@@ -28,10 +28,6 @@ self.__precacheManifest = [
     "url": "/discovery_and_integration_demo/static/media/outline-icons.ef60a4f6.woff"
   },
   {
-    "revision": "9c74e172f87984c48ddf5c8108cabe67",
-    "url": "/discovery_and_integration_demo/static/media/flags.9c74e172.png"
-  },
-  {
     "revision": "701ae6abd4719e9c2ada3535a497b341",
     "url": "/discovery_and_integration_demo/static/media/outline-icons.701ae6ab.eot"
   },
@@ -40,12 +36,16 @@ self.__precacheManifest = [
     "url": "/discovery_and_integration_demo/static/media/outline-icons.ad97afd3.ttf"
   },
   {
+    "revision": "9c74e172f87984c48ddf5c8108cabe67",
+    "url": "/discovery_and_integration_demo/static/media/flags.9c74e172.png"
+  },
+  {
     "revision": "0ab54153eeeca0ce03978cc463b257f7",
     "url": "/discovery_and_integration_demo/static/media/icons.0ab54153.woff2"
   },
   {
-    "revision": "0006757e4e80b3f51a79",
-    "url": "/discovery_and_integration_demo/static/js/main.0006757e.chunk.js"
+    "revision": "04256c66fc372293e457",
+    "url": "/discovery_and_integration_demo/static/js/main.04256c66.chunk.js"
   },
   {
     "revision": "e8c322de9658cbeb8a774b6624167c2c",
@@ -60,12 +60,12 @@ self.__precacheManifest = [
     "url": "/discovery_and_integration_demo/static/media/icons.8e3c7f55.eot"
   },
   {
-    "revision": "13db00b7a34fee4d819ab7f9838cc428",
-    "url": "/discovery_and_integration_demo/static/media/brand-icons.13db00b7.eot"
-  },
-  {
     "revision": "b87b9ba532ace76ae9f6edfe9f72ded2",
     "url": "/discovery_and_integration_demo/static/media/icons.b87b9ba5.ttf"
+  },
+  {
+    "revision": "13db00b7a34fee4d819ab7f9838cc428",
+    "url": "/discovery_and_integration_demo/static/media/brand-icons.13db00b7.eot"
   },
   {
     "revision": "c5ebe0b32dc1b5cc449a76c4204d13bb",
@@ -84,7 +84,7 @@ self.__precacheManifest = [
     "url": "/discovery_and_integration_demo/static/css/2.e7360b67.chunk.css"
   },
   {
-    "revision": "fe8aaa2dba6101583341df1e0f7f01db",
+    "revision": "8199a7962bb6a19d6398e58bbf807708",
     "url": "/discovery_and_integration_demo/index.html"
   }
 ];
