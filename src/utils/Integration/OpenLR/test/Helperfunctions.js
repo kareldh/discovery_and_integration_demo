@@ -158,3 +158,42 @@ export function generateRealisticLengthTestNetwork(){
         lines: [undefined,line1,line2,line3,line4,line5,line6,line7,line8,line9,line10,line11,line12,line13,line14,line15,line16,line17,line18,line19,line20,line21,line22,line23,line24,line25,line26]
     }
 }
+
+export function loadRTtestNetworkWithLoop(){
+    let n1 = new Node("http://www.openstreetmap.org/node/4691959557",51.2126651,4.4066541);
+    let n2 = new Node("http://www.openstreetmap.org/node/5607822120",51.2126422,4.4066453);
+    let n3 = new Node("http://www.openstreetmap.org/node/5607832955",51.2126153,4.4067580);
+    let n4 = new Node("http://www.openstreetmap.org/node/5607832954",51.2125941,4.4068391);
+    let n5 = new Node("http://www.openstreetmap.org/node/5607832950",51.2125183,4.4070575);
+    let n6 = new Node("http://www.openstreetmap.org/node/5607832953",51.2124908,4.4071645);
+    let n7 = new Node("http://www.openstreetmap.org/node/5607822421",51.2124336,4.4074395);
+    let n8 = new Node("http://www.openstreetmap.org/node/5607822443",51.2124724,4.4074550);
+    let n9 = new Node("http://www.openstreetmap.org/node/5607832951",51.2125418,4.4073929);
+    let n10 = new Node("http://www.openstreetmap.org/node/5607822427",51.2126749,4.4073613);
+    let n11 = new Node("http://www.openstreetmap.org/node/5607822435",51.2128848,4.4073296);
+    let n12 = new Node("http://www.openstreetmap.org/node/4691959567",51.2128858,4.4082370);
+    let n13 = new Node("http://www.openstreetmap.org/node/4691959568",51.2128258,4.4071835);
+    let n14 = new Node("http://www.openstreetmap.org/node/4691959569",51.2127736,4.4071085);
+    let n15 = new Node("http://www.openstreetmap.org/node/4691959570",51.2127100,4.4069567);
+
+    let l1 = new Line("http://www.openstreetmap.org/way/150668711_http://www.openstreetmap.org/node/4691959557",n1,n2);
+    let l2 = new Line("http://www.openstreetmap.org/way/150668711_http://www.openstreetmap.org/node/5607822120",n2,n3);
+    let l3 = new Line("http://www.openstreetmap.org/way/150668711_http://www.openstreetmap.org/node/5607832955",n3,n4);
+    let l4 = new Line("http://www.openstreetmap.org/way/150668711_http://www.openstreetmap.org/node/5607832954",n4,n5);
+    let l5 = new Line("http://www.openstreetmap.org/way/150668711_http://www.openstreetmap.org/node/5607832950",n5,n6);
+    let l6 = new Line("http://www.openstreetmap.org/way/150668711_http://www.openstreetmap.org/node/5607832953",n6,n7);
+    let l7 = new Line("http://www.openstreetmap.org/way/150668711_http://www.openstreetmap.org/node/5607822421",n7,n8);
+    let l8 = new Line("http://www.openstreetmap.org/way/150668711_http://www.openstreetmap.org/node/5607822443",n8,n9);
+    let l9 = new Line("http://www.openstreetmap.org/way/150668711_http://www.openstreetmap.org/node/5607832951",n9,n10);
+    let l10 = new Line("http://www.openstreetmap.org/way/150668711_http://www.openstreetmap.org/node/5607822427",n10,n11);
+    let l11 = new Line("http://www.openstreetmap.org/way/150668711_http://www.openstreetmap.org/node/5607822435",n11,n12);
+    let l12 = new Line("http://www.openstreetmap.org/way/150668711_http://www.openstreetmap.org/node/4691959567",n12,n13);
+    let l13 = new Line("http://www.openstreetmap.org/way/150668711_http://www.openstreetmap.org/node/4691959568",n13,n14);
+    let l14 = new Line("http://www.openstreetmap.org/way/150668711_http://www.openstreetmap.org/node/4691959569",n14,n15);
+    let l15 = new Line("http://www.openstreetmap.org/way/150668711_http://www.openstreetmap.org/node/4691959570",n15,n1);
+
+    return {
+        nodes: [n1,n2,n3,n4,n5,n6,n7,n8,n9,n10,n11,n12,n13,n14,n15],
+        lines: [l1,l2,l3,l4,l5,l6,l7,l8,l9,l10,l11,l12,l13,l14,l15]
+    }
+}
