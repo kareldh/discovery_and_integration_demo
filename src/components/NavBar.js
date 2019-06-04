@@ -13,7 +13,7 @@ class NavBar extends React.Component {
         return (
             <Menu>
                 <Menu.Item
-                    as={Link} to='/OpenLRDemo/'
+                    as={Link} to={'/OpenLRDemo/'}
                     name='OpenLRDemo'
                     active={activeItem === 'OpenLRDemo'}
                     onClick={this.handleItemClick}
@@ -21,7 +21,7 @@ class NavBar extends React.Component {
                     OpenLR demo page
                 </Menu.Item>
                 <Menu.Item
-                    as={Link} to='/DiscoveryDemo/'
+                    as={Link} to={'/DiscoveryDemo/'}
                     name='DiscoveryDemo'
                     active={activeItem === 'DiscoveryDemo'}
                     onClick={this.handleItemClick}
