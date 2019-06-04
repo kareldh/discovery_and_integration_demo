@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js");
 
 importScripts(
-  "/intersection_visualisation_demo/precache-manifest.3a089b3a9528f7e51c86d86cf50f575c.js"
+  "/discovery_and_integration_demo/precache-manifest.a363de23576eb9ae59ed5baa660e3d16.js"
 );
 
 workbox.clientsClaim();
@@ -28,7 +28,7 @@ self.__precacheManifest = [].concat(self.__precacheManifest || []);
 workbox.precaching.suppressWarnings();
 workbox.precaching.precacheAndRoute(self.__precacheManifest, {});
 
-workbox.routing.registerNavigationRoute("/intersection_visualisation_demo/index.html", {
+workbox.routing.registerNavigationRoute("/discovery_and_integration_demo/index.html", {
   
   blacklist: [/^\/_/,/\/[^\/]+\.[^\/]+$/],
 });
