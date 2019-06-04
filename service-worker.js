@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js");
 
 importScripts(
-  "/intersection_visualisation_demo/precache-manifest.718d6e8ff3b3c760609ee9ac36777ec0.js"
+  "/intersection_visualisation_demo/precache-manifest.fa18cd9def7e4cc8b59fd2d9d1b7cd3a.js"
 );
 
 workbox.clientsClaim();
