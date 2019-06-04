@@ -1,3 +1,7 @@
+/**
+ * @jest-environment node
+ */
+
 import MapDataBase from "../map/MapDataBase";
 import SlowMapDataBase from "../map/SlowMapDataBase";
 import {mapNodesLinesToID, generateStraightLaneTestData} from "./Helperfunctions";
@@ -21,7 +25,7 @@ test('initialize mapdatabase',()=>{
     expect(mapDataBase.hasTurnRestrictions()).toEqual(false);
 });
 
-test('findNodesCloseByCoordinate use with a lot of nodes (from wegenregister Antwerpen)',(done)=>{
+test.skip('findNodesCloseByCoordinate use with a lot of nodes (from wegenregister Antwerpen)',(done)=>{
     expect.assertions(19);
     loadNodesLineStringsWegenregsterAntwerpen().then(features => {
         let slowMapDataBase = new SlowMapDataBase();
@@ -46,7 +50,7 @@ test('findNodesCloseByCoordinate use with a lot of nodes (from wegenregister Ant
     });
 },60000);
 
-test('findLinesCloseByCoordinate use with a lot of lines (from wegenregister Antwerpen)',(done)=>{
+test.skip('findLinesCloseByCoordinate use with a lot of lines (from wegenregister Antwerpen)',(done)=>{
     expect.assertions(41);
     loadNodesLineStringsWegenregsterAntwerpen().then(features => {
         let slowMapDataBase = new SlowMapDataBase();
