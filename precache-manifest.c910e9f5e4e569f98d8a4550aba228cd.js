@@ -4,7 +4,7 @@ self.__precacheManifest = [
     "url": "/discovery_and_integration_demo/static/media/icons.faff9214.woff"
   },
   {
-    "revision": "ab8e0f1d50bab5c85397",
+    "revision": "b2640a5f6abc2b613388",
     "url": "/discovery_and_integration_demo/static/css/main.bad90bc2.chunk.css"
   },
   {
@@ -20,12 +20,16 @@ self.__precacheManifest = [
     "url": "/discovery_and_integration_demo/static/js/2.04e92251.chunk.js"
   },
   {
+    "revision": "cd6c777f1945164224dee082abaea03a",
+    "url": "/discovery_and_integration_demo/static/media/outline-icons.cd6c777f.woff2"
+  },
+  {
     "revision": "ef60a4f6c25ef7f39f2d25a748dbecfe",
     "url": "/discovery_and_integration_demo/static/media/outline-icons.ef60a4f6.woff"
   },
   {
-    "revision": "cd6c777f1945164224dee082abaea03a",
-    "url": "/discovery_and_integration_demo/static/media/outline-icons.cd6c777f.woff2"
+    "revision": "9c74e172f87984c48ddf5c8108cabe67",
+    "url": "/discovery_and_integration_demo/static/media/flags.9c74e172.png"
   },
   {
     "revision": "701ae6abd4719e9c2ada3535a497b341",
@@ -36,16 +40,12 @@ self.__precacheManifest = [
     "url": "/discovery_and_integration_demo/static/media/outline-icons.ad97afd3.ttf"
   },
   {
-    "revision": "9c74e172f87984c48ddf5c8108cabe67",
-    "url": "/discovery_and_integration_demo/static/media/flags.9c74e172.png"
-  },
-  {
     "revision": "0ab54153eeeca0ce03978cc463b257f7",
     "url": "/discovery_and_integration_demo/static/media/icons.0ab54153.woff2"
   },
   {
-    "revision": "ab8e0f1d50bab5c85397",
-    "url": "/discovery_and_integration_demo/static/js/main.ab8e0f1d.chunk.js"
+    "revision": "b2640a5f6abc2b613388",
+    "url": "/discovery_and_integration_demo/static/js/main.b2640a5f.chunk.js"
   },
   {
     "revision": "e8c322de9658cbeb8a774b6624167c2c",
@@ -84,7 +84,7 @@ self.__precacheManifest = [
     "url": "/discovery_and_integration_demo/static/css/2.e7360b67.chunk.css"
   },
   {
-    "revision": "80c56c2a85ac270d504dfca96038216b",
+    "revision": "587ab268892e5d00745b4c40e807e6f6",
     "url": "/discovery_and_integration_demo/index.html"
   }
 ];
