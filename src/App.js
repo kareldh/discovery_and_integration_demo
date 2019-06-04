@@ -9,7 +9,7 @@ import NavBar from "./components/NavBar";
 class App extends Component {
     render() {
         return (
-            <Router>
+            <Router basename={process.env.PUBLIC_URL}>
                 <div>
                     <NavBar/>
                     {/*<ul>*/}
@@ -26,7 +26,7 @@ class App extends Component {
 
                     {/*<hr />*/}
 
-                    <Route path="/OpenLRDemo/" component={OpenLrDemo} />
+                    <Route path="/OpenLRDemo/" component={OpenLrDemo}  />
                     <Route path="/DiscoveryDemo/" component={MainDemo} />
                     {/*<Route path="/OpenStreetMapLinesView/" component={ApiContainer} />*/}
                 </div>
