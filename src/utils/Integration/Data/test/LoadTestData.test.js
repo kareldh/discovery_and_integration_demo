@@ -9,4 +9,4 @@ test('loadNodesLineStringsWegenregsterAntwerpen',(done)=>{
             done();
         }
     );
-});
+},10000);
