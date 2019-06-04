@@ -71,10 +71,10 @@ export default class RoutableTilesIntegration{
         ){
             return fowEnum.TRAFFICSQUARE;
         }
-        else if(osmWay.junction !== undefined && osmWay.junction === "https://w3id.org/openstreetmap/terms#Roundabout"){
+        else if(osmWay.junction !== undefined && osmWay.junction === "roundabout"){
             return fowEnum.ROUNDABOUT;
         }
-        else if(osmWay.highway !== undefined && OsmFowHighwayMapping[osmWay.highway.slice(4)] !== undefined){
+        else if(osmWay.highway !== undefined && OsmFowHighwayMapping[osmWay.highway.slice(37).toLowerCase()] !== undefined){
             return OsmFowHighwayMapping[osmWay.highway.slice(37).toLowerCase()];
         }
         else {
