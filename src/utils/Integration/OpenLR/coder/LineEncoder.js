@@ -452,7 +452,7 @@ export default class LineEncoder {
                     spLines = [];
                     lengthToLRP = 0;
                 }
-                if(!invalidLRPAdded){
+                else{
                     lengthToLRP += lines[i].getLength();
                     spLines.push(lines[i]);
                 }
@@ -497,7 +497,7 @@ export default class LineEncoder {
                 });
                 let shortestPath = Dijkstra.shortestPath(lines[lrpIndexInLoc+1].getEndNode(),lines[lines.length-1].getStartNode(),{maxDist: maxDist});
                 shortestPaths.push(shortestPath);
-                return this.checkShortestPathCoverage(lrpIndexInLoc+1,lines,shortestPath.lines,lines.length-1);
+                return this.checkShortestPathCoverage(lrpIndexInLoc+2,lines,shortestPath.lines,lines.length-1);
             }
         }
     }

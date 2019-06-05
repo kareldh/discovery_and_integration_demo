@@ -1,4 +1,4 @@
-import {generateRealisticLengthTestNetwork, loadRTtestNetworkWithLoop, mapNodesLinesToID} from "./Helperfunctions";
+import {generateRealisticLengthTestNetwork, mapNodesLinesToID} from "./Helperfunctions";
 import MapDataBase from "../map/MapDataBase";
 import LineEncoder from "../coder/LineEncoder";
 import LineDecoder from "../coder/LineDecoder";
@@ -145,24 +145,4 @@ test('findCandidateLines 4 LRPs no offsets extended perfect candidates',()=>{
     expect(candidateLines[3][0].projected).toEqual(false);
     expect(candidateLines[3][0].lrpIndex).toEqual(3);
     expect(candidateLines[3][0].frcDiff).toEqual(0);
-});
-
-test("adjustToValidStartEnd way on loop without junctions, so infinite expansion would occur if not taken care of in code",()=>{
-    let network = loadRTtestNetworkWithLoop();
-    let data = mapNodesLinesToID(network.nodes,network.lines);
-    let mapDatabase = new MapDataBase(data.lines,data.nodes);
-    let expanded = LineEncoder.adjustToValidStartEnd(mapDatabase,[mapDatabase.lines["http://www.openstreetmap.org/way/150668711_http://www.openstreetmap.org/node/4691959557"]],{posOffset:0,negOffset:0});
-    expect(expanded.front).toEqual(0);
-    expect(expanded.back).toEqual(0);
-});
-
-test("encode way on loop without junctions, so infinite expansion would occur if not taken care of in code",()=>{
-    let network = loadRTtestNetworkWithLoop();
-    let data = mapNodesLinesToID(network.nodes,network.lines);
-    let mapDatabase = new MapDataBase(data.lines,data.nodes);
-    let encoded = LineEncoder.encode(mapDatabase,[mapDatabase.lines["http://www.openstreetmap.org/way/150668711_http://www.openstreetmap.org/node/4691959557"]],0,0);
-    expect(encoded).toBeDefined();
-    expect(encoded.LRPs.length).toEqual(2);
-    expect(encoded.posOffset).toEqual(0);
-    expect(encoded.negOffset).toEqual(0);
 });
