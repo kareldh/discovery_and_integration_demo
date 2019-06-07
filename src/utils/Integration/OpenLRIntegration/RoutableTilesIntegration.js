@@ -64,14 +64,15 @@ export default class RoutableTilesIntegration{
     }
 
     static getFOW(osmWay){
-        if(osmWay.highway !== undefined
-            && osmWay.highway === "https://w3id.org/openstreetmap/terms#Pedestrian"
-            && osmWay.area !== undefined
-            && osmWay.area === "yes"
-        ){
-            return fowEnum.TRAFFICSQUARE;
-        }
-        else if(osmWay.junction !== undefined && osmWay.junction === "roundabout"){
+        // if(osmWay.highway !== undefined
+        //     && osmWay.highway === "https://w3id.org/openstreetmap/terms#Pedestrian"
+        //     && osmWay.area !== undefined
+        //     && osmWay.area === "yes"
+        // ){
+        //     return fowEnum.TRAFFICSQUARE; //todo: is dit wel correct?
+        // }
+        // else
+        if(osmWay.junction !== undefined && osmWay.junction === "roundabout"){
             return fowEnum.ROUNDABOUT;
         }
         else if(osmWay.highway !== undefined && OsmFowHighwayMapping[osmWay.highway.slice(37).toLowerCase()] !== undefined){

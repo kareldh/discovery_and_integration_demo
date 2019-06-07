@@ -125,14 +125,15 @@ export default class OSMIntegration{
 
     static getFOW(osmWay){
         let value = OSMIntegration._getTagsValues(osmWay,"highway","junction","area");
-        if(value["highway"] !== undefined
-            && value["highway"] === "pedestrian"
-            && value["area"] !== undefined
-            && value["area"] === "yes")
-        {
-            return fowEnum.TRAFFICSQUARE;
-        }
-        else if(value["junction"] !== undefined && value["junction"] === "roundabout"){
+        // if(value["highway"] !== undefined
+        //     && value["highway"] === "pedestrian"
+        //     && value["area"] !== undefined
+        //     && value["area"] === "yes")
+        // {
+        //     return fowEnum.TRAFFICSQUARE; //todo: is dit wel correct?
+        // }
+        // else
+        if(value["junction"] !== undefined && value["junction"] === "roundabout"){
             return fowEnum.ROUNDABOUT;
         }
         else if(value["highway"] !== undefined && OsmFowHighwayMapping[value["highway"]] !== undefined){
