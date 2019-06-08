@@ -1,6 +1,7 @@
 import axios from 'axios';
 import ldfetch from "ldfetch";
 import {DATASET_URL} from "./const";
+import {tile2boundingBox} from "../../tileUtils";
 
 
 export function loadNodesLineStringsWegenregisterAntwerpen(){
@@ -35,4 +36,9 @@ export function fetchOsmData(latLower,latUpper,longLower,longUpper) {
                 reject(error)
             })
     })
+}
+
+export function fetchOsmTileData(zoom,tileX,tileY) {
+    let boundingBox = tile2boundingBox(tileX,tileY,zoom);
+    return fetchOsmData(boundingBox.latLower,boundingBox.latUpper,boundingBox.longLower,boundingBox.longUpper)
 }
