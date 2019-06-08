@@ -4,7 +4,7 @@
 
 import MapDataBase from "../OpenLR/map/MapDataBase";
 import WegenregisterAntwerpenIntegration from "../OpenLRIntegration/WegenregisterAntwerpenIntegration";
-import {loadOsmTestData} from "../Data/LoadTestData";
+import {loadOsmTileTestData} from "../Data/LoadTestData";
 import {
     filterHighwayData, getMappedElements, getRoutableTilesNodesAndLines,
     parseToJson
@@ -15,7 +15,10 @@ import OpenLRDecoder from "../OpenLR/Decoder";
 import RoutableTilesIntegration from "../OpenLRIntegration/RoutableTilesIntegration";
 import {LinesDirectlyToLRPs} from "../OpenLR/experimental/LinesDirectlyToLRPs";
 import {configProperties} from "../OpenLR/coder/CoderSettings";
-import {fetchRoutableTile, loadNodesLineStringsWegenregisterAntwerpen} from "../Data/LoadData";
+import {
+    fetchOsmData, fetchOsmTileData, fetchRoutableTile,
+    loadNodesLineStringsWegenregisterAntwerpen
+} from "../Data/LoadData";
 
 export let decoderPropertiesAlwaysProj = {
     dist: 5,    //maximum distance (in meter) of a candidate node to a LRP
@@ -51,7 +54,7 @@ export let decoderProperties = {
     distMultiplierForRetry: 2
 };
 
-let maxDecodedLines = 10;
+let maxDecodedLines = 20;
 let wegenregisterLineLengthLimit = 5; // in meter
 let lineLengthLimitSameDataBase = 0; // in meter
 let maxAmountOfWegenregisterLines = 1000;
@@ -71,8 +74,8 @@ performance.now = ()=>{
     return  Math.round((t[0]*1000) + (t[1]/1000000));
 };
 
-function _fromOneToOther(fromDataBase,toDataBase,decoderProperties,encodeFunction){
-    console.log("Encoder Lines:",Object.keys(fromDataBase.lines).length,"Decoder Lines:",Object.keys(toDataBase.lines).length);
+export function _fromOneToOther(fromDataBase,toDataBase,decoderProperties,encodeFunction,logging=true){
+    if(logging) console.log("Encoder Lines:",Object.keys(fromDataBase.lines).length,"Decoder Lines:",Object.keys(toDataBase.lines).length);
 
     let locations = [];
     let encodeErrors = 0;
@@ -125,13 +128,13 @@ function _fromOneToOther(fromDataBase,toDataBase,decoderProperties,encodeFunctio
     let time2 = clock(t1);
     let total = encodeTimes.length > 0 ? encodeTimes.reduce((previous, current)=> current += previous) : 0;
     let errorTotal = encodeErrorTimes.length > 0 ? encodeErrorTimes.reduce((previous, current)=> current += previous) : 0;
-    console.log("encoded locations: ",locations.length,"encode errors:",encodeErrors,
+    if(logging) console.log("encoded locations: ",locations.length,"encode errors:",encodeErrors,
         "in time:",time2,"ms",
         "mean time:",total/encodeTimes.length,"ms,",
         "error mean time",encodeErrorTimes.length > 0 ? errorTotal/encodeErrorTimes.length : 0,"ms,"
     );
-    console.log(encodeErrorTypes);
-    console.log("fromDataBase chorteste:",kortste,"| Amount under 1 meter:",x);
+    if(logging) console.log(encodeErrorTypes);
+    if(logging) console.log("fromDataBase chortest:",kortste,"| Amount under 1 meter:",x);
 
     let times = [];
     let errorTimes = [];
@@ -160,14 +163,14 @@ function _fromOneToOther(fromDataBase,toDataBase,decoderProperties,encodeFunctio
     time2 = clock(t1);
     let sum = times.length > 0 ? times.reduce((previous, current)=> current += previous) : 0;
     let errorSum = errorTimes.length > 0 ? errorTimes.reduce((previous, current)=> current += previous) : 0;
-    console.log("decoded lines: ",decodedLines.length,"decode errors:",decodeErrors,
+    if(logging) console.log("decoded lines: ",decodedLines.length,"decode errors:",decodeErrors,
         "in time:",time2,"ms,",
         "mean time:",sum/times.length,"ms,",
         "error mean time",errorSum/errorTimes.length,"ms,"
     );
-    console.log(decodeErrorTypes);
+    if(logging) console.log(decodeErrorTypes);
 
-    console.warn(erroneousLocations[0]);
+    if(logging) console.warn(erroneousLocations[0]);
 
     for(let i=0;i<decodedLines.length;i++){
         expect(decodedLines[i].lines.length).toBeGreaterThan(0);
@@ -185,17 +188,18 @@ function _fromOneToOther(fromDataBase,toDataBase,decoderProperties,encodeFunctio
             }
         }
     }
-    console.log("toDataBase chortest:",kortsteTo,"| Amount under 1 meter:",aantalUnder);
+    if(logging) console.log("toDataBase chortest:",kortsteTo,"| Amount under 1 meter:",aantalUnder);
 
     return {
         encodedLocations: locations.length,
         encodeErrors: encodeErrors,
         decodedLines: decodedLines.length,
-        decodeErrors: decodeErrors
+        decodeErrors: decodeErrors,
+        meanDecodeTime: sum/times.length
     };
 }
-function _fromOneToSame(mapDatabase,decoderProperties,encodeFunction,lineLimit,lineLengthLimit){
-    console.log("Encoder Lines:",Object.keys(mapDatabase.lines).length,"Decoder Lines:",Object.keys(mapDatabase.lines).length);
+export function _fromOneToSame(mapDatabase,decoderProperties,encodeFunction,lineLimit,lineLengthLimit,logging=true){
+    if(logging) console.log("Encoder Lines:",Object.keys(mapDatabase.lines).length,"Decoder Lines:",Object.keys(mapDatabase.lines).length);
     let lineIds = [];
     let decodeErrorIndexes = [];
     let locations = [];
@@ -244,12 +248,12 @@ function _fromOneToSame(mapDatabase,decoderProperties,encodeFunction,lineLimit,l
     let t2 = performance.now();
     let total = encodeTimes.length > 0 ? encodeTimes.reduce((previous, current)=> current += previous) : 0;
     let errorTotal = encodeErrorTimes.length > 0 ? encodeErrorTimes.reduce((previous, current)=> current += previous) : 0;
-    console.log("encoded locations: ",locations.length,"encode errors:",encodeErrors,
+    if(logging) console.log("encoded locations: ",locations.length,"encode errors:",encodeErrors,
         "in time:",t2-t1,"ms",
         "mean time:",encodeTimes.length > 0 ? total/encodeTimes.length : 0,"ms,",
         "error mean time",encodeErrorTimes.length > 0 ? errorTotal/encodeErrorTimes.length : 0,"ms,"
     );
-    console.log(encodeErrorTypes);
+    if(logging) console.log(encodeErrorTypes);
 
     let times = [];
     let errorTimes = [];
@@ -278,14 +282,14 @@ function _fromOneToSame(mapDatabase,decoderProperties,encodeFunction,lineLimit,l
         }
     }
     t2 = performance.now();
-    let sum = decodedLines.length > 0 ? times.reduce((previous, current)=> current += previous) : 0;
+    let sum = times.length > 0 ? times.reduce((previous, current)=> current += previous) : 0;
     let errorSum = errorTimes.length > 0 ? errorTimes.reduce((previous, current)=> current += previous) : 0;
-    console.log("decoded lines: ",decodedLines.length > 0 ? decodedLines.length : 0,"decode errors:",decodeErrors,
+    if(logging) console.log("decoded lines: ",decodedLines.length > 0 ? decodedLines.length : 0,"decode errors:",decodeErrors,
         "in time:",t2-t1,"ms,",
         "mean time:",sum/times.length,"ms,",
         "error mean time",errorTimes.length > 0 ? errorSum/errorTimes.length : 0,"ms,"
     );
-    console.log(decodeErrorTypes);
+    if(logging) console.log(decodeErrorTypes);
 
     let decodedToTwo = 0;
     let decodedToThree = 0;
@@ -391,10 +395,10 @@ function _fromOneToSame(mapDatabase,decoderProperties,encodeFunction,lineLimit,l
 
                 if(Math.abs(diffBegin) > minOffsetDiff || Math.abs(diffEnd) > minOffsetDiff){
                     // console.log("Line encoded: ",lineIds[i]);
-                    console.log("Original Line:",mapDatabase.lines[lineIds[i]]);
-                    console.log("Encoded location:",locations[i]);
-                    console.log("Decoded location:",decodedLines[i-a]);
-                    console.log("Begin diff:",diffBegin,"End diff:",diffEnd);
+                    if(logging) console.log("Original Line:",mapDatabase.lines[lineIds[i]]);
+                    if(logging) console.log("Encoded location:",locations[i]);
+                    if(logging) console.log("Decoded location:",decodedLines[i-a]);
+                    if(logging) console.log("Begin diff:",diffBegin,"End diff:",diffEnd);
                 }
 
                 expect(diffBegin).toBeDefined();
@@ -424,18 +428,19 @@ function _fromOneToSame(mapDatabase,decoderProperties,encodeFunction,lineLimit,l
     }
     //happens because encoder moves to valid nodes, which in combination with the rounding to meters has a small loss in precision
     //since nodes are than projected during decoding, they can be projected up to half a meter to the left or right of our original line
-    console.log("decoded to two:",decodedToTwo,"decoded to three:",decodedToThree,"decoded to more",decodedToMoreThanThree);
-    console.log("original line not present",originalLineNotPresent);
+    if(logging) console.log("decoded to two:",decodedToTwo,"decoded to three:",decodedToThree,"decoded to more",decodedToMoreThanThree);
+    if(logging) console.log("original line not present",originalLineNotPresent);
     let offsetErrorSum = offsetDiffs.length > 0 ? offsetDiffs.reduce((previous, current)=> current += previous) : 0;
-    console.log("Minimum offset error:",minDiff,"Maximum offset error:",maxDiff,"Mean offset error:",offsetDiffs.length > 0 ? offsetErrorSum/offsetDiffs.length : 0);
-    console.log("Maximum amount of resulting lines after decoding",maxAmountOfLines);
-    console.log("Amount of Lines were offsetDiff at both sides was lower than",minOffsetDiff,":",amountBothDiffsUnderMinOffsetDiff);
+    if(logging) console.log("Minimum offset error:",minDiff,"Maximum offset error:",maxDiff,"Mean offset error:",offsetDiffs.length > 0 ? offsetErrorSum/offsetDiffs.length : 0);
+    if(logging) console.log("Maximum amount of resulting lines after decoding",maxAmountOfLines);
+    if(logging) console.log("Amount of Lines were offsetDiff at both sides was lower than",minOffsetDiff,":",amountBothDiffsUnderMinOffsetDiff);
 
     return({
         encodedLocations: locations.length,
         encodeErrors: encodeErrors,
         decodedLines: decodedLines.length,
-        decodeErrors: decodeErrors
+        decodeErrors: decodeErrors,
+        meanDecodeTime: sum/times.length
     })
 }
 
@@ -445,7 +450,7 @@ export function osmToWegenregister(decoderProperties){
             let wegenregisterMapDataBase = new MapDataBase();
             WegenregisterAntwerpenIntegration.initMapDataBase(wegenregisterMapDataBase,features);
 
-            loadOsmTestData()
+            fetchOsmData(51.2094,51.2198,4.3960,4.4116)
                 .then((data)=>{parseToJson(data)
                     .then((json)=>{getMappedElements(json)
                         .then((elements)=>{filterHighwayData(elements)
@@ -496,7 +501,7 @@ export function osmToRoutableTiles(decoderProperties){
                 })}));
 
         Promise.all(tilesLoaded).then(()=> {
-            loadOsmTestData()
+            fetchOsmData(51.2094,51.2198,4.3960,4.4116)
                 .then((data)=>{parseToJson(data)
                     .then((json)=>{getMappedElements(json)
                         .then((elements)=>{filterHighwayData(elements)
@@ -516,7 +521,7 @@ export function osmToWegenregisterNoEnc(decoderProperties){
             let wegenregisterMapDataBase = new MapDataBase();
             WegenregisterAntwerpenIntegration.initMapDataBase(wegenregisterMapDataBase,features);
 
-            loadOsmTestData()
+            fetchOsmData(51.2094,51.2198,4.3960,4.4116)
                 .then((data)=>{parseToJson(data)
                     .then((json)=>{getMappedElements(json)
                         .then((elements)=>{filterHighwayData(elements)
@@ -567,7 +572,7 @@ export function osmToRoutableTilesNoEnc(decoderProperties){
                 })}));
 
         Promise.all(tilesLoaded).then(()=> {
-            loadOsmTestData()
+            fetchOsmData(51.2094,51.2198,4.3960,4.4116)
                 .then((data)=>{parseToJson(data)
                     .then((json)=>{getMappedElements(json)
                         .then((elements)=>{filterHighwayData(elements)
@@ -584,7 +589,7 @@ export function osmToRoutableTilesNoEnc(decoderProperties){
 
 export function osmToOsm(decoderProperties){
     return new Promise(resolve=>{
-        loadOsmTestData()
+        fetchOsmTileData(14,8392,5469)
             .then((data)=>{parseToJson(data)
                 .then((json)=>{getMappedElements(json)
                     .then((elements)=>{filterHighwayData(elements)
@@ -600,7 +605,7 @@ export function osmToOsm(decoderProperties){
 }
 export function osmToOsmNoEncoding(decoderProperties){
     return new Promise(resolve=>{
-        loadOsmTestData()
+        fetchOsmTileData(14,8392,5469)
             .then((data)=>{parseToJson(data)
                 .then((json)=>{getMappedElements(json)
                     .then((elements)=>{filterHighwayData(elements)

@@ -18,7 +18,7 @@ import {configProperties} from "../OpenLR/coder/CoderSettings";
 
 describe.skip("tests using configProperties in centimeter",()=>{
 
-    describe("tests different databases",()=>{
+    describe("tests different databases osm to reg",()=>{
         test('demo osm to wegenregister no proj',(done)=>{
             expect.hasAssertions();
             osmToWegenregister(decoderProperties).then((res)=>{
@@ -51,7 +51,9 @@ describe.skip("tests using configProperties in centimeter",()=>{
                 done();
             });
         },160000);
+    });
 
+    describe("tests different databases osm to rt",()=>{
         test('demo osm to RoutableTiles no proj',(done)=>{
             expect.hasAssertions();
             osmToRoutableTiles(decoderProperties).then((res)=>{
@@ -84,7 +86,9 @@ describe.skip("tests using configProperties in centimeter",()=>{
                 done();
             });
         },160000);
+    });
 
+    describe("tests different databases rt to reg",()=>{
         test('demo RoutableTiles to wegenregister no proj',(done)=>{
             expect.hasAssertions();
             routableTilesToWegenregister(decoderProperties).then((res)=>{
@@ -119,7 +123,7 @@ describe.skip("tests using configProperties in centimeter",()=>{
         },160000);
     });
 
-    describe("tests same database",()=>{
+    describe("tests same database OSM",()=>{
         test('demo osm to osm',(done)=>{
             expect.hasAssertions();
             osmToOsm(decoderPropertiesAlwaysProj).then((res)=>{
@@ -152,40 +156,9 @@ describe.skip("tests using configProperties in centimeter",()=>{
                 done();
             });
         },60000);
+    });
 
-        test('demo wegenregister to wegenregister',(done)=>{
-            expect.hasAssertions();
-            wegenregisterToWegenregister(decoderPropertiesAlwaysProj).then((res)=>{
-                console.log(res);
-                expect(res).toBeDefined();
-                done();
-            });
-        },60000);
-        test('demo wegenregister to wegenregister no proj',(done)=>{
-            expect.hasAssertions();
-            wegenregisterToWegenregister(decoderProperties).then((res)=>{
-                console.log(res);
-                expect(res).toBeDefined();
-                done();
-            });
-        },60000);
-        test('demo wegenregister to wegenregister no encoding',(done)=>{
-            expect.hasAssertions();
-            wegenregisterToWegenregisterNoEncoding(decoderPropertiesAlwaysProj).then((res)=>{
-                console.log(res);
-                expect(res).toBeDefined();
-                done();
-            });
-        },60000);
-        test('demo wegenregister to wegenregister no encoding no proj',(done)=>{
-            expect.hasAssertions();
-            wegenregisterToWegenregisterNoEncoding(decoderProperties).then((res)=>{
-                console.log(res);
-                expect(res).toBeDefined();
-                done();
-            });
-        },60000);
-
+    describe("tests same database Routable Tiles",()=>{
         test('demo RoutableTiles to RoutableTiles',(done)=>{
             expect.hasAssertions();
             routableTilesToRoutableTiles(decoderPropertiesAlwaysProj).then((res)=>{
@@ -213,6 +186,41 @@ describe.skip("tests using configProperties in centimeter",()=>{
         test('demo RoutableTiles to RoutableTiles no encoding no proj',(done)=>{
             expect.hasAssertions();
             routableTilesToRoutableTilesNoEncoding(decoderProperties).then((res)=>{
+                console.log(res);
+                expect(res).toBeDefined();
+                done();
+            });
+        },60000);
+    });
+
+    describe("tests same database Wegenregister",()=>{
+        test('demo wegenregister to wegenregister',(done)=>{
+            expect.hasAssertions();
+            wegenregisterToWegenregister(decoderPropertiesAlwaysProj).then((res)=>{
+                console.log(res);
+                expect(res).toBeDefined();
+                done();
+            });
+        },60000);
+        test('demo wegenregister to wegenregister no proj',(done)=>{
+            expect.hasAssertions();
+            wegenregisterToWegenregister(decoderProperties).then((res)=>{
+                console.log(res);
+                expect(res).toBeDefined();
+                done();
+            });
+        },60000);
+        test('demo wegenregister to wegenregister no encoding',(done)=>{
+            expect.hasAssertions();
+            wegenregisterToWegenregisterNoEncoding(decoderPropertiesAlwaysProj).then((res)=>{
+                console.log(res);
+                expect(res).toBeDefined();
+                done();
+            });
+        },60000);
+        test('demo wegenregister to wegenregister no encoding no proj',(done)=>{
+            expect.hasAssertions();
+            wegenregisterToWegenregisterNoEncoding(decoderProperties).then((res)=>{
                 console.log(res);
                 expect(res).toBeDefined();
                 done();
@@ -264,7 +272,7 @@ describe.skip("tests using configProperties in meter",()=>{
         configProperties.bearDist = 20;
     });
 
-    describe("tests different databases",()=>{
+    describe("tests different databases osm to reg",()=>{
         test('demo osm to wegenregister no proj',(done)=>{
             expect.hasAssertions();
             osmToWegenregister(decoderProperties).then((res)=>{
@@ -297,7 +305,9 @@ describe.skip("tests using configProperties in meter",()=>{
                 done();
             });
         },60000);
+    });
 
+    describe("tests different databases osm to rt",()=>{
         test('demo osm to RoutableTiles no proj',(done)=>{
             expect.hasAssertions();
             osmToRoutableTiles(decoderProperties).then((res)=>{
@@ -330,7 +340,9 @@ describe.skip("tests using configProperties in meter",()=>{
                 done();
             });
         },60000);
+    });
 
+    describe("tests different databases rt to reg",()=>{
         test('demo RoutableTiles to wegenregister no proj',(done)=>{
             expect.hasAssertions();
             routableTilesToWegenregister(decoderProperties).then((res)=>{
@@ -365,7 +377,7 @@ describe.skip("tests using configProperties in meter",()=>{
         },60000);
     });
 
-    describe("tests same database",()=>{
+    describe("tests same database OSM",()=>{
         test('demo osm to osm',(done)=>{
             expect.hasAssertions();
             osmToOsm(decoderPropertiesAlwaysProj).then((res)=>{
@@ -398,7 +410,9 @@ describe.skip("tests using configProperties in meter",()=>{
                 done();
             });
         },60000);
+    });
 
+    describe("tests same database Routable Tiles",()=>{
         test('demo wegenregister to wegenregister',(done)=>{
             expect.hasAssertions();
             wegenregisterToWegenregister(decoderPropertiesAlwaysProj).then((res)=>{
@@ -431,7 +445,9 @@ describe.skip("tests using configProperties in meter",()=>{
                 done();
             });
         },60000);
+    });
 
+    describe("tests same database Wegenregister",()=>{
         test('demo RoutableTiles to RoutableTiles',(done)=>{
             expect.hasAssertions();
             routableTilesToRoutableTiles(decoderPropertiesAlwaysProj).then((res)=>{
@@ -457,13 +473,13 @@ describe.skip("tests using configProperties in meter",()=>{
             });
         },60000);
         test('demo RoutableTiles to RoutableTiles no encoding no proj',(done)=>{
-        expect.hasAssertions();
-        routableTilesToRoutableTilesNoEncoding(decoderProperties).then((res)=>{
-            console.log(res);
-            expect(res).toBeDefined();
-            done();
-        });
-    },60000);
+            expect.hasAssertions();
+            routableTilesToRoutableTilesNoEncoding(decoderProperties).then((res)=>{
+                console.log(res);
+                expect(res).toBeDefined();
+                done();
+            });
+        },60000);
     });
 
     describe("tests wegenregister only lines longer than 5 meter",()=>{
