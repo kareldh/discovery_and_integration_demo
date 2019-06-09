@@ -4,7 +4,7 @@ self.__precacheManifest = [
     "url": "/discovery_and_integration_demo/static/media/icons.faff9214.woff"
   },
   {
-    "revision": "610eeeaf08a9de9c82f5",
+    "revision": "197856eef5f221b53e44",
     "url": "/discovery_and_integration_demo/static/css/main.bad90bc2.chunk.css"
   },
   {
@@ -16,16 +16,20 @@ self.__precacheManifest = [
     "url": "/discovery_and_integration_demo/static/media/brand-icons.a1a749e8.svg"
   },
   {
-    "revision": "4080c2eeac50af1df95e",
-    "url": "/discovery_and_integration_demo/static/js/2.4080c2ee.chunk.js"
+    "revision": "a8f00ee98b4db8745e3c",
+    "url": "/discovery_and_integration_demo/static/js/2.a8f00ee9.chunk.js"
+  },
+  {
+    "revision": "ef60a4f6c25ef7f39f2d25a748dbecfe",
+    "url": "/discovery_and_integration_demo/static/media/outline-icons.ef60a4f6.woff"
   },
   {
     "revision": "cd6c777f1945164224dee082abaea03a",
     "url": "/discovery_and_integration_demo/static/media/outline-icons.cd6c777f.woff2"
   },
   {
-    "revision": "ef60a4f6c25ef7f39f2d25a748dbecfe",
-    "url": "/discovery_and_integration_demo/static/media/outline-icons.ef60a4f6.woff"
+    "revision": "9c74e172f87984c48ddf5c8108cabe67",
+    "url": "/discovery_and_integration_demo/static/media/flags.9c74e172.png"
   },
   {
     "revision": "701ae6abd4719e9c2ada3535a497b341",
@@ -36,16 +40,12 @@ self.__precacheManifest = [
     "url": "/discovery_and_integration_demo/static/media/outline-icons.ad97afd3.ttf"
   },
   {
-    "revision": "9c74e172f87984c48ddf5c8108cabe67",
-    "url": "/discovery_and_integration_demo/static/media/flags.9c74e172.png"
-  },
-  {
     "revision": "0ab54153eeeca0ce03978cc463b257f7",
     "url": "/discovery_and_integration_demo/static/media/icons.0ab54153.woff2"
   },
   {
-    "revision": "610eeeaf08a9de9c82f5",
-    "url": "/discovery_and_integration_demo/static/js/main.610eeeaf.chunk.js"
+    "revision": "197856eef5f221b53e44",
+    "url": "/discovery_and_integration_demo/static/js/main.197856ee.chunk.js"
   },
   {
     "revision": "e8c322de9658cbeb8a774b6624167c2c",
@@ -80,11 +80,11 @@ self.__precacheManifest = [
     "url": "/discovery_and_integration_demo/static/media/icons.962a1bf3.svg"
   },
   {
-    "revision": "4080c2eeac50af1df95e",
+    "revision": "a8f00ee98b4db8745e3c",
     "url": "/discovery_and_integration_demo/static/css/2.e7360b67.chunk.css"
   },
   {
-    "revision": "bebf236d04107c5da33d17fb982b389a",
+    "revision": "c7800bc9820b3b795173f6f3f99a4bae",
     "url": "/discovery_and_integration_demo/index.html"
   }
 ];
