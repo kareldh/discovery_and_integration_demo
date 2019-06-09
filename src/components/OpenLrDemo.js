@@ -26,7 +26,7 @@ import {map} from "../utils/Integration/Data/testdata/junction_with_lanes_manual
 import {LinesDirectlyToLRPs} from "../utils/Integration/OpenLR/experimental/LinesDirectlyToLRPs";
 import {configProperties, decoderProperties} from "../utils/Integration/OpenLR/coder/CoderSettings";
 import {internalPrecisionEnum} from "../utils/Integration/OpenLR/map/Enum";
-import {getTileXYForLocation, tile2boundingBox} from "../Logic/tileUtils";
+import {getTileXYForLocation, tile2boundingBox} from "../utils/tileUtils";
 import {downloadOpenTrafficLightsTestData} from "../utils/OpenTrafficLights/data";
 import {MainDemo} from "./MainDemo";
 
@@ -49,7 +49,7 @@ export default class OpenLrDemo extends React.Component{
             data: [],
             lat: 51.21205,
             lng: 4.39717,
-            encodingStrat: encodingStratEnum.OpenLrEncode,
+            encodingStrat: encodingStratEnum.LinesToLRPs,
             dataSource: inputDataEnum.RoutableTiles,
             internalPrecision: internalPrecisionEnum.CENTIMETER
         };
@@ -98,11 +98,12 @@ export default class OpenLrDemo extends React.Component{
             let encoded;
             if(this.state.encodingStrat === encodingStratEnum.OpenLrEncode){
                 encoded = LineEncoder.encode(mapDataBase,l,0,0);
+                console.log("Encoded: ",encoded);
             }
             else if(this.state.encodingStrat === encodingStratEnum.LinesToLRPs){
                 encoded = LinesDirectlyToLRPs(l);
+                console.log("Directly converted: ",encoded);
             }
-            console.log(encoded);
 
             if(this.state.dataSource===inputDataEnum.OpenStreetMap){
                 this.findMarkersOsm(encoded);
@@ -255,7 +256,7 @@ export default class OpenLrDemo extends React.Component{
     }
 
     addMarker(latlng){
-        this.addDataBases(latlng,this.state.dataSource);
+        this.addDataBases(latlng,this.state.dataSource,true);
         this.coordinates.push(latlng);
         // let marker = OpenLrDemo.createMarker(latlng.lat,latlng.lng);
         this.setState(()=>{
@@ -268,7 +269,7 @@ export default class OpenLrDemo extends React.Component{
         });
     }
 
-    addDataBases(latlng,dataSource){
+    addDataBases(latlng,dataSource,singleTile=false){
         let {lat,lng} = latlng;
         let tileXY = getTileXYForLocation(lat,lng,14);
         this.x = tileXY.x;
@@ -276,25 +277,35 @@ export default class OpenLrDemo extends React.Component{
         let promises = [];
         let t1 = performance.now();
         let promise = new Promise(resolve=>{
-            for(let ix=tileXY.x-1;ix<=tileXY.x+1;ix++){
-                for(let iy=tileXY.y-1;iy<=tileXY.y+1;iy++){
-                    if(!this.tiles[ix+"_"+iy]){
-                        // use this check if we only want to fetch each tile one time during the lifetime of this application
-                        // not using this check results in refilling the mapDataBase every time the location is set
-                        if(dataSource===inputDataEnum.RoutableTiles){
-                            promises.push(this.addRoutableTileToMapDataBase(14,ix,iy));
-                        }
-                        else if(dataSource===inputDataEnum.OpenStreetMap){
-                            promises.push(this.addOpenStreetMapTileToMapDataBase(14,ix,iy));
-                        }
-                        this.tiles[ix+"_"+iy] = true;
+            let tileXYs = [];
+            if(singleTile){
+                tileXYs.push({x: tileXY.x, y: tileXY.y});
+            }
+            else{
+                for(let ix=tileXY.x-1;ix<=tileXY.x+1;ix++){
+                    for(let iy=tileXY.y-1;iy<=tileXY.y+1;iy++){
+                        // if(!this.tiles[ix+"_"+iy]){
+                            // use this check if we only want to fetch each tile one time during the lifetime of this application
+                            // not using this check results in refilling the mapDataBase every time the location is set
+                            tileXYs.push({x: ix, y: iy});
+                            // this.tiles[ix+"_"+iy] = true;
+                        // }
                     }
                 }
             }
 
+            tileXYs.forEach((tile)=>{
+                if(dataSource===inputDataEnum.RoutableTiles){
+                    promises.push(this.addRoutableTileToMapDataBase(14,tile.x,tile.y));
+                }
+                else if(dataSource===inputDataEnum.OpenStreetMap){
+                    promises.push(this.addOpenStreetMapTileToMapDataBase(14,tile.x,tile.y));
+                }
+            });
+
             Promise.all(promises).then(()=>{
                 let t2 = performance.now();
-                console.log("mapDataBase initialized in",t2-t1,"ms");
+                console.log("mapDataBase initialized in",t2-t1,"ms"); //todo: niet altijd iets gedaan, dus log is voor begeleiders misschien niet duidelijk
                 resolve();
             }).catch();
         });
@@ -309,8 +320,6 @@ export default class OpenLrDemo extends React.Component{
         return new Promise((resolve,reject)=>{
             fetchRoutableTile(zoom, x, y)
                 .then((data) => {
-                    let t4 = performance.now();
-                    console.log("downloaded tile",x,y,zoom,"in",t4-t3,"ms");
                     let t1 = performance.now();
                     getRoutableTilesNodesAndLines(data.triples)
                         .then((nodesAndLines) => {
@@ -320,7 +329,7 @@ export default class OpenLrDemo extends React.Component{
                             let nodesLines = RoutableTilesIntegration.getNodesLines(nodesAndLines.nodes, nodesAndLines.lines);
                             this.routableTilesDataBase.addData(nodesLines.lines, nodesLines.nodes);
                             let t2 = performance.now();
-                            console.log("parsed tile",x,y,zoom,"in",t2-t1,"ms");
+                            console.log("Fetched tile",x,y,zoom,"in",t1-t3,"ms, Parsed tile in",t2-t1,"ms");
                             resolve();
                         })
                 })
@@ -334,8 +343,6 @@ export default class OpenLrDemo extends React.Component{
         return new Promise((resolve,reject)=>{
             fetchOsmData(boundingBox.latLower,boundingBox.latUpper,boundingBox.longLower,boundingBox.longUpper)
                 .then((data)=>{
-                    let t4 = performance.now();
-                    console.log("downloaded tile",x,y,zoom,"in",t4-t3,"ms");
                     let t1 = performance.now();
                     parseToJson(data)
                     .then((json)=>{getMappedElements(json)
@@ -347,7 +354,7 @@ export default class OpenLrDemo extends React.Component{
                                 let nodesLines = OSMIntegration.getNodesLines(highwayData.nodes,highwayData.ways,highwayData.relations);
                                 this.osmDataBase.addData(nodesLines.lines,nodesLines.nodes);
                                 let t2 = performance.now();
-                                console.log("parsed tile",x,y,zoom,"in",t2-t1,"ms");
+                                console.log("Fetched tile",x,y,zoom,"in",t1-t3,"ms, Parsed tile in",t2-t1,"ms");
                                 resolve();
                             })})})})
                 .catch(e=>reject(e));
@@ -397,7 +404,7 @@ export default class OpenLrDemo extends React.Component{
 
     render(){
         let {data,lat,lng} = this.state;
-        console.log(data);
+        // console.log(data);
         return <div>
             <div>
                 <TileView zoom={14} lat={lat} lng={lng} data={data} onMouseClick={this.addMarker}/>
@@ -480,12 +487,12 @@ export default class OpenLrDemo extends React.Component{
             this.addDataBases({lat: 51.21205, lng: 4.39717},this.state.dataSource);
             dataBaseInitialized = this.dataBasesInitialized;
         }
-        console.log(dataBaseInitialized);
+        // console.log(dataBaseInitialized);
         downloadOpenTrafficLightsTestData().then(doc=>{
             MainDemo._getTrafficLightData(doc).then(parsed=> {
                 let LRPs = MainDemo._toLRPs(parsed,this.state.encodingStrat);
                 dataBaseInitialized.then(() => {
-                    console.log(dataBaseInitialized);
+                    // console.log(dataBaseInitialized);
                     if(this.state.dataSource===inputDataEnum.OpenStreetMap){
                         database = this.osmDataBase;
                     }

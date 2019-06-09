@@ -1,6 +1,6 @@
 import MapDataBase from "../utils/Integration/OpenLR/map/MapDataBase";
 import Catalog from "../utils/Discovery/TrafficLightDataDiscovery/Catalog";
-import {getTileXYForLocation, tile2boundingBox} from "../Logic/tileUtils";
+import {getTileXYForLocation, tile2boundingBox} from "../utils/tileUtils";
 import {fetchRoutableTile} from "../utils/Integration/Data/LoadData";
 import {getRoutableTilesNodesAndLines} from "../utils/Integration/Data/ParseData";
 import RoutableTilesIntegration from "../utils/Integration/OpenLRIntegration/RoutableTilesIntegration";
@@ -108,6 +108,7 @@ export class MainDemo extends React.Component{
 
     addRoutableTileToMapDataBase(zoom,x,y){
         return new Promise(resolve=>{
+            let t3 = performance.now();
             fetchRoutableTile(zoom, x, y)
                 .then((data) => {
                     let t1 = performance.now();
@@ -116,7 +117,7 @@ export class MainDemo extends React.Component{
                             let nodesLines = RoutableTilesIntegration.getNodesLines(nodesAndLines.nodes, nodesAndLines.lines);
                             this.mapDataBase.addData(nodesLines.lines, nodesLines.nodes);
                             let t2 = performance.now();
-                            console.log("Parsed tile",x,y,"in",t2-t1,"ms");
+                            console.log("Fetched tile",x,y,zoom,"in",t1-t3,"ms, Parsed tile in",t2-t1,"ms");
                             this.tiles[x + "_" + y] = true;
                             resolve();
                         })
@@ -356,7 +357,7 @@ export class MainDemo extends React.Component{
     }
 
     handleCatalogSelect(event){
-        this.setState({catalog: event.target.value});
+        this.setState({catalog: event.target.value, data: []});
         this.initCatalog(event.target.value);
     }
 }
