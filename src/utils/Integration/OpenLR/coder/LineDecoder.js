@@ -421,7 +421,7 @@ export default class LineDecoder{
             if(posOffsetOverflow && negOffsetOverflow){
                 let posOverflow = offsets.posOffset-firstLine.getLength();
                 let negOverflow = offsets.negOffset-lastLine.getLength();
-                if(posOverflow>=negOverflow){
+                if(posOverflow>=negOverflow){ //todo: vermoeden dat grotere overflow betekent dat de weg meer naar de andere kant moet liggen, maar zou ook kunnen dat het juist andersom is
                     offsets.posOffset  -= firstLine.getLength();
                     concatShortestPath.shortestPath.shift();
                     firstLine = concatShortestPath.shortestPath[0];
