@@ -34,3 +34,7 @@ You will also see any lint errors in the console.
 
 Launches the test runner in the interactive watch mode.<br>
 See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+
+### `npm test -- --coverage'
+
+Execute tests + generate coverage report. Report can also be viewed in browser via /coverage/lcov-report/index.html
